@@ -10,6 +10,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh, health,info,beans,env, mappings, routes
+        include: '*'
 server:
   port: 9993
+  
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

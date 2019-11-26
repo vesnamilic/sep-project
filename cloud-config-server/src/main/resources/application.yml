@@ -1,0 +1,35 @@
+eureka:
+  client:
+    enabled: true
+    instance-info-replication-interval-seconds: 10
+    registry-fetch-interval-seconds: 10
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    lease-expiration-duration-in-seconds: 20
+    lease-renewal-interval-in-seconds: 10
+server:
+  port: 8888
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh
+
+
+spring:
+  cloud:
+    bus:
+      enabled: true
+    config:
+      server:
+        git:
+          clone-on-start: true
+          search-paths: /config/{application}
+          uri: https://github.com/vesnamilic/configuration-repository.git
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
