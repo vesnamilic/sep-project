@@ -1,0 +1,15 @@
+eureka:
+  client:
+    enabled: true
+    instance-info-replication-interval-seconds: 10
+    registry-fetch-interval-seconds: 10
+  instance:
+    lease-expiration-duration-in-seconds: 20
+    lease-renewal-interval-in-seconds: 10
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health,info,beans,env, mappings, routes
+server:
+  port: 9992
