@@ -10,23 +10,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import sep.project.model.Client;
 import sep.project.model.PaymentMethod;
-import sep.project.services.PaymentMethodService;
+import sep.project.services.ClientService;
 
 @RestController
-@RequestMapping(value = "/paymentmethod", produces = MediaType.APPLICATION_JSON_VALUE)
-public class PaymentMethodController {
+@RequestMapping(value = "/client", produces = MediaType.APPLICATION_JSON_VALUE)
+public class ClientController {
 	
 	@Autowired
-	private PaymentMethodService paymentMethodService;
+	private ClientService clientService;
 	
 	@PostMapping("")
-	public ResponseEntity<?> addPaymentMethod(@RequestBody PaymentMethod paymentMethod) {
-		PaymentMethod newPaymentMethod = paymentMethodService.save(paymentMethod);
+	public ResponseEntity<?> addClient(@RequestBody Client client) {
+		Client newClient = clientService.save(client);
 		
-		System.out.println("Dodavanje novog nacina placanja");
+		System.out.println("Dodavanje novog klijenta");
 		
-		return (newPaymentMethod != null) ? new ResponseEntity<>(newPaymentMethod, HttpStatus.CREATED) : ResponseEntity.status(400).build();
+		return (newClient != null) ? new ResponseEntity<>(newClient, HttpStatus.CREATED) : ResponseEntity.status(400).build();
 	}
 	
 	@GetMapping("nesto")

@@ -6,14 +6,19 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+
+import sep.projects.dto.SellerDTO;
 
 @Entity
 public class Seller {
 	
 	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
     @Column
@@ -30,6 +35,12 @@ public class Seller {
     
     public Seller() {
     	
+    }
+    
+    public Seller(SellerDTO dto) {
+    	this.id = dto.getId();
+    	this.name = dto.getName();
+    	this.deleted = dto.isDeleted();
     }
 
 	public Long getId() {
@@ -54,6 +65,22 @@ public class Seller {
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
+	}
+
+	public Client getClient() {
+		return client;
+	}
+
+	public void setClient(Client client) {
+		this.client = client;
+	}
+
+	public Set<PaymentMethod> getPaymentMethods() {
+		return paymentMethods;
+	}
+
+	public void setPaymentMethods(Set<PaymentMethod> paymentMethods) {
+		this.paymentMethods = paymentMethods;
 	}
 
 }
