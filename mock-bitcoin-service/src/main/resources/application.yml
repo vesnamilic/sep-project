@@ -6,6 +6,7 @@ eureka:
   instance:
     lease-expiration-duration-in-seconds: 20
     lease-renewal-interval-in-seconds: 10
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 management:
   endpoints:
@@ -13,5 +14,7 @@ management:
       exposure:
         include: '*'
 server:
-  port: 9992
-  
+  port: ${PORT:0}
+
+
+    

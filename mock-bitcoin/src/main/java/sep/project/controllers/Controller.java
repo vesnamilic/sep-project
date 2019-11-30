@@ -20,7 +20,7 @@ public class Controller {
 		
 		System.out.println("Placanje probna GET metoda");
 		
-		return "PROBA";
+		return "Dolazim iz bitcoin aplikacije";
 	}
 	
 	@GetMapping("/proba2")

@@ -30,6 +30,6 @@ public class Controller {
 		
 		System.out.println("NC 2. probna GET metoda");
 		
-		return "PROBA 2";
+		return "Dolazim iz naucne centrale";
 	}
 }
