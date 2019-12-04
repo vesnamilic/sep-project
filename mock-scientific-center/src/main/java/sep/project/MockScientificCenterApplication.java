@@ -16,5 +16,5 @@ public class MockScientificCenterApplication {
     public RestTemplate getRestTemplate() {
     	return new RestTemplate();
     }
-
+    
 }

@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: service-registry
+    
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+  server:
+    waitTimeInMsWhenSyncEmpty: 0
+  instance:
+    hostname: localhost
+    securePort: ${server.port}
+    securePortEnabled: true  
+    nonSecurePortEnabled: false 
+    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
+    statusPageUrl: https://${eureka.instance.hostname}:${server.port}/admin/info
+
+server:
+  port: 8761
+  ssl:
+    enabled: true
+    key-alias: service-registry
+    key-store: classpath:service_registry_keyStore.jks
+    key-store-password: password
+    key-store-type: JKS
+    trust-store: classpath:service_registry_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS

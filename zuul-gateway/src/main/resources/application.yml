@@ -1,17 +1,52 @@
-eureka:
-  client:
-    enabled: true
-    instance-info-replication-interval-seconds: 10
-    registry-fetch-interval-seconds: 10
-  instance:
-    lease-expiration-duration-in-seconds: 20
-    lease-renewal-interval-in-seconds: 10
-management:
-  endpoints:
-    web:
-      exposure:
-        include: refresh, health,info,beans,env, mappings, routes
 server:
   port: 8762
+  ssl:
+    enabled: true
+    key-store: classpath:zuul_gateway_keyStore.jks
+    key-store-password: password
+    key-alias: zuul-gateway
+    trust-store: classpath:zuul_gateway_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+  
+eureka:
+  instance:
+    hostname: localhost
+    nonSecurePortEnabled: false
+    securePortEnabled: true
+    securePort: ${server.port}
+    statusPageUrl: https://localhost:${server.port}/info
+    healthCheckUrl: https://localhost:${server.port}/health
+    homePageUrl: https://localhost:${server.port}
+  client:
+    serviceUrl:
+      defaultZone:  ${EUREKA_URI:https://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+
+
 zuul:
   prefix: /api
+  routes:
+    mock-bitcoin-service:
+      service-id: mock-bitcoin-service
+      path: /mock-bitcoin-service/**
+  host:
+    connect-timeout-millis: 5000000
+    socket-timeout-millis: 5000000
+  ignoredServices: '*'
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 12000
+
+
+ribbon:
+    ConnectTimeout: 10000
+    ReadTimeout: 10000
+    
+

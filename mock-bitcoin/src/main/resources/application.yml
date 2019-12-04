@@ -1,2 +1,11 @@
-server:
+server: 
   port: 9898
+  ssl:
+    enabled: true
+    key-store: classpath:mock_bitcoin_keyStore.jks
+    key-store-password: password
+    key-alias: mock-bitcoin
+    key-store-type: JKS
+    trust-store: classpath:mock_bitcoin_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS

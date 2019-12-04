@@ -3,7 +3,6 @@ package sep.project.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +27,6 @@ public class Controller {
 
 	    System.out.println("Placanje 2. probna GET metoda");
 	    
-	    return restTemplate.exchange("http://localhost:8762/api/bitcoin/rest/proba2", HttpMethod.GET, null, String.class).getBody();
+	    return restTemplate.exchange("https://localhost:8762/api/bitcoin/rest/proba2", HttpMethod.GET, null, String.class).getBody();
 	}
 }

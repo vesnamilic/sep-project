@@ -22,7 +22,7 @@ public class Controller {
 
 	    System.out.println("NC probna GET metoda");
 	    
-	    return restTemplate.exchange("http://localhost:8762/api/bitcoin/rest/proba", HttpMethod.GET, null, String.class).getBody();
+	    return restTemplate.exchange("https://localhost:8762/api/bitcoin/rest/proba", HttpMethod.GET, null, String.class).getBody();
 	}
 	
 	@GetMapping("/proba2")

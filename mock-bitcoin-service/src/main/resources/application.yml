@@ -1,20 +1,35 @@
-eureka:
-  client:
+server:
+  port: 9992
+  ssl:
     enabled: true
-    instance-info-replication-interval-seconds: 10
-    registry-fetch-interval-seconds: 10
+    key-store: classpath:mock_bitcoin_service_keyStore.jks
+    key-store-password: password
+    key-alias: mock-bitcoin-service
+    key-store-type: JKS
+    trust-store: classpath:mock_bitcoin_service_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+  
+eureka:
   instance:
-    lease-expiration-duration-in-seconds: 20
-    lease-renewal-interval-in-seconds: 10
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    hostname: localhost
+    nonSecurePortEnabled: false
+    securePortEnabled: true
+    securePort: ${server.port}
+    statusPageUrl: https://localhost:${server.port}/info
+    healthCheckUrl: https://localhost:${server.port}/health
+    homePageUrl: https://localhost:${server.port}
+  client:
+    serviceUrl:
+      defaultZone:  ${EUREKA_URI:https://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+    
 
 management:
   endpoints:
     web:
       exposure:
         include: '*'
-server:
-  port: ${PORT:0}
 
 
-    

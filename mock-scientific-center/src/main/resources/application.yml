@@ -1,2 +1,11 @@
 server:
   port: 9897
+  ssl:
+    enabled: true
+    key-store: classpath:mock_scientific_center_keyStore.jks
+    key-store-password: password
+    key-alias: mock-scientific-center
+    key-store-type: JKS
+    trust-store: classpath:mock_scientific_center_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
