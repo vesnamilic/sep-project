@@ -1,5 +1,7 @@
 package sep.project.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,15 +26,26 @@ public class PaymentMethodController {
 	public ResponseEntity<?> addPaymentMethod(@RequestBody PaymentMethod paymentMethod) {
 		PaymentMethod newPaymentMethod = paymentMethodService.save(paymentMethod);
 		
-		System.out.println("Dodavanje novog nacina placanja");
+		System.out.println("Adding new payment method: " + paymentMethod.getName());
 		
 		return (newPaymentMethod != null) ? new ResponseEntity<>(newPaymentMethod, HttpStatus.CREATED) : ResponseEntity.status(400).build();
+	}
+	
+	@GetMapping("")
+	public ResponseEntity<?> getPaymentMethods(){
+		
+		List<PaymentMethod> paymentMethods = paymentMethodService.getAll();
+		
+		System.out.println("Getting all payment methods");
+		
+		return (paymentMethods != null) ? new ResponseEntity<>(paymentMethods, HttpStatus.CREATED) : ResponseEntity.status(400).build();
+
 	}
 	
 	@GetMapping("nesto")
 	public String proba() {
 		
-		return "poyyy";
+		return "proba";
 	}
 
 }

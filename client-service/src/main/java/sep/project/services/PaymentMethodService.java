@@ -1,5 +1,7 @@
 package sep.project.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,11 @@ public class PaymentMethodService {
 			return saved;
 		}
 		return null;
+	}
+	
+	public List<PaymentMethod> getAll() {
+		
+		return paymentMethodRepository.findByDeleted(false);
 	}
 
 }

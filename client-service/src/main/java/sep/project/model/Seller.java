@@ -5,14 +5,10 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-
-import sep.projects.dto.SellerDTO;
 
 @Entity
 public class Seller {
@@ -27,20 +23,11 @@ public class Seller {
     @Column
     private boolean deleted;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Client client;
-    
     @ManyToMany
     private Set<PaymentMethod> paymentMethods = new HashSet<>();
     
     public Seller() {
     	
-    }
-    
-    public Seller(SellerDTO dto) {
-    	this.id = dto.getId();
-    	this.name = dto.getName();
-    	this.deleted = dto.isDeleted();
     }
 
 	public Long getId() {
@@ -65,14 +52,6 @@ public class Seller {
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
-	}
-
-	public Client getClient() {
-		return client;
-	}
-
-	public void setClient(Client client) {
-		this.client = client;
 	}
 
 	public Set<PaymentMethod> getPaymentMethods() {

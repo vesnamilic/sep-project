@@ -14,6 +14,15 @@ management:
         include: '*'
 server:
   port: 9996
+  ssl:
+    enabled: true
+    key-store: classpath:client_service_keyStore.jks
+    key-store-password: password
+    key-alias: client-service
+    key-store-type: JKS
+    trust-store: classpath:client_service_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
 
 #Spring DataSource
 spring:
