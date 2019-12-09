@@ -42,7 +42,7 @@ public class PaymentMethodController {
 
 	}
 	
-	@GetMapping("nesto")
+	@GetMapping("/nesto")
 	public String proba() {
 		
 		return "proba";

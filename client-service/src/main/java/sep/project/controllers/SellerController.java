@@ -43,7 +43,7 @@ public class SellerController {
 		return (seller != null) ? new ResponseEntity<>(null, HttpStatus.OK) : ResponseEntity.status(400).build();
 	}
 	
-	@GetMapping("nesto")
+	@GetMapping("/nesto")
 	public String proba() {
 		
 		return "proba";

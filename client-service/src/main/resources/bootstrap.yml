@@ -4,8 +4,3 @@ spring:
       
 ribbon:
   isSecure: true
-
-eureka:
-  client:
-    service-url:
-      default-zone: ${EUREKA_URI:https://localhost:8761/eureka}
