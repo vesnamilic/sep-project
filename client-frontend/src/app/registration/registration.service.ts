@@ -7,7 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class RegistrationService {
 
-  baseUrl = 'http://localhost:8762/api/client/seller/';
+  baseUrl = 'https://localhost:8762/api/client/seller/';
 
   constructor(private http: HttpClient) { }
 
