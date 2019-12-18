@@ -1,5 +1,14 @@
 server:
   port: 8081
+  ssl:
+    enabled: true
+    key-store: classpath:bank_keyStore.jks
+    key-store-password: password
+    key-alias: bank
+    key-store-type: JKS
+    trust-store: classpath:bank_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
         
 spring:
   application: 

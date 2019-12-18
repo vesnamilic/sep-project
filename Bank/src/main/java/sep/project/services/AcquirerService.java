@@ -88,83 +88,80 @@ public class AcquirerService {
 	public void setBank1URL(String bankAdress) {
 		BankAddress = bankAdress;
 	}
-	
-	//*****************************************For /firstRequest********************************************************//	
 
-		public boolean validate(KPRequestDTO request) {
+// *****************************************For /firstRequest********************************************************//
 
-			CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
+	public boolean validate(KPRequestDTO request) {
 
-			if (seller == null) {
-				return false;
-			}
-
-			if (request.getAmount() == null || request.getMerchantID() == null || request.getMerchantOrderID() == null
-					|| request.getMerchantPass() == null || request.getMerchantTimestamp() == null) {
-				return false;
-			}
-
-			if (request.getAmount() <= 0) {
-				return false;
-			}
-
-			if (!seller.getMerchantPass().equals(request.getMerchantPass())) {
-				return false;
-			}
-
-			return true;
+		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
+		if (seller == null) {
+			return false;
 		}
 
-		public PaymentInfo createPaymentInfo(KPRequestDTO request) {
-
-			Transaction t = createTransaction(request);
-
-			PaymentInfo paymentInfo = new PaymentInfo(createURLToken(request), t);
-
-			t.setPaymentURL(paymentInfo.getPaymentURL());
-
-			transactionRepository.save(t);
-			paymentInfoRepository.save(paymentInfo);
-
-			return paymentInfo;
-
-		}
-		
-		public String createURLToken(KPRequestDTO request) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(request.getMerchantID());
-			sb.append(request.getAmount());
-			sb.append(request.getMerchantOrderID());
-			String hashCode = Hashing.sha256()
-					  .hashString(sb.toString(), StandardCharsets.UTF_8)
-					  .toString();
-			return hashCode.substring(0, 50);
+		if (request.getAmount() == null || request.getMerchantID() == null || request.getMerchantOrderID() == null
+				|| request.getMerchantPass() == null || request.getMerchantTimestamp() == null) {
+			return false;
 		}
 
-		public Transaction createTransaction(KPRequestDTO request) {
-
-			CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
-			Transaction t = new Transaction();
-			t.setBuyer(null);
-			t.setSeller(seller);
-			t.setPaymentURL("");
-			t.setTimestamp(new Date());
-			t.setStatus(Status.K);
-			t.setSellerPan(seller.getCard().getPan());
-			t.setBuyerPan(null);
-			t.setAmount(request.getAmount());
-			t.setSuccessURL(request.getSuccessURL());
-			t.setFailedURL(request.getFailedURL());
-			t.setErrorURL(request.getErrorURL());
-			t.setMerchantOrderId(request.getMerchantOrderID());
-			t.setMerchantTimestamp(request.getMerchantTimestamp());
-
-			transactionRepository.save(t);
-
-			return t;
+		if (request.getAmount() <= 0) {
+			return false;
 		}
 
-	//*****************************************For /pay/{url}********************************************************//	
+		if (!seller.getMerchantPass().equals(request.getMerchantPass())) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public PaymentInfo createPaymentInfo(KPRequestDTO request) {
+
+		Transaction t = createTransaction(request);
+
+		PaymentInfo paymentInfo = new PaymentInfo(createURLToken(request), t);
+
+		t.setPaymentURL(paymentInfo.getPaymentURL());
+
+		transactionRepository.save(t);
+		paymentInfoRepository.save(paymentInfo);
+
+		return paymentInfo;
+
+	}
+
+	public String createURLToken(KPRequestDTO request) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(request.getMerchantID());
+		sb.append(request.getAmount());
+		sb.append(request.getMerchantOrderID());
+		String hashCode = Hashing.sha256().hashString(sb.toString(), StandardCharsets.UTF_8).toString();
+		return hashCode.substring(0, 50);
+	}
+
+	public Transaction createTransaction(KPRequestDTO request) {
+
+		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
+		Transaction t = new Transaction();
+		t.setBuyer(null);
+		t.setSeller(seller);
+		t.setPaymentURL("");
+		t.setTimestamp(new Date());
+		t.setStatus(Status.K);
+		t.setSellerPan(seller.getCard().getPan());
+		t.setBuyerPan(null);
+		t.setAmount(request.getAmount());
+		t.setSuccessURL(request.getSuccessURL());
+		t.setFailedURL(request.getFailedURL());
+		t.setErrorURL(request.getErrorURL());
+		t.setMerchantOrderId(request.getMerchantOrderID());
+		t.setMerchantTimestamp(request.getMerchantTimestamp());
+
+		transactionRepository.save(t);
+
+		return t;
+	}
+
+// *****************************************For /pay/{url}********************************************************//
 
 	public boolean checkCredentials(String url, BuyerDTO buyerDTO) {
 
@@ -201,8 +198,7 @@ public class AcquirerService {
 		}
 
 		String expDate = buyerDTO.getMonth() + "/" + buyerDTO.getYear();
-		if (!buyer.getCard().getExpDate().equals(expDate))
-		{
+		if (!buyer.getCard().getExpDate().equals(expDate)) {
 			return false;
 		}
 
@@ -256,7 +252,7 @@ public class AcquirerService {
 				throw new InvalidDataException("Data is not valid!");
 			}
 			// Seller and buyer are not in same banke, contacte PCC
-			sendRequestToPCC(t,buyerDTO);
+			sendRequestToPCC(t, buyerDTO);
 			map.put("Location", "/paymentSent");
 			return new ResponseEntity<>(map, HttpStatus.OK);
 		}
@@ -340,66 +336,64 @@ public class AcquirerService {
 		}
 
 	}
-	
-	public String paymentSuccessful(PaymentInfo paymentInfo, Transaction t){
-        
-        CompletedDTO completedDTO = new CompletedDTO();
+
+	public String paymentSuccessful(PaymentInfo paymentInfo, Transaction t) {
+
+		CompletedDTO completedDTO = new CompletedDTO();
 		completedDTO.setTransactionStatus(Status.U);
 		completedDTO.setMerchantOrderID(t.getMerchantOrderId());
 		completedDTO.setAcquirerOrderID(t.getId());
 		completedDTO.setAcquirerTimestamp(t.getTimestamp());
 		completedDTO.setPaymentID(paymentInfo.getPaymentID());
 		completedDTO.setRedirectURL(t.getSuccessURL());
-        
-        RestTemplate template = new RestTemplate();
-        try {
-            ResponseEntity<Boolean> response = template.postForEntity(replyToKP, completedDTO, Boolean.class);
-            if(response.getBody()) {
-                return t.getSuccessURL();
-            }
-            else {
-            	return t.getErrorURL();
-            }
-        } catch(Exception e) {
-            System.out.println("KP is not available");
-            save(t, Status.U_KP);
-            System.out.println("paymentSuccessful Funkcija catch blok jer je ista banka...");
-            return "/paymentSent";
-        }
 
-    }
-	
-	 @Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
-	    public ResponseEntity<Map<String, String>> placanjeIstaBanka(Transaction t, Card buyerCard, CardOwner buyer, String location ){
-	        Map<String, String> map = new HashMap<>();
-	        Float available = buyerCard.getAvailableFunds();
-	        buyerCard.setAvailableFunds(available - t.getAmount());
-	        cardRepository.save(buyerCard);
-	        buyer.setCard(buyerCard);
-	        cardOwnerRepository.save(buyer);
+		RestTemplate template = new RestTemplate();
+		try {
+			ResponseEntity<Boolean> response = template.postForEntity(replyToKP, completedDTO, Boolean.class);
+			if (response.getBody()) {
+				return t.getSuccessURL();
+			} else {
+				return t.getErrorURL();
+			}
+		} catch (Exception e) {
+			System.out.println("KP is not available");
+			save(t, Status.U_KP);
+			System.out.println("paymentSuccessful Funkcija catch blok jer je ista banka...");
+			return "/paymentSent";
+		}
 
-	        Card sellerCard = cardRepository.findByPan(t.getSellerPan());
-	        available = sellerCard.getAvailableFunds();
-	        sellerCard.setAvailableFunds(available + t.getAmount());
-	        cardRepository.save(sellerCard);
+	}
 
-	        CardOwner seller = cardOwnerRepository.findByCardPan(sellerCard.getPan());
-	        seller.setCard(sellerCard);
-	        cardOwnerRepository.save(seller);
+	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+	public ResponseEntity<Map<String, String>> placanjeIstaBanka(Transaction t, Card buyerCard, CardOwner buyer,
+			String location) {
+		Map<String, String> map = new HashMap<>();
+		Float available = buyerCard.getAvailableFunds();
+		buyerCard.setAvailableFunds(available - t.getAmount());
+		cardRepository.save(buyerCard);
+		buyer.setCard(buyerCard);
+		cardOwnerRepository.save(buyer);
 
-	        t.setStatus(Status.U);
-	        transactionRepository.save(t);
+		Card sellerCard = cardRepository.findByPan(t.getSellerPan());
+		available = sellerCard.getAvailableFunds();
+		sellerCard.setAvailableFunds(available + t.getAmount());
+		cardRepository.save(sellerCard);
 
-	        map.put("Location", location);
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.add("Location", location);
-	        headers.add("Access-Control-Allow-Origin", "*");
-	        return new ResponseEntity<>(map, headers, HttpStatus.OK);
-	    }
-	
-	
+		CardOwner seller = cardOwnerRepository.findByCardPan(sellerCard.getPan());
+		seller.setCard(sellerCard);
+		cardOwnerRepository.save(seller);
+
+		t.setStatus(Status.U);
+		transactionRepository.save(t);
+
+		map.put("Location", location);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Location", location);
+		headers.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<>(map, headers, HttpStatus.OK);
+	}
+
 //*****************************************For comunications with PCC********************************************************//	
-	
 
 	public void finalizePayment(PCCResponseDTO pccResponseDTO) {
 
@@ -461,5 +455,4 @@ public class AcquirerService {
 		}
 	}
 
-	
 }
