@@ -7,6 +7,8 @@ public class RegisterSellerDTO {
 	private String merchantID;
 
 	private String merchantPassword;
+	
+	private String email;
 
 	public RegisterSellerDTO() {
 
@@ -34,6 +36,14 @@ public class RegisterSellerDTO {
 
 	public void setMerchantPassword(String merchantPassword) {
 		this.merchantPassword = merchantPassword;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }

@@ -91,29 +91,41 @@ public class AcquirerService {
 
 	public boolean validate(KPRequestDTO request) {
 		/*
-		CryptoConverter c = new CryptoConverter();
-		String a = c.convertToDatabaseColumn("111111111");
-		String b = c.convertToDatabaseColumn("222222222");
-		System.out.println(a);
-		System.out.println(b);
-*/
+		 * CryptoConverter c = new CryptoConverter(); String a =
+		 * c.convertToDatabaseColumn("111111111"); String b =
+		 * c.convertToDatabaseColumn("222222222"); System.out.println(a);
+		 * System.out.println(b);
+		 */
+		System.out.println(request.getMerchantID());
 		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
 		if (seller == null) {
+			System.out.println("aaaaaaaaaaaaaaa");
 			return false;
 		}
 
 		if (request.getAmount() == null || request.getMerchantID() == null || request.getMerchantOrderID() == null
 				|| request.getMerchantPass() == null || request.getMerchantTimestamp() == null) {
+			System.out.println(request.getAmount() == null);
+			System.out.println(request.getMerchantID() == null);
+			System.out.println(request.getMerchantOrderID() == null);
+
+			System.out.println(request.getMerchantPass() == null);
+			System.out.println(request.getMerchantTimestamp() == null);
+			System.out.println("*********************************");
+
 			return false;
 		}
 
 		if (request.getAmount() <= 0) {
+			System.out.println("333333333");
 			return false;
 		}
 
 		if (!seller.getMerchantPass().equals(request.getMerchantPass())) {
+			System.out.println("444444444");
 			return false;
 		}
+		System.out.println("55555555");
 		return true;
 	}
 
@@ -252,7 +264,7 @@ public class AcquirerService {
 		t.setBuyerPan(buyerDTO.getPan());
 		t.setIssuerTimestamp(new Date());
 		t.setIssuerOrderId(paymentInfo.getPaymentID());
-		
+
 		CardOwner buyer = cardOwnerRepository.findByCardPan(buyerDTO.getPan());
 		if (buyer == null) {
 

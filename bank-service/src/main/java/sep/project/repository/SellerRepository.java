@@ -6,4 +6,6 @@ import sep.project.model.Seller;
 
 public interface SellerRepository extends JpaRepository<Seller, Long> {
 	
+	Seller findByEmail(String email);
+
 }

@@ -20,6 +20,9 @@ public class Seller {
 	private String sellerName;
 	
 	@Column(nullable = false)
+	private String email;
+	
+	@Column(nullable = false)
 	@Convert(converter = CryptoConverter.class)
 	private String merchantID;
 	
@@ -61,6 +64,14 @@ public class Seller {
 
 	public void setMerchantPassword(String merchantPassword) {
 		this.merchantPassword = merchantPassword;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }
