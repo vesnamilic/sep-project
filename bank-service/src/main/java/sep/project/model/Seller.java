@@ -1,10 +1,13 @@
 package sep.project.model;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
+import sep.project.crypto.CryptoConverter;
 
 @Entity
 public class Seller {
@@ -17,9 +20,11 @@ public class Seller {
 	private String sellerName;
 	
 	@Column(nullable = false)
+	@Convert(converter = CryptoConverter.class)
 	private String merchantID;
 	
 	@Column(nullable = false)
+	@Convert(converter = CryptoConverter.class)
 	private String merchantPassword;
 	
 	public Seller() {
