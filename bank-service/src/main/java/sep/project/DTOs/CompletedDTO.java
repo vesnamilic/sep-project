@@ -5,6 +5,7 @@ import java.util.Date;
 import sep.project.enums.Status;
 
 public class CompletedDTO {
+
 	private Status transactionStatus;
 
 	private Long merchantOrderID;

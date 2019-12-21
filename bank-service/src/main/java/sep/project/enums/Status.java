@@ -1,6 +1,8 @@
 package sep.project.enums;
 
 public enum Status {
-	//K, C, U, N, E (Kreirano, Cekanje, Uspesno, Neuspesno, Expired).
-    K, C, U, N, C_PCC, N_KP, U_KP, K_KP, N_PCC, U_PCC, E_KP, E
+
+	CREATED, WAITING, SUCCESSFULLY, UNSUCCESSFULLY, UNSECCESSFULY_BANK, WAITING_PCC, UNSUCCESSFULLY_KP, SUCCESSFULLY_KP,
+	CREATED_KP, UNSUCCESSFULLY_PCC, SUCCESSFULLY_PCC, EXPIRED_KP, EXPIRED,
+
 }
