@@ -14,7 +14,7 @@ public class PaymentMethodService {
 	@Autowired
 	private PaymentMethodRepository paymentMethodRepository;
 	
-	public PaymentMethod save(PaymentMethod paymentMethod) {
+	public PaymentMethod addPaymentMethod(PaymentMethod paymentMethod) {
 		if(paymentMethod.getId() == null) {
 			PaymentMethod saved = paymentMethodRepository.save(paymentMethod);
 			

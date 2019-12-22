@@ -10,5 +10,7 @@ import sep.project.model.PaymentMethod;
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long>, JpaSpecificationExecutor<PaymentMethod> {
 	
 	List<PaymentMethod> findByDeleted(Boolean deleted);
+	
+	PaymentMethod findByIdAndDeleted(Long id, Boolean deleted);
 
 }

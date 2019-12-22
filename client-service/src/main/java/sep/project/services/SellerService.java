@@ -1,6 +1,6 @@
 package sep.project.services;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,34 +19,48 @@ public class SellerService {
 	@Autowired
 	private PaymentMethodRepository paymentMethodRepository;
 	
-	public Seller save(Seller seller) {
-		if(seller.getId() == null) {
+	public Seller getSeller(String email) {
+		
+		return sellerRepository.findByEmailAndDeleted(email, false);
+	}
+	
+	public Seller addSeller(Seller seller) {
+		if(getSeller(seller.getEmail()) == null && seller.getId() == null) {
 			Seller saved = sellerRepository.save(seller);
 						
 			return saved;
 		}
 		return null;
 	}
-
 	
-	public Seller addPayment(Long sellerId, List<Long> methods) {
+	public Seller getSeller(Long sellerId) {
+		return sellerRepository.getOne(sellerId);
+	}
+	
+	public Set<PaymentMethod> getPayments(Long sellerId) {
 		
-		Seller seller = sellerRepository.getOne(sellerId);
+		Seller seller = getSeller(sellerId);
 		if(seller == null) {
 			
 			return null;
 		}
 		
-		for(Long method : methods) {
-			PaymentMethod pm = paymentMethodRepository.getOne(method);
+		return seller.getPaymentMethods();
+	}
+
+	public Seller addPayment(Long sellerId, PaymentMethod paymentMethod) {
+		
+		Seller seller = getSeller(sellerId);
+		PaymentMethod pm = paymentMethodRepository.findByIdAndDeleted(paymentMethod.getId(),false);
+		
+		if(seller == null || pm == null) {
 			
-			if(pm != null) {
-				
-				seller.getPaymentMethods().add(pm);
-				
-				sellerRepository.save(seller);
-			}
+			return null;
 		}
+		
+		seller.getPaymentMethods().add(pm);
+		
+		sellerRepository.save(seller);
 		
 		return seller;
 	}

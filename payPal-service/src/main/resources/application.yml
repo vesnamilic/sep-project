@@ -1,18 +1,36 @@
-eureka:
-  client:
+server:
+  port: 9993
+  ssl:
     enabled: true
-    instance-info-replication-interval-seconds: 10
-    registry-fetch-interval-seconds: 10
+    key-store: classpath:paypal_service_keyStore.jks
+    key-store-password: password
+    key-alias: paypal-service
+    key-store-type: JKS
+    trust-store: classpath:paypal_service_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+
+eureka:
   instance:
-    lease-expiration-duration-in-seconds: 20
-    lease-renewal-interval-in-seconds: 10
+    hostname: localhost
+    nonSecurePortEnabled: false
+    securePortEnabled: true
+    securePort: ${server.port}
+    statusPageUrl: https://localhost:${server.port}/info
+    healthCheckUrl: https://localhost:${server.port}/health
+    homePageUrl: https://localhost:${server.port}
+  client:
+    serviceUrl:
+      defaultZone:  ${EUREKA_URI:https://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+    
+
 management:
   endpoints:
     web:
       exposure:
         include: '*'
-server:
-  port: 9993
   
 spring:
   rabbitmq:
@@ -20,3 +38,18 @@ spring:
     port: 5672
     username: guest
     password: guest
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sep-paypal 
+    username: postgres
+    password: root
+    initialization-mode: always  
+    sql-script-encoding: UTF-8
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect

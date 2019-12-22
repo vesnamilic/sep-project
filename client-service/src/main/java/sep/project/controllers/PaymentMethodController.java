@@ -22,24 +22,27 @@ public class PaymentMethodController {
 	@Autowired
 	private PaymentMethodService paymentMethodService;
 	
+	/**
+	 * Dodavanje novog načina plaćanja u KP
+	 */
 	@PostMapping("")
 	public ResponseEntity<?> addPaymentMethod(@RequestBody PaymentMethod paymentMethod) {
-		PaymentMethod newPaymentMethod = paymentMethodService.save(paymentMethod);
+		PaymentMethod newPaymentMethod = paymentMethodService.addPaymentMethod(paymentMethod);
 		
-		System.out.println("Adding new payment method: " + paymentMethod.getName());
+		System.out.println("Adding a new payment method: " + paymentMethod.getName());
 		
 		return (newPaymentMethod != null) ? new ResponseEntity<>(newPaymentMethod, HttpStatus.CREATED) : ResponseEntity.status(400).build();
 	}
 	
+	/**
+	 * Preuzimanje svih načina plaćanja omogućenih od strane KP-a
+	 */
 	@GetMapping("")
 	public ResponseEntity<?> getPaymentMethods(){
 		
 		List<PaymentMethod> paymentMethods = paymentMethodService.getAll();
-		
-		System.out.println("Getting all payment methods");
-		
-		return (paymentMethods != null) ? new ResponseEntity<>(paymentMethods, HttpStatus.CREATED) : ResponseEntity.status(400).build();
-
+				
+		return (paymentMethods != null) ? new ResponseEntity<>(paymentMethods, HttpStatus.OK) : ResponseEntity.status(400).build();
 	}
 	
 	@GetMapping("/nesto")

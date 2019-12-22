@@ -3,10 +3,11 @@ spring:
     name: payPal-service
   cloud:
     config:
-      discovery:
-        service-id: cloud-config-server
-        enabled: true
+      uri: https://localhost:8888
       fail-fast: true
+
+ribbon:
+  isSecure: true
 
 eureka:
   client:

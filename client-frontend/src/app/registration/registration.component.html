@@ -9,6 +9,10 @@
               <h3 class="login-heading mb-4">Register your webshop</h3>
               <form id="registrationForm" [formGroup] = "registrationForm" (ngSubmit) = "submitForm()">
                 <div class="form-label-group">
+                  <label for="inputEmail" class="form-control-label">Email</label>
+                  <input type="text" id="inputEmail" class="form-control" placeholder="Email" formControlName="email">
+                </div>
+                <div class="form-label-group">
                   <label for="inputName" class="form-control-label">Name</label>
                   <input type="text" id="inputName" class="form-control" placeholder="Name" formControlName="name">
                 </div>

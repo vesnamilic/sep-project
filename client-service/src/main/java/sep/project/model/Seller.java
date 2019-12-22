@@ -17,6 +17,9 @@ public class Seller {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
+	@Column
+	private String email;
+	
     @Column
     private String name;
     
@@ -36,6 +39,14 @@ public class Seller {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getName() {

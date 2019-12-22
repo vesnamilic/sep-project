@@ -1,0 +1,16 @@
+server:
+  port: 4200
+  ssl:
+    enabled: true
+    key-store: classpath:client_frontend_keyStore.jks
+    key-store-password: password
+    key-alias: client-frontend
+    key-store-type: JKS
+    trust-store: classpath:client_frontend_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+        
+spring:
+  application: 
+    name: angular
+  
