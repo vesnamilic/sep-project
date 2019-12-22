@@ -3,10 +3,12 @@ import { Routes, RouterModule } from '@angular/router';
 import { FormComponent } from './form/form.component';
 
 
-const routes: Routes = [{
-  path: 'form',
-  component: FormComponent
-}];
+const routes: Routes = [
+  {
+    path: 'form/:token',
+    component: FormComponent
+  }
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(
@@ -16,4 +18,5 @@ const routes: Routes = [{
 
   exports: [RouterModule]
 })
+
 export class AppRoutingModule { }
