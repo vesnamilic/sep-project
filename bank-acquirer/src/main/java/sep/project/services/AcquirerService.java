@@ -175,6 +175,14 @@ public class AcquirerService {
 // *****************************************For /pay/{url}********************************************************//
 
 	public boolean checkCredentials(String url, BuyerDTO buyerDTO) {
+System.out.println(buyerDTO.getCvv());
+System.out.println(buyerDTO.getLastName());
+System.out.println(buyerDTO.getMonth());
+
+System.out.println(buyerDTO.getName());
+System.out.println(buyerDTO.getPan());
+System.out.println(buyerDTO.getYear());
+System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
 		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentURL(url);
 		if (paymentInfo == null) {
