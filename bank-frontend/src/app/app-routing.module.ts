@@ -5,6 +5,10 @@ import { FormComponent } from './form/form.component';
 
 const routes: Routes = [
   {
+    path: '',
+    component: FormComponent
+  },
+  {
     path: 'form/:token',
     component: FormComponent
   }
@@ -12,8 +16,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(
-    routes,
-    { useHash: true }
+    routes
   )],
 
   exports: [RouterModule]
