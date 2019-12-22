@@ -12,7 +12,7 @@ server:
     
 spring: 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pcc
+    url: jdbc:postgresql://localhost:5432/bank-service
     username: postgres
     password: root
     initialization-mode: always  

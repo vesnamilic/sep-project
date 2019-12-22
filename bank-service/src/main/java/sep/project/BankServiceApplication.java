@@ -25,7 +25,7 @@ public class BankServiceApplication {
 		System.setProperty("javax.net.ssl.trustStore", "src/main/resources/bank_service_trustedStore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 		EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
-		builder.withClientName("mock-bitcoin-service");
+		builder.withClientName("bank-service");
 		builder.withSystemSSLConfiguration();
 		builder.withMaxTotalConnections(10);
 		builder.withMaxConnectionsPerHost(10);

@@ -1,0 +1,32 @@
+server:
+  port: 8081
+  ssl:
+    enabled: true
+    key-store: classpath:bank_acquirer_keyStore.jks
+    key-store-password: password
+    key-alias: bank-acquirer
+    key-store-type: JKS
+    trust-store: classpath:bank_acquirer_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+    
+    
+spring:
+  application: 
+    name: poyy
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank1
+    username: postgres
+    password: root
+    initialization-mode: always  
+    sql-script-encoding: UTF-8
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate: 
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
