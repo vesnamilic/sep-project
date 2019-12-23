@@ -11,19 +11,20 @@ public class ClientService {
 	
 	@Autowired
 	ClientRepository clientRepository;
-	
+		
 	public Client getClient(String email) {
 		
 		return clientRepository.findByEmail(email);
 	}
 	
 	public Client save(Client client) {
+		
 		if(getClient(client.getEmail()) == null && client.getId() == null) {
 			Client saved = clientRepository.save(client);
-						
+					
 			return saved;
 		}
-		
+				
 		return null;
 	}
 

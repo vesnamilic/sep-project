@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +34,19 @@ public class PayPalService {
 	@Autowired
 	private TransactionService transactionService;
 	
+	private static final Logger logger = LoggerFactory.getLogger(PayPalService.class);
+	
 	private String executionMode = "sandbox";
 	
 	public boolean createPayment(CreatePaymentDTO paymentDTO){
 		
+		logger.info("INITIATED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
+		
 		Client client = clientService.getClient(paymentDTO.getEmail());
 		
 		if(client == null) {
+			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
+			
 			return false;
 		}
 		
@@ -63,13 +71,13 @@ public class PayPalService {
 	    Payment payment = new Payment("sale", payer);
 	    payment.setTransactions(transactions);
 	    payment.setRedirectUrls(redirectUrls);
-	    	    
-	    APIContext apiContext = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
-	    
+	    	    	    
 	    //saving transaction with transaction status created
-	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.CREATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency());
+	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.INITIATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency());
 	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
 	    
+	    APIContext apiContext = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+
 	    try {
 	    	String redirectUrl = "";
 	    	
@@ -78,29 +86,33 @@ public class PayPalService {
 	    	//System.out.println("created payment object details:" + newPayment.toString());
 	    
 	    	if(newPayment != null) {
+	    		
+				logger.error("EXECUTED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
+	    		
 	    		for(Links link : newPayment.getLinks()) {
 	    			if(link.getRel().equals("approval_url")) {
 	    				redirectUrl = link.getHref();
 	    				
 	    				System.out.println(redirectUrl);
-	                    break;
+	                    
+	    				break;
 	    			}
 	    		}
 	    	}
 	    		    	
 		} catch (PayPalRESTException e) {
-			System.err.println(e.getDetails());
+			//System.err.println(e.getDetails());
+			
+			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 			
 			//edit transaction status to canceled
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
 			return false;
-
 		}
 	    
-	    return true;
-	    	    
+	    return true;    	    
  	}
 	
 	public boolean completePayment(ConfirmPaymentDTO paymentDTO){
@@ -121,11 +133,13 @@ public class PayPalService {
 	        APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 	        Payment createdPayment = payment.execute(context, paymentExecution);
 	        if(createdPayment!=null){
-		    	//System.out.println("confirmed payment object details:" + createdPayment.toString());
+				logger.error("COMPLETED | PayPal Transaction Completion");
 
 	        }
 	    } catch (PayPalRESTException e) {
 	        System.err.println(e.getDetails());
+	        
+			logger.error("CANCELED | PayPal Transaction Completion");
 	        
 	        return false;
 	    }

@@ -1,5 +1,10 @@
 package sep.project.dto;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.paypal.api.payments.Transaction;
+
 public class CreatePaymentDTO {
 	
 	private String email;
@@ -7,7 +12,7 @@ public class CreatePaymentDTO {
 	private Double paymentAmount;
 	
 	private String paymentCurrency;
-		
+			
 	public CreatePaymentDTO(){
 		
 	}

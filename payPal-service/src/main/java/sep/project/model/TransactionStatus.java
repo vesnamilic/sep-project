@@ -1,7 +1,7 @@
 package sep.project.model;
 
 public enum TransactionStatus {
-	CREATED,
+	INITIATED,
 	COMPLETED,
 	CANCELED
 }

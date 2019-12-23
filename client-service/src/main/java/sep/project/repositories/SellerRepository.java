@@ -8,5 +8,7 @@ import sep.project.model.Seller;
 public interface SellerRepository extends JpaRepository<Seller, Long>, JpaSpecificationExecutor<Seller> {
 
 	Seller findByEmailAndDeleted(String email, Boolean deleted);
+	
+	Seller findByIdAndDeleted(Long id, Boolean deleted);
 
 }

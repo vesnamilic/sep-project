@@ -2,6 +2,8 @@ package sep.project.services;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +20,15 @@ public class SellerService {
 	
 	@Autowired
 	private PaymentMethodRepository paymentMethodRepository;
-	
+		
 	public Seller getSeller(String email) {
 		
 		return sellerRepository.findByEmailAndDeleted(email, false);
+	}
+	
+	public Seller getSeller(Long id) {
+		
+		return sellerRepository.findByIdAndDeleted(id, false);
 	}
 	
 	public Seller addSeller(Seller seller) {
@@ -33,13 +40,9 @@ public class SellerService {
 		return null;
 	}
 	
-	public Seller getSeller(Long sellerId) {
-		return sellerRepository.getOne(sellerId);
-	}
-	
-	public Set<PaymentMethod> getPayments(Long sellerId) {
+	public Set<PaymentMethod> getPayments(String email) {
 		
-		Seller seller = getSeller(sellerId);
+		Seller seller = getSeller(email);
 		if(seller == null) {
 			
 			return null;
