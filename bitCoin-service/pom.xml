@@ -10,10 +10,10 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>sep.project</groupId>
-	<artifactId>mock-bitcoin-service</artifactId>
+	<artifactId>bitCoin-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>mock-bitcoin-service</name>
-	<description>Mock Service for BitCoin</description>
+	<name>bitCoin-service</name>
+	<description>Service for BitCoin Payment Method</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -31,7 +31,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
@@ -59,6 +59,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

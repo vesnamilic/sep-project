@@ -14,24 +14,24 @@ public class Client {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	Long id;
+	private Long id;
 	
 	@Column
-	String email;
+	private String email;
 	
     @Column
     @Convert(converter = CryptoConverter.class)
-	String clientId;
+    private String clientId;
     
     @Column
     @Convert(converter = CryptoConverter.class)
-	String clientSecret;
+    private String clientSecret;
 	
-	Client(){
+	public Client(){
 		
 	}
 	
-	Client(Long id, String clientId, String email, String clientSecret){
+	public Client(Long id, String clientId, String email, String clientSecret){
 		this.id = id;
 		this.email = email;
 		this.clientId = clientId;

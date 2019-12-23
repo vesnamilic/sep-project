@@ -17,7 +17,7 @@ import sep.project.services.PayPalService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
-@RequestMapping(value = "/paypal", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PayPalController {
 
     private final PayPalService payPalService;   
@@ -28,11 +28,11 @@ public class PayPalController {
     }
 
     /**
-     * Kreiranje novog plaćanja
+     * Creating a new PayPal transaction
      */
     @PostMapping(value = "/create")
     public ResponseEntity<?> makePayment(@RequestBody CreatePaymentDTO paymentDTO){  	
-    	System.out.println("Create a new payment: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
+    	System.out.println("Creating a new PayPal transaction: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
         
     	boolean result = payPalService.createPayment(paymentDTO);
         
@@ -41,11 +41,11 @@ public class PayPalController {
     }
     
     /**
-     * Završavanje plaćanja
+     * Completing an existing PayPal transaction
      */
     @PostMapping(value = "/complete")
     public ResponseEntity<?> completePayment(@RequestBody ConfirmPaymentDTO paymentDTO){   	
-    	System.out.println("Complete the payment");
+    	System.out.println("Completing an existing PayPal transaction.");
     	
     	boolean result = payPalService.completePayment(paymentDTO);
         

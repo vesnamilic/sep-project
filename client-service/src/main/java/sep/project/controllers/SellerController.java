@@ -23,47 +23,48 @@ import sep.project.services.SellerService;
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 @RequestMapping(value = "/seller", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SellerController {
-	
+
 	@Autowired
 	private SellerService sellerService;
-	
+
 	/**
 	 * Dodavanje novog klijenta (novog prodavca) u KP
 	 */
 	@PostMapping("")
 	public ResponseEntity<?> addSeller(@RequestBody Seller seller) {
 		Seller newSeller = sellerService.addSeller(seller);
-		
+
 		System.out.println("Creating a new seller: " + seller.getName());
-		
-		return (newSeller != null) ? new ResponseEntity<>(newSeller, HttpStatus.CREATED) : ResponseEntity.status(400).build();
+
+		return (newSeller != null) ? new ResponseEntity<>(newSeller, HttpStatus.CREATED)
+				: ResponseEntity.status(400).build();
 	}
-	
+
 	/**
 	 * Dodavanje novog načina plaćanja postojećem klijentu KP-a
 	 */
 	@PutMapping("/paymentmethod/{sellerId}")
-	public ResponseEntity<?> addPaymentMethod(@PathVariable Long sellerId, @RequestBody PaymentMethod paymentMethod){
-		
+	public ResponseEntity<?> addPaymentMethod(@PathVariable Long sellerId, @RequestBody PaymentMethod paymentMethod) {
+
 		Seller seller = sellerService.addPayment(sellerId, paymentMethod);
-				
+
 		return (seller != null) ? ResponseEntity.status(200).build() : ResponseEntity.status(400).build();
 	}
-	
+
 	/**
 	 * Preuzimanje omogućenih načina plaćanja za postojećeg klijenta KP-a
 	 */
 	@GetMapping("/paymentmethod/{sellerId}")
-	public ResponseEntity<?> getPaymentMethods(@PathVariable Long sellerId){
-		
+	public ResponseEntity<?> getPaymentMethods(@PathVariable Long sellerId) {
+
 		Set<PaymentMethod> paymentMethods = sellerService.getPayments(sellerId);
-				
+
 		return (paymentMethods != null) ? new ResponseEntity<>(paymentMethods, HttpStatus.OK) : ResponseEntity.status(400).build();
 	}
-	
+
 	@GetMapping("/nesto")
 	public String proba() {
-		
+
 		return "proba";
 	}
 

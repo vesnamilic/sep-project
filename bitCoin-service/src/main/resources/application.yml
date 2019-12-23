@@ -1,0 +1,60 @@
+#Parameters
+
+sandbox_url : "https://api-sandbox.coingate.com/v2/orders"
+cancel_url : "https://localhost:8762/api/bitcoin/cancel"
+success_url : "https://localhost:8762/api/bitcoin/success"
+callback_url : "https://localhost:8762/api/bitcoin/callback"
+
+server:
+  port: 9992
+  ssl:
+    enabled: true
+    key-store: classpath:bitcoin_service_keyStore.jks
+    key-store-password: password
+    key-alias: bitcoin-service
+    key-store-type: JKS
+    trust-store: classpath:bitcoin_service_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
+  
+eureka:
+  instance:
+    hostname: localhost
+    nonSecurePortEnabled: false
+    securePortEnabled: true
+    securePort: ${server.port}
+    statusPageUrl: https://localhost:${server.port}/info
+    healthCheckUrl: https://localhost:${server.port}/health
+    homePageUrl: https://localhost:${server.port}
+  client:
+    serviceUrl:
+      defaultZone:  ${EUREKA_URI:https://localhost:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+    
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+#Spring DataSource
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bitcoin-service
+    username: postgres
+    password: root
+    initialization-mode: always  
+    sql-script-encoding: UTF-8
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        
+
