@@ -9,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -20,6 +21,9 @@ public class Transaction {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@ManyToOne
+	private Seller seller;
 
 	@Column
 	private Long paymentID;
@@ -99,6 +103,14 @@ public class Transaction {
 
 	public void setAcquirerTimestamp(Date acquirerTimestamp) {
 		this.acquirerTimestamp = acquirerTimestamp;
+	}
+
+	public Seller getSeller() {
+		return seller;
+	}
+
+	public void setSeller(Seller seller) {
+		this.seller = seller;
 	}
 
 }

@@ -53,7 +53,9 @@ public class BankService {
 	public ResponseEntity<BankResponseDTO> initiatePayment(PayRequestDTO requestDTO) {
 
 		Transaction t = createTransaction(requestDTO);
-
+		if(t==null) {
+			return new ResponseEntity<BankResponseDTO>(HttpStatus.BAD_REQUEST);
+		}
 		Transaction savedTransaction=transactionRepository.save(t);
 		savedTransaction.setMerchantOrderId(savedTransaction.getId());
 		transactionRepository.save(savedTransaction);
@@ -103,10 +105,17 @@ public class BankService {
 	}
 
 	public Transaction createTransaction(PayRequestDTO requestDTO) {
+		
+		Seller seller = sellerRepository.findByEmail(requestDTO.getEmail());
+		if(seller==null) {
+			return null;
+		}
+		
 		Transaction transaction = new Transaction();
 		transaction.setAmount(requestDTO.getPriceAmount());
 		transaction.setMerchantOrderId(transaction.getId());
 		transaction.setStatus(Status.CREATED);
+		transaction.setSeller(seller);
 		return transaction;
 	}
 
