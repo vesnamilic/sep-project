@@ -22,13 +22,13 @@ public class ClientController {
 	ClientService clientService;
 	
 	/**
-	 * Dodavanje novog klijenta u PayPal bazu
+	 * Adding a new PaymentHub client to the PayPal database 
 	 */
 	@PostMapping("")
 	public ResponseEntity<?> addClient(@RequestBody Client client) {
 		Client newClient = clientService.save(client);
 		
-		System.out.println("Creating a new seller: " + client.getEmail());
+		System.out.println("Adding a new client: " + client.getEmail());
 		
 		return (newClient != null) ? ResponseEntity.status(201).build() : ResponseEntity.status(400).build();
 	}

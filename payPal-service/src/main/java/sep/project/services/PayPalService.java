@@ -1,6 +1,7 @@
 package sep.project.services;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import com.paypal.base.rest.PayPalRESTException;
 import sep.project.dto.ConfirmPaymentDTO;
 import sep.project.dto.CreatePaymentDTO;
 import sep.project.model.Client;
+import sep.project.model.TransactionStatus;
 
 
 @Service
@@ -26,6 +28,9 @@ public class PayPalService {
 	
 	@Autowired
 	private ClientService clientService;
+	
+	@Autowired
+	private TransactionService transactionService;
 	
 	private String executionMode = "sandbox";
 	
@@ -61,6 +66,10 @@ public class PayPalService {
 	    	    
 	    APIContext apiContext = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 	    
+	    //saving transaction with transaction status created
+	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.CREATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency());
+	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
+	    
 	    try {
 	    	String redirectUrl = "";
 	    	
@@ -81,6 +90,10 @@ public class PayPalService {
 	    		    	
 		} catch (PayPalRESTException e) {
 			System.err.println(e.getDetails());
+			
+			//edit transaction status to canceled
+			savedTransaction.setStatus(TransactionStatus.CANCELED);
+			transactionService.save(savedTransaction);
 			
 			return false;
 
