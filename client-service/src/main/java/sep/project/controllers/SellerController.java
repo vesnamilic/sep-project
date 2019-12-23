@@ -2,6 +2,8 @@ package sep.project.controllers;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,40 +28,68 @@ public class SellerController {
 
 	@Autowired
 	private SellerService sellerService;
+	
+	private static final Logger logger = LoggerFactory.getLogger(SellerController.class);
 
 	/**
-	 * Dodavanje novog klijenta (novog prodavca) u KP
+	 * Registering a new client (seller) to the PaymentHub
 	 */
 	@PostMapping("")
 	public ResponseEntity<?> addSeller(@RequestBody Seller seller) {
+		
+		logger.info("INITIATED | Registering a new client to the PaymentHub | Name: " + seller.getName());
+		
 		Seller newSeller = sellerService.addSeller(seller);
 
-		System.out.println("Creating a new seller: " + seller.getName());
+		if(newSeller != null) {
+			logger.info("COMPLETED | Registering a new client to the PaymentHub | Name: " + seller.getName());
+			return new ResponseEntity<>(newSeller, HttpStatus.CREATED);
+		}
+		else {
+			logger.error("CANCELED | Registering a new client to the PaymentHub | Name: " + seller.getName());
+			return ResponseEntity.status(400).build();
+		}
 
-		return (newSeller != null) ? new ResponseEntity<>(newSeller, HttpStatus.CREATED)
-				: ResponseEntity.status(400).build();
 	}
 
 	/**
-	 * Dodavanje novog načina plaćanja postojećem klijentu KP-a
+	 * Adding a new payment method to an existing client
 	 */
 	@PutMapping("/paymentmethod/{sellerId}")
 	public ResponseEntity<?> addPaymentMethod(@PathVariable Long sellerId, @RequestBody PaymentMethod paymentMethod) {
+		
+		logger.info("INITIATED | Adding a new payment method to an existing client | Method: " + paymentMethod.getName());
 
 		Seller seller = sellerService.addPayment(sellerId, paymentMethod);
 
-		return (seller != null) ? ResponseEntity.status(200).build() : ResponseEntity.status(400).build();
+		if(seller != null) {
+			logger.info("COMPLETED | Adding a new payment method to an existing client | Method: " + paymentMethod.getName());
+			return ResponseEntity.status(200).build();
+		}
+		else {
+			logger.error("CANCELED | Adding a new payment method to an existing client | Method: " + paymentMethod.getName());
+			return ResponseEntity.status(400).build();
+		}
 	}
 
 	/**
-	 * Preuzimanje omogućenih načina plaćanja za postojećeg klijenta KP-a
+	 * Getting all available payment methods for an existing client
 	 */
-	@GetMapping("/paymentmethod/{sellerId}")
-	public ResponseEntity<?> getPaymentMethods(@PathVariable Long sellerId) {
+	@GetMapping("/paymentmethod/{sellerEmail}")
+	public ResponseEntity<?> getPaymentMethods(@PathVariable String sellerEmail) {
+		
+		logger.info("INITIATED | Getting all available payment methods for an existing client | Email: " + sellerEmail);
 
-		Set<PaymentMethod> paymentMethods = sellerService.getPayments(sellerId);
-
-		return (paymentMethods != null) ? new ResponseEntity<>(paymentMethods, HttpStatus.OK) : ResponseEntity.status(400).build();
+		Set<PaymentMethod> paymentMethods = sellerService.getPayments(sellerEmail);
+		
+		if(paymentMethods != null) {
+			logger.info("COMPLETED | Getting all available payment methods for an existing client | Email: " + sellerEmail);
+			return new ResponseEntity<>(paymentMethods, HttpStatus.OK);
+		}
+		else {
+			logger.error("CANCELED | Getting all available payment methods for an existing client | Email: " + sellerEmail);
+			return ResponseEntity.status(400).build();
+		}
 	}
 
 	@GetMapping("/nesto")

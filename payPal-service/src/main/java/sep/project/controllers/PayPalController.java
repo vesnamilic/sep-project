@@ -32,7 +32,6 @@ public class PayPalController {
      */
     @PostMapping(value = "/create")
     public ResponseEntity<?> makePayment(@RequestBody CreatePaymentDTO paymentDTO){  	
-    	System.out.println("Creating a new PayPal transaction: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
         
     	boolean result = payPalService.createPayment(paymentDTO);
         
@@ -45,7 +44,6 @@ public class PayPalController {
      */
     @PostMapping(value = "/complete")
     public ResponseEntity<?> completePayment(@RequestBody ConfirmPaymentDTO paymentDTO){   	
-    	System.out.println("Completing an existing PayPal transaction.");
     	
     	boolean result = payPalService.completePayment(paymentDTO);
         
