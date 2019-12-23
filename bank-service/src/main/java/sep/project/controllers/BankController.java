@@ -27,7 +27,6 @@ public class BankController {
 	@PostMapping(value = "/initiatePayment")
 	public ResponseEntity<BankResponseDTO> initiatePayment(@RequestBody PayRequestDTO request) {
 
-		System.out.println("DEBUG: initiatePayment called");
 		ResponseEntity<BankResponseDTO> ret = bankService.initiatePayment(request);
 		if (ret != null) {
 			return ret;
@@ -40,7 +39,6 @@ public class BankController {
 	@PostMapping(value = "/registerSeller")
 	public ResponseEntity<Boolean> registerSeller(@RequestBody RegisterSellerDTO registerSellerDTO) {
 
-		System.out.println("DEBUG: registerSeller called");
 		Boolean ret = bankService.registerSeller(registerSellerDTO);
 		if (ret) {
 			return new ResponseEntity<>(HttpStatus.CREATED);
@@ -53,7 +51,6 @@ public class BankController {
 	@PostMapping(value = "/finishPayment")
 	public ResponseEntity finishPayment(@RequestBody CompletedDTO completedDTO) {
 
-		System.out.println("DEBUG: finishPayment called");
 		return bankService.finishPayment(completedDTO);
 
 	}
