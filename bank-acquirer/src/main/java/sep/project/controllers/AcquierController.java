@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sep.project.DTOs.BuyerDTO;
 import sep.project.DTOs.KPRequestDTO;
 import sep.project.DTOs.KPResponseDTO;
+import sep.project.DTOs.PCCResponseDTO;
 import sep.project.DTOs.PayResponseDTO;
 import sep.project.customExceptions.InvalidDataException;
 import sep.project.customExceptions.NoEnoughFundException;
@@ -62,13 +63,6 @@ public class AcquierController {
 		return new ResponseEntity<KPResponseDTO>(retVal, HttpStatus.OK);
 	}
 
-	/*
-	 * @PostMapping(value = "/pccReply") public void pccReply(@RequestBody
-	 * PCCResponseDTO pccResponseDTO) {
-	 * System.out.println("DEBUG: pccReplay called");
-	 * acquirerService.finalizePayment(pccResponseDTO); }
-	 */
-
 	@PostMapping(value = "/pay/{url}")
 	public ResponseEntity<PayResponseDTO> postPaymentForm(HttpServletResponse httpServletResponse,
 			@PathVariable String url, @RequestBody BuyerDTO buyerDTO) {
@@ -110,5 +104,12 @@ public class AcquierController {
 			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	@PostMapping(value = "/pccReply")
+	public void pccReply(@RequestBody PCCResponseDTO pccResponseDTO) {
+		System.out.println("DEBUG: pccReplay called");
+		acquirerService.finalizePayment(pccResponseDTO);
+	}
+
 
 }

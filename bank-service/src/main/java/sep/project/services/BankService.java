@@ -2,6 +2,8 @@ package sep.project.services;
 
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -50,6 +52,8 @@ public class BankService {
 		failedURL = s;
 	}
 
+	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
+
 	public ResponseEntity<BankResponseDTO> initiatePayment(PayRequestDTO requestDTO) {
 
 		Transaction t = createTransaction(requestDTO);
@@ -59,7 +63,8 @@ public class BankService {
 		Transaction savedTransaction=transactionRepository.save(t);
 		savedTransaction.setMerchantOrderId(savedTransaction.getId());
 		transactionRepository.save(savedTransaction);
-		
+		logger.info("COMPLETED | Saved transaction with id: "+savedTransaction.getId());
+		   
 		BankRequestDTO bankRequest = createBankRequest(requestDTO, savedTransaction.getMerchantOrderId());
 
 		if(bankRequest==null) {
@@ -71,12 +76,14 @@ public class BankService {
 			ResponseEntity<BankResponseDTO> responseDTO = template
 					.postForEntity("https://localhost:8081/api/firstRequest", bankRequest, BankResponseDTO.class);
 			if (responseDTO != null) {
+				logger.info("INFO | Bank return value");
 				return responseDTO;
-			} else
+			} else {
+				logger.error("ERROR | Error in bank");
 				return null;
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Bank is not available!");
+			logger.error("ERROR | Bank is not available");
 			t.setStatus(Status.UNSECCESSFULY_BANK);
 			transactionRepository.save(t);
 			return null;
@@ -88,6 +95,7 @@ public class BankService {
 
 		Seller seller = sellerRepository.findByEmail(requestDTO.getEmail());
 		if(seller==null) {
+			logger.error("ERROR | Bank request can not be made, seller does not exists");
 			return null;
 		}
 		BankRequestDTO bankRequest = new BankRequestDTO();
@@ -99,7 +107,8 @@ public class BankService {
 		bankRequest.setErrorURL(errorURL);
 		bankRequest.setSuccessURL(successURL);
 		bankRequest.setFailedURL(failedURL);
-
+		
+		logger.info("COMPLETED | Bank request created");
 		return bankRequest;
 
 	}
@@ -108,6 +117,7 @@ public class BankService {
 		
 		Seller seller = sellerRepository.findByEmail(requestDTO.getEmail());
 		if(seller==null) {
+			logger.error("ERROR | Transaction can not be made, seller does not exists");
 			return null;
 		}
 		
@@ -116,6 +126,7 @@ public class BankService {
 		transaction.setMerchantOrderId(transaction.getId());
 		transaction.setStatus(Status.CREATED);
 		transaction.setSeller(seller);
+		logger.info("COMPLETED | Transaction with id: "+transaction.getId()+" created");
 		return transaction;
 	}
 
@@ -124,14 +135,15 @@ public class BankService {
 		Seller seller = new Seller();
 		seller.setMerchantID(registerSellerDTO.getMerchantID());
 		seller.setMerchantPassword(registerSellerDTO.getMerchantPassword());
-		seller.setSellerName(registerSellerDTO.getSellerName());
 		seller.setEmail(registerSellerDTO.getEmail());
 		
 		Seller savedSeller = sellerRepository.save(seller);
 
 		if (savedSeller != null) {
+			logger.info("COMPLETED | Seller with email: "+savedSeller.getEmail()+" is successfuly added to card payment system");
 			return true;
 		} else {
+			logger.error("ERROR | Seller can not be added to card payment system, email is null");
 			return false;
 		}
 	}
@@ -139,13 +151,13 @@ public class BankService {
 	public ResponseEntity finishPayment(CompletedDTO completedDTO) {
 
 		Transaction t = transactionRepository.findByMerchantOrderId(completedDTO.getMerchantOrderID());
-		System.out.println("trenuntni status: " + t.getStatus());
-		System.out.println(completedDTO.getTransactionStatus());
+		
 		t.setStatus(completedDTO.getTransactionStatus());
 		t.setAcquirerOrderId(completedDTO.getAcquirerOrderID());
 		t.setAcquirerTimestamp(completedDTO.getAcquirerTimestamp());
 		t.setPaymentID(completedDTO.getPaymentID());
 		transactionRepository.save(t);
+		logger.info("COMPLETED | Payment with id: "+completedDTO.getPaymentID()+" completed");
 
 		return new ResponseEntity<>(HttpStatus.OK);
 

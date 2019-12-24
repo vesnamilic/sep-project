@@ -27,6 +27,7 @@ import sep.project.DTOs.BuyerDTO;
 import sep.project.DTOs.CompletedDTO;
 import sep.project.DTOs.KPRequestDTO;
 import sep.project.DTOs.PCCRequestDTO;
+import sep.project.DTOs.PCCResponseDTO;
 import sep.project.DTOs.PayResponseDTO;
 import sep.project.customExceptions.InvalidDataException;
 import sep.project.customExceptions.NoEnoughFundException;
@@ -133,7 +134,7 @@ public class AcquirerService {
 
 		transactionRepository.save(t);
 		paymentInfoRepository.save(paymentInfo);
-		
+
 		logger.info("payment info created");
 		return paymentInfo;
 
@@ -152,7 +153,7 @@ public class AcquirerService {
 
 		Transaction t = new Transaction();
 		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
-		if(seller==null) {
+		if (seller == null) {
 			logger.error("unsucessfull creating transaction, sellerr does not exists");
 			return null;
 		}
@@ -180,13 +181,13 @@ public class AcquirerService {
 
 		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentURL(url);
 		if (paymentInfo == null) {
-			logger.error("payment info with url:"+url+" does not exists");
+			logger.error("payment info with url:" + url + " does not exists");
 			return false;
 		}
 
 		Transaction t = paymentInfo.getTransaction();
 		if (t == null) {
-			logger.error("transaction does not exists in payment with id:"+paymentInfo.getPaymentID());
+			logger.error("transaction does not exists in payment with id:" + paymentInfo.getPaymentID());
 			return false;
 		}
 
@@ -264,7 +265,7 @@ public class AcquirerService {
 		PayResponseDTO responseDTO = new PayResponseDTO();
 		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentURL(url);
 		if (paymentInfo == null) {
-			logger.error("url: "+paymentInfo.getPaymentURL()+" does not exists");
+			logger.error("url: " + url + " does not exists");
 			throw new PaymentException("URL does not exists!");
 		}
 
@@ -333,8 +334,7 @@ public class AcquirerService {
 			if (response.getBody()) {
 				logger.info("KP is informed");
 				return t.getFailedURL();
-			}
-			else {
+			} else {
 				logger.info("KP is informed");
 				return "/failed";
 			}
@@ -374,7 +374,7 @@ public class AcquirerService {
 
 		} catch (HttpStatusCodeException exception) {
 			if (exception.getStatusCode().is5xxServerError()) {
-				logger.error("Transaction with id: "+t.getId()+" already exists on PCC");
+				logger.error("Transaction with id: " + t.getId() + " already exists on PCC");
 				System.out.println("This transaction already exists on PCC");
 				save(t, Status.UNSUCCESSFULLY);
 			}
@@ -448,52 +448,63 @@ public class AcquirerService {
 
 //*****************************************For comunications with PCC********************************************************//	
 
-	/*
-	 * public void finalizePayment(PCCResponseDTO pccResponseDTO) {
-	 * 
-	 * Transaction t =
-	 * transactionRepository.findById(pccResponseDTO.getAcquirerOrderID()).get();
-	 * 
-	 * PaymentInfo paymentInfo = paymentInfoRepository.findByTransaction(t);
-	 * 
-	 * if (pccResponseDTO.getStatus() == Status.UNSUCCESSFULLY) { save(t,
-	 * Status.UNSUCCESSFULLY); } else {
-	 * t.setIssuerOrderId(pccResponseDTO.getIssuerOrderID());
-	 * t.setIssuerTimestamp(pccResponseDTO.getIssuerTimestamp()); save(t,
-	 * Status.SUCCESSFULLY); Card recieverCard =
-	 * cardRepository.findByPan(t.getSellerPan());
-	 * 
-	 * Float available = recieverCard.getAvailableFunds();
-	 * recieverCard.setAvailableFunds(available + t.getAmount());
-	 * cardRepository.save(recieverCard);
-	 * 
-	 * CardOwner seller = cardOwnerRepository.findByCardPan(recieverCard.getPan());
-	 * seller.setCard(recieverCard); cardOwnerRepository.save(seller);
-	 * 
-	 * } System.out.println("Novi status transakcije ID: " + t.getId() + " je " +
-	 * t.getStatus().toString()); sendReplyToKP(t, paymentInfo); }
-	 */
+	public void finalizePayment(PCCResponseDTO pccResponseDTO) {
+
+		Transaction t = transactionRepository.findById(pccResponseDTO.getAcquirerOrderID()).get();
+
+		PaymentInfo paymentInfo = paymentInfoRepository.findByTransaction(t);
+
+		if (pccResponseDTO.getStatus() == Status.UNSUCCESSFULLY) {
+			save(t, Status.UNSUCCESSFULLY);
+		} else {
+			t.setIssuerOrderId(pccResponseDTO.getIssuerOrderID());
+			t.setIssuerTimestamp(pccResponseDTO.getIssuerTimestamp());
+			save(t, Status.SUCCESSFULLY);
+			Card recieverCard = cardRepository.findByPan(t.getSellerPan());
+
+			Float available = recieverCard.getAvailableFunds();
+			recieverCard.setAvailableFunds(available + t.getAmount());
+			cardRepository.save(recieverCard);
+
+			CardOwner seller = cardOwnerRepository.findByCardPan(recieverCard.getPan());
+			seller.setCard(recieverCard);
+			cardOwnerRepository.save(seller);
+
+		}
+		System.out.println("Novi status transakcije ID: " + t.getId() + " je " + t.getStatus().toString());
+		sendReplyToKP(t, paymentInfo);
+	}
+
 	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
 	public void save(Transaction t, Status s) {
 		t.setStatus(s);
 		transactionRepository.save(t);
 	}
-	/*
-	 * private void sendReplyToKP(Transaction t, PaymentInfo pccResponse) {
-	 * 
-	 * CompletedDTO completedDTO = new CompletedDTO();
-	 * completedDTO.setTransactionStatus(t.getStatus());
-	 * completedDTO.setMerchantOrderID(t.getMerchantOrderId());
-	 * completedDTO.setAcquirerOrderID(t.getId());
-	 * completedDTO.setAcquirerTimestamp(t.getTimestamp());
-	 * completedDTO.setPaymentID(pccResponse.getPaymentID()); if (t.getStatus() ==
-	 * Status.SUCCESSFULLY) { completedDTO.setRedirectURL(t.getSuccessURL()); } else
-	 * { completedDTO.setRedirectURL(t.getFailedURL()); }
-	 * 
-	 * RestTemplate template = new RestTemplate(); try {
-	 * template.postForEntity(replyToKP, completedDTO, Boolean.class); } catch
-	 * (Exception e) { System.out.println("KP nije dostupan,metoda sendReplyToKP.");
-	 * if (t.getStatus() == Status.SUCCESSFULLY) { save(t, Status.SUCCESSFULLY_KP);
-	 * } else { save(t, Status.UNSUCCESSFULLY_KP); } } }
-	 */
+
+	private void sendReplyToKP(Transaction t, PaymentInfo pccResponse) {
+
+		CompletedDTO completedDTO = new CompletedDTO();
+		completedDTO.setTransactionStatus(t.getStatus());
+		completedDTO.setMerchantOrderID(t.getMerchantOrderId());
+		completedDTO.setAcquirerOrderID(t.getId());
+		completedDTO.setAcquirerTimestamp(t.getTimestamp());
+		completedDTO.setPaymentID(pccResponse.getPaymentID());
+		if (t.getStatus() == Status.SUCCESSFULLY) {
+			completedDTO.setRedirectURL(t.getSuccessURL());
+		} else {
+			completedDTO.setRedirectURL(t.getFailedURL());
+		}
+
+		RestTemplate template = new RestTemplate();
+		try {
+			template.postForEntity(replyToKP, completedDTO, Boolean.class);
+		} catch (Exception e) {
+			System.out.println("KP nije dostupan,metoda sendReplyToKP.");
+			if (t.getStatus() == Status.SUCCESSFULLY) {
+				save(t, Status.SUCCESSFULLY_KP);
+			} else {
+				save(t, Status.UNSUCCESSFULLY_KP);
+			}
+		}
+	}
 }
