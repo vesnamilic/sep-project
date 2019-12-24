@@ -8,6 +8,9 @@ import { NavigationComponent } from './navigation/navigation.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormComponent } from './form/form.component';
+import { MatStepperModule } from '@angular/material/stepper';
 
 @NgModule({
   declarations: [
@@ -15,13 +18,16 @@ import { NotFoundComponent } from './not-found/not-found.component';
     HomePageComponent,
     RegistrationComponent,
     NavigationComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    FormComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatStepperModule
   ],
   providers: [],
   bootstrap: [AppComponent]

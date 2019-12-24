@@ -1,0 +1,22 @@
+<header class="masthead">
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-12">
+                <mat-horizontal-stepper labelPosition="bottom">
+                    <mat-step *ngFor="let pm of paymentMethods; let i = index" [completed]="false" [label]="pm.name">
+                        <form id="form" [formGroup]="form" (ngSubmit) = "submitForm()">
+                            <div class="form-label-group" *ngFor="let field of fields">
+                                <label [attr.for]="field.name" class="form-control-label">{{field.label}}</label>
+                                <input class="form-control" [formControlName]="field.name" [placeholder] = "field.label" [id]="field.name" [type]="field.type">
+                            </div>
+                        </form>
+                        <div class="row">
+                            <button class="btn btn-md btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" *ngIf="i < paymentMethods.length-1" mat-button matStepperNext>Skip</button>
+                            <button class="btn btn-md btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" type="submit" form="form" [disabled]="!form.valid">Confirm</button>
+                        </div>
+                    </mat-step>
+                </mat-horizontal-stepper>
+            </div>
+        </div>
+    </div>
+</header>
