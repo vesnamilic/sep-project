@@ -35,18 +35,7 @@ public class BankController {
 		}
 
 	}
-
-	@PostMapping(value = "/registerSeller")
-	public ResponseEntity<Boolean> registerSeller(@RequestBody RegisterSellerDTO registerSellerDTO) {
-
-		Boolean ret = bankService.registerSeller(registerSellerDTO);
-		if (ret) {
-			return new ResponseEntity<>(HttpStatus.CREATED);
-		} else {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-	}
+	
 
 	@PostMapping(value = "/finishPayment")
 	public ResponseEntity finishPayment(@RequestBody CompletedDTO completedDTO) {

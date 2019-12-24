@@ -135,7 +135,6 @@ public class BankService {
 		Seller seller = new Seller();
 		seller.setMerchantID(registerSellerDTO.getMerchantID());
 		seller.setMerchantPassword(registerSellerDTO.getMerchantPassword());
-		seller.setSellerName(registerSellerDTO.getSellerName());
 		seller.setEmail(registerSellerDTO.getEmail());
 		
 		Seller savedSeller = sellerRepository.save(seller);
