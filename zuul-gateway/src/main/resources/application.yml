@@ -33,7 +33,7 @@ zuul:
       path: /mock-bitcoin-service/**
     bank-service:
       service-id: bank-service
-      path: /bank-service/**
+      path: /bank/**
   host:
     connect-timeout-millis: 5000000
     socket-timeout-millis: 5000000

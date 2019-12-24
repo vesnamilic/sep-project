@@ -14,7 +14,7 @@ export class FormService {
       headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
     };
 
-    const baseUrl = 'https://localhost:8081/api/pay/'+token;
+    const baseUrl = 'https://localhost:8081/pay/'+token;
 
     return this.http.post(baseUrl, payInfo, httpOptions);
   }

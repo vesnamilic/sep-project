@@ -74,7 +74,7 @@ public class BankService {
 		RestTemplate template = new RestTemplate();
 		try {
 			ResponseEntity<BankResponseDTO> responseDTO = template
-					.postForEntity("https://localhost:8081/api/firstRequest", bankRequest, BankResponseDTO.class);
+					.postForEntity("https://localhost:8081/firstRequest", bankRequest, BankResponseDTO.class);
 			if (responseDTO != null) {
 				logger.info("INFO | Bank return value");
 				return responseDTO;
