@@ -57,8 +57,8 @@ export class FormComponent implements OnInit {
     console.log(this.token);
     this.formService.pay(payInfo, this.token).subscribe(
       data => {
-        alert('Payed successfully');
-        this.router.navigateByUrl('/');
+        const response = data as any;
+        document.location.href  = response.url;
       },
       error => {
         alert('An error ocurred.');

@@ -2,8 +2,10 @@ package sep.project.model;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
@@ -18,22 +20,29 @@ import javax.persistence.SequenceGenerator;
 public class Transaction {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqTrans")
 	private Long id;
 	
+	@Column
 	private String status;
 	
+	@Column
 	private Date creationDate;
 	
+	@Column
 	private String priceCurrency;
 	
+	@Column
 	private Double priceAmount;
 	
+	@Column
 	private String receiveCurrency;
 	
+	@Column
 	private Double receiveAmount;
 	
-	private long paymentId;
+	@Column
+	private Long paymentId;
 	
 	@ManyToOne
 	private Merchant merchant;
@@ -107,13 +116,14 @@ public class Transaction {
 		this.creationDate = creationDate;
 	}
 
-	public long getPaymentId() {
+	public Long getPaymentId() {
 		return paymentId;
 	}
 
-	public void setPaymentId(long paymentId) {
+	public void setPaymentId(Long paymentId) {
 		this.paymentId = paymentId;
 	}
+
 	
 	
 }

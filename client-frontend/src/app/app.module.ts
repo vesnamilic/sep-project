@@ -11,6 +11,9 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PaymentMethodsComponent } from './form/form.component';
 import { MatStepperModule } from '@angular/material/stepper';
+import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
+import { SuccessComponent } from './success/success.component';
+import { CancelComponent } from './cancel/cancel.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +22,10 @@ import { MatStepperModule } from '@angular/material/stepper';
     RegistrationComponent,
     NavigationComponent,
     NotFoundComponent,
-    PaymentMethodsComponent
+    PaymentMethodsComponent,
+    ChoosePaymentMethodComponent,
+    SuccessComponent,
+    CancelComponent
   ],
   imports: [
     BrowserModule,
@@ -32,4 +38,6 @@ import { MatStepperModule } from '@angular/material/stepper';
   providers: [],
   bootstrap: [AppComponent]
 })
+
+
 export class AppModule { }

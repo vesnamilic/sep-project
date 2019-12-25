@@ -17,4 +17,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 
 	@Query("SELECT t FROM Transaction t WHERE t.status = ?1 or t.status = ?2 or t.status = ?3")
 	public List<Transaction> getTransactionWithStatuses(String status1, String status2, String status3);
+	
+	public Transaction findByPaymentId(Long paymentId);
 }

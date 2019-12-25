@@ -1,6 +1,6 @@
 
 -- MERCHANT DATA --
-INSERT INTO merchant(id,email, user_token) VALUES (1,'test@gmail.com', 'GBAT9WsxGdfeetdPHJTJEVBUZPwsefaZanbUz7fA');
+INSERT INTO merchant(id,email, token) VALUES (1,'test@gmail.com', 'Funpnt4xVdM7J9yPJXJkPTW1NGlk35Moq3DgjmU67fMFfbfFtbDeVkvRFoLaTiZm');
 
 
 -- TRANSACTION DATA -- 
@@ -25,4 +25,4 @@ INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_curre
 INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_currency, receive_amount, receive_currency, status, merchant_id) VALUES (18, '2019-12-22 21:42:01 UTC', 224068, 2, 'USD', 0.000267 , 'BTC', 'paid', 1);
 INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_currency, receive_amount, receive_currency, status, merchant_id) VALUES (19, '2019-12-22 21:45:22 UTC', 224069, 2, 'USD', 0 , 'BTC', 'invalid', 1);
 INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_currency, receive_amount, receive_currency, status, merchant_id) VALUES (20, '2019-12-22 22:00:15 UTC', 224070, 2, 'USD', 0.000267 , 'BTC', 'paid', 1);
-INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_currency, receive_amount, receive_currency, status, merchant_id) VALUES (21, '2019-12-22 22:03:41 UTC', 224071, 2, 'USD', 0.000267 , 'BTC', 'paid', 1);
+INSERT INTO transaction(id, creation_date, payment_id, price_amount, price_currency, receive_amount, receive_currency, status, merchant_id) VALUES (21, '2019-12-22 22:03:41 UTC', 224071, 2, 'USD', 0.000267 , 'BTC', 'new', 1);

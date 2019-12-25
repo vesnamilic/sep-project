@@ -12,22 +12,34 @@ import sep.project.repositories.PaymentMethodRepository;
 
 @Service
 public class PaymentMethodService {
-	
+
 	@Autowired
 	private PaymentMethodRepository paymentMethodRepository;
-		
+
 	public PaymentMethod addPaymentMethod(PaymentMethod paymentMethod) {
-		if(paymentMethod.getId() == null) {
+		if (paymentMethod.getId() == null) {
 			PaymentMethod saved = paymentMethodRepository.save(paymentMethod);
-			
+
 			return saved;
 		}
 		return null;
 	}
-	
+
 	public List<PaymentMethod> getAll() {
-		
+
 		return paymentMethodRepository.findByDeleted(false);
+	}
+
+	/**
+	 * Metoda za preuzimanje nacina placanja sa odgovarajucim nazivom
+	 * 
+	 * @param name naziv nacina placanja
+	 * @return pronađeni način plaćanja
+	 * @see PaymentMethod
+	 */
+	public PaymentMethod getByName(String name) {
+		return this.paymentMethodRepository.findByNameAndDeleted(name, false);
+
 	}
 
 }

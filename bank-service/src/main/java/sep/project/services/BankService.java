@@ -54,11 +54,11 @@ public class BankService {
 
 	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
-	public ResponseEntity<BankResponseDTO> initiatePayment(PayRequestDTO requestDTO) {
+	public ResponseEntity<String> initiatePayment(PayRequestDTO requestDTO) {
 
 		Transaction t = createTransaction(requestDTO);
 		if(t==null) {
-			return new ResponseEntity<BankResponseDTO>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		Transaction savedTransaction=transactionRepository.save(t);
 		savedTransaction.setMerchantOrderId(savedTransaction.getId());
@@ -68,25 +68,26 @@ public class BankService {
 		BankRequestDTO bankRequest = createBankRequest(requestDTO, savedTransaction.getMerchantOrderId());
 
 		if(bankRequest==null) {
-			return new ResponseEntity<BankResponseDTO>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		
 		RestTemplate template = new RestTemplate();
 		try {
-			ResponseEntity<BankResponseDTO> responseDTO = template
-					.postForEntity("https://localhost:8081/api/firstRequest", bankRequest, BankResponseDTO.class);
+			ResponseEntity<String> responseDTO = template
+					.postForEntity("https://localhost:8081/firstRequest", bankRequest, String.class);
 			if (responseDTO != null) {
 				logger.info("INFO | Bank return value");
-				return responseDTO;
+				return ResponseEntity.ok(responseDTO.getBody());
 			} else {
 				logger.error("ERROR | Error in bank");
-				return null;
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("ERROR | Bank is not available");
 			t.setStatus(Status.UNSECCESSFULY_BANK);
 			transactionRepository.save(t);
-			return null;
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 	}
@@ -99,7 +100,7 @@ public class BankService {
 			return null;
 		}
 		BankRequestDTO bankRequest = new BankRequestDTO();
-		bankRequest.setAmount(requestDTO.getPriceAmount());
+		bankRequest.setAmount(requestDTO.getPaymentAmount());
 		bankRequest.setMerchantID(seller.getMerchantID());
 		bankRequest.setMerchantPass(seller.getMerchantPassword());
 		bankRequest.setMerchantTimestamp(new Date());
@@ -122,7 +123,7 @@ public class BankService {
 		}
 		
 		Transaction transaction = new Transaction();
-		transaction.setAmount(requestDTO.getPriceAmount());
+		transaction.setAmount(requestDTO.getPaymentAmount());
 		transaction.setMerchantOrderId(transaction.getId());
 		transaction.setStatus(Status.CREATED);
 		transaction.setSeller(seller);
@@ -149,17 +150,18 @@ public class BankService {
 	}
 
 	public ResponseEntity finishPayment(CompletedDTO completedDTO) {
-
-		Transaction t = transactionRepository.findByMerchantOrderId(completedDTO.getMerchantOrderID());
 		
+		Transaction t = transactionRepository.findByMerchantOrderId(completedDTO.getMerchantOrderID());
 		t.setStatus(completedDTO.getTransactionStatus());
 		t.setAcquirerOrderId(completedDTO.getAcquirerOrderID());
 		t.setAcquirerTimestamp(completedDTO.getAcquirerTimestamp());
 		t.setPaymentID(completedDTO.getPaymentID());
+
 		transactionRepository.save(t);
+
 		logger.info("COMPLETED | Payment with id: "+completedDTO.getPaymentID()+" completed");
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		return ResponseEntity.status(200).body(true);
 
 	}
 

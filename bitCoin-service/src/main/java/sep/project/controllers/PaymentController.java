@@ -1,5 +1,7 @@
 package sep.project.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,128 +29,155 @@ import sep.project.services.TransactionService;
 @RestController
 @RequestMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PaymentController {
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
+
 	@Autowired
 	private RestTemplate restTemplate;
-	
+
 	@Autowired
 	private MerchantService merchantService;
-	
+
 	@Autowired
 	private TransactionService transactionService;
-	
+
 	@Value("${sandbox_url}")
 	private String sandBoxURL;
-	
+
 	@Value("${success_url}")
 	private String successURL;
-	
+
 	@Value("${cancel_url}")
 	private String cancelURL;
 	
+	@Value("${success_url_front}")
+	private String successFrontURL;
+
+	@Value("${cancel_url_front}")
+	private String cancelFrontURL;
+
 	@Value("${callback_url}")
 	private String callbackURL;
-	
+
 	@Value("Authorization")
 	private String AUTH_HEADER;
-	
+
 	@Value("Bearer")
 	private String TOKEN_TYPE;
-	
+
 	/**
 	 * Metoda za kreiranje placanja i slanje podataka o placanju na CoinGate
+	 * 
 	 * @param paymentInfo informacije o placanju
-	 * @return 
+	 * @return
 	 * @see BitCoinPayment
 	 */
-	@PostMapping("/")
+	@PostMapping("/create")
 	public ResponseEntity<?> createPayment(@RequestBody BitCoinPayment paymentInfo) {
+
+		logger.info("INITIATED | Creating payment | Merchant's email: " + paymentInfo.getEmail() + " , Amount: "
+				+ paymentInfo.getPaymentAmount());
 		Merchant merchant = this.merchantService.getMerchant(paymentInfo.getEmail());
-		
-		if(merchant == null) {
+
+		if (merchant == null) {
+			logger.error("CANCELED | Finding a merchant based on the given email address | Merchant's email: "
+					+ paymentInfo.getEmail());
 			return ResponseEntity.badRequest().build();
 		}
-		
-		PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO(paymentInfo.getPaymentAmount(), paymentInfo.getPaymentCurrency() ,"BTC");
-		paymentRequestDTO.setToken(merchant.getUserToken());
+
+		PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO(paymentInfo.getPaymentAmount(),
+				paymentInfo.getPaymentCurrency(), "BTC");
+		paymentRequestDTO.setToken(merchant.getToken());
 		paymentRequestDTO.setCallback_url(this.callbackURL);
 		paymentRequestDTO.setCancel_url(this.cancelURL);
 		paymentRequestDTO.setSuccess_url(this.successURL);
 		HttpHeaders headers = new HttpHeaders();
-		headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + merchant.getUserToken());
+		headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + merchant.getToken());
 		HttpEntity<PaymentRequestDTO> request = new HttpEntity<>(paymentRequestDTO, headers);
-		
-		Transaction transaction = this.transactionService.createInitialTransaction(merchant, paymentInfo.getPaymentAmount(), paymentInfo.getPaymentCurrency());
-		
+
+		Transaction transaction = this.transactionService.createInitialTransaction(merchant,
+				paymentInfo.getPaymentAmount(), paymentInfo.getPaymentCurrency());
 		// TODO: Dodati opis greske
-		if(transaction == null) {
+		if (transaction == null) {
+			logger.error("CANCELED | Saving initial transaction for the order | Merchant's email: "
+					+ paymentInfo.getEmail());
 			return ResponseEntity.badRequest().build();
 		}
-		
+
 		ResponseEntity<PaymentResponseDTO> response = null;
 
 		try {
-			response =  restTemplate.exchange(sandBoxURL, HttpMethod.POST, request, PaymentResponseDTO.class);
+			response = restTemplate.exchange(sandBoxURL, HttpMethod.POST, request, PaymentResponseDTO.class);
 		} catch (Exception e) {
-	      this.transactionService.changeTransactionStatus(transaction.getId(), "invalid");
-	      return ResponseEntity.badRequest().build();
-	    }
-		
-		if(response.getStatusCode() != HttpStatus.OK) {
+			logger.error("CANCELED | Contacting the bitcoin service | Service url: " + sandBoxURL);
+			this.transactionService.changeTransactionStatus(transaction.getId(), "invalid");
+			return ResponseEntity.badRequest().build();
+		}
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			logger.error("CANCELED | Contacting the bitcoin service | Service url: " + sandBoxURL + " , Status Code: " + response.getStatusCode());
 			return ResponseEntity.status(response.getStatusCode()).build();
 		}
-		
+
 		PaymentResponseDTO responseObject = response.getBody();
-		System.out.println(responseObject);
 		transaction.setCreationDate(responseObject.getCreated_at());
 		transaction.setPaymentId(responseObject.getId());
 		transaction.setStatus(responseObject.getStatus());
 		transaction.setReceiveAmount(0.0);
 		transaction.setReceiveCurrency("");
 		transaction = this.transactionService.saveTransaction(transaction);
-		
-		if(transaction == null) {
-			 return ResponseEntity.status(500).body("Error while trying to save payment");
-		}
-		
-		// TODO: Otkomentarisaati prilikom pokusaja sa fronta
-		/*HttpHeaders headersRedirect = new HttpHeaders();
-		headers.add("Location", response.getBody().getPayment_url());
 
-		return new ResponseEntity<byte []>(null,headersRedirect,HttpStatus.FOUND);*/
-		return ResponseEntity.ok(response);
+		if (transaction == null) {
+			logger.error("CANCELED | Saving payment transaction for the payment | Payment id: " + responseObject.getId());
+			return ResponseEntity.status(500).body("Error while trying to save payment");
+		}
+
+		logger.info("COMPLETED | Creating payment | Merchant's email: " + paymentInfo.getEmail() + " , Amount: "
+				+ paymentInfo.getPaymentAmount());
+		return ResponseEntity.ok(response.getBody().getPayment_url());
+
 	}
-	
+
 	@GetMapping("/cancel")
 	public ResponseEntity<?> cancelPayment() {
-
-		return null;
+		this.transactionService.checkTransactionsStatuses();
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", this.cancelFrontURL);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
-	
+
 	@GetMapping("/success")
 	public ResponseEntity<?> successfulPayment() {
-
-		return null;
+		this.transactionService.checkTransactionsStatuses();
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", this.successFrontURL);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
-	
+
 	@PostMapping("/callback")
 	public ResponseEntity<?> paymentStatusChanged(@RequestBody CallBackDTO callback) {
+		Transaction transaction = this.transactionService.getTransactionByPayment(callback.getId());
+		if(transaction == null) {
+			return ResponseEntity.status(400).build();
+		}
+		
+		if(this.transactionService.changeTransaction(transaction)) {
+			return ResponseEntity.ok().build();
+		} else {
+			return ResponseEntity.status(400).build();
+		}
+		
+	}
+	
 
-		return ResponseEntity.ok("");
-	}
-	
 	// TODO: Ako bude trebalo
-	/* 
-	public ResponseEntity<?> checkPaymentDetails() {
-		return null;
-	}
-	
-	public ResponseEntity<?> getPayment() {
-		return null;
-	}
-	
-	public ResponseEntity<?> getPaymentList() {
-		return null;
-	}
-	*/
+	/*
+	 * public ResponseEntity<?> checkPaymentDetails() { return null; }
+	 * 
+	 * public ResponseEntity<?> getPayment() { return null; }
+	 * 
+	 * public ResponseEntity<?> getPaymentList() { return null; }
+	 */
 }
