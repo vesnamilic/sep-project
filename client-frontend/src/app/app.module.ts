@@ -9,7 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormComponent } from './form/form.component';
+import { PaymentMethodsComponent } from './form/form.component';
 import { MatStepperModule } from '@angular/material/stepper';
 
 @NgModule({
@@ -19,7 +19,7 @@ import { MatStepperModule } from '@angular/material/stepper';
     RegistrationComponent,
     NavigationComponent,
     NotFoundComponent,
-    FormComponent
+    PaymentMethodsComponent
   ],
   imports: [
     BrowserModule,

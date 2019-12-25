@@ -21,6 +21,8 @@ export class FormService {
 
     const url = this.baseUrl + service + '/client/fields';
 
+    // console.log(url);
+
     return this.http.get<Field[]>(url, httpOptions);
   }
 
@@ -30,6 +32,8 @@ export class FormService {
     };
 
     const url = this.baseUrl + 'client/paymentmethod';
+
+    // console.log(url);
 
     return this.http.get<PaymentMethod[]>(url, httpOptions);
   }

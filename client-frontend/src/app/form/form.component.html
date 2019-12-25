@@ -3,9 +3,9 @@
         <div class="row h-100 align-items-center">
             <div class="col-12">
                 <mat-horizontal-stepper labelPosition="bottom">
-                    <mat-step *ngFor="let pm of paymentMethods; let i = index" [completed]="false" [label]="pm.name">
+                    <mat-step *ngFor="let form of formList; let i = index" [completed]="false" [label]="paymentMethods[i].name">
                         <form id="form" [formGroup]="form" (ngSubmit) = "submitForm()">
-                            <div class="form-label-group" *ngFor="let field of fields">
+                            <div class="form-label-group" *ngFor="let field of fields[i]">
                                 <label [attr.for]="field.name" class="form-control-label">{{field.label}}</label>
                                 <input class="form-control" [formControlName]="field.name" [placeholder] = "field.label" [id]="field.name" [type]="field.type">
                             </div>

@@ -10,55 +10,68 @@ import { PaymentMethod } from '../model/paymentmethod';
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.css']
 })
-export class FormComponent implements OnInit {
+export class PaymentMethodsComponent implements OnInit {
 
   constructor(private formService: FormService,
               private router: Router) { }
 
 
   paymentMethods: PaymentMethod[] = [];
-  fields: Field[] = [];
+  fields: Field[][] = [];
 
-
-  form: FormGroup;
+  formList: FormGroup[] = [];
 
   ngOnInit() {
-
-    this.getPaymentMethods();
-
-    this.getFields();
-
+    this.createForms();
   }
 
-  getFields() {
-    this.formService.getFields('paypal').subscribe(
-      data => {
-        for (let field of data) {
-          this.fields.push(field);
-        }
-
-        this.form = this.createFormGroup(this.fields);
-      },
-      error => {
-        console.log('An error ocurred.');
-      }
-    );
-  }
-
-  getPaymentMethods() {
+  createForms() {
+    // get all payment methods
     this.formService.getPaymentMethods().subscribe(
       data => {
         for (let pm of data) {
           this.paymentMethods.push(pm);
         }
+        
+        // get form for every payment method
+        for (let pm of this.paymentMethods) {
+          this.getFields(pm.name.toLowerCase());
+        }
       },
       error => {
         console.log('An error ocurred.');
       }
     );
+
+    console.log(this.formList);
   }
 
-  createFormGroup(fields: Field[] ) {
+  getFields(paymentMethodName: string) {
+
+    let list: Field[] = [];
+    let form: FormGroup;
+
+    this.formService.getFields(paymentMethodName).subscribe(
+      data => {
+        for (let field of data) {
+          list.push(field);
+        }
+
+        this.fields.push(list);
+
+        form = this.createFormGroup(list);
+
+        this.formList.push(form);
+      },
+      error => {
+        console.log('An error ocurred.');
+      }
+    );
+    
+  }
+
+  // create a form group from the list of fields
+  createFormGroup(fields: Field[]) {
     const group: any = {};
 
     fields.forEach(field => {
