@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomePageComponent } from './home-page/home-page.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
 
 
 const routes: Routes = [
@@ -15,9 +16,14 @@ const routes: Routes = [
     component: HomePageComponent
   },
   {
+    path: 'payment/:id',
+    component: ChoosePaymentMethodComponent
+  }
+  ,
+  {
     path: '**',
     component: NotFoundComponent
-  },
+  }
 ];
 
 @NgModule({
