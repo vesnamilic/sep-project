@@ -1,8 +1,8 @@
 #Parameters
 
 sandbox_url : "https://api-sandbox.coingate.com/v2/orders/"
-cancel_url : "https://localhost:8762/api/bitcoin/cancel"
-success_url : "https://localhost:8762/api/bitcoin/success"
+cancel_url : "https://localhost:4200/#/cancel"
+success_url : "https://localhost:4200/#/success"
 callback_url : "https://localhost:8762/api/bitcoin/callback"
 
 server:
