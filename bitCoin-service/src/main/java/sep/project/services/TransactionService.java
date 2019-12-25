@@ -2,6 +2,8 @@ package sep.project.services;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import sep.project.controllers.PaymentController;
 import sep.project.dto.PaymentRequestDTO;
 import sep.project.dto.PaymentResponseDTO;
 import sep.project.model.Merchant;
@@ -25,6 +28,8 @@ import sep.project.repositories.TransactionRepository;
 @Service
 public class TransactionService {
 
+	private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
+	
 	private TransactionRepository transactionRepository;
 
 	@Autowired
@@ -51,6 +56,15 @@ public class TransactionService {
 	 */
 	public Transaction getTransaction(Long id) {
 		return this.transactionRepository.getOne(id);
+	}
+	
+	/**
+	 * Metoda za pronalazak transakcije sa odgovarajucim id placanja
+	 * @param id identifikator placanja
+	 * @return transakciju sa datim id-jem placanja
+	 */
+	public Transaction getTransactionByPayment(Long id) {
+		return this.transactionRepository.findByPaymentId(id);
 	}
 
 	/**
@@ -109,50 +123,56 @@ public class TransactionService {
 
 		return true;
 	}
+	
+	public boolean changeTransaction(Transaction transaction) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + transaction.getMerchant().getToken());
+		HttpEntity<PaymentRequestDTO> request = new HttpEntity<>(headers);
+		ResponseEntity<PaymentResponseDTO> response = null;
+		
+		try {
+			response = restTemplate.exchange("https://api-sandbox.coingate.com/v2/orders/" + transaction.getPaymentId(), HttpMethod.GET, request,
+						PaymentResponseDTO.class);
+		} catch (RestClientException e) {
+			// TODO Auto-generated catch block
+			return false;
+		} catch (Exception e2) {
+			return false;
+		}
+		
+		PaymentResponseDTO responseObject = response.getBody();
+		System.out.println(responseObject);
+		if(responseObject.getReceive_amount() != "") {
+			try {
+				transaction.setReceiveAmount(Double.parseDouble(responseObject.getReceive_amount()));
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				return false;
+			}
+		}
+
+		transaction.setReceiveCurrency(responseObject.getReceive_currency());
+		transaction.setStatus(responseObject.getStatus());
+		transaction = this.saveTransaction(transaction);
+
+		if (transaction == null) {
+			return false;
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Metoda za periodicnu proveru transakcija sa statusom new, pending i confirming.
 	 * Sinhronizacija sa stanjem transakcija na CoinGate-u
 	 */
 	@Scheduled(initialDelay = 10000, fixedRate = 60000)
-	public void checkTransactionStatus() {
+	public void checkTransactionsStatuses() {
 		List<Transaction> transactions = this.transactionRepository.getTransactionWithStatuses("new", "pending",
 				"confirming");
 		
 		for (Transaction transaction : transactions) {
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + transaction.getMerchant().getToken());
-			HttpEntity<PaymentRequestDTO> request = new HttpEntity<>(headers);
-			ResponseEntity<PaymentResponseDTO> response = null;
-			
-			try {
-				response = restTemplate.exchange("https://api-sandbox.coingate.com/v2/orders/" + transaction.getPaymentId(), HttpMethod.GET, request,
-							PaymentResponseDTO.class);
-			} catch (RestClientException e) {
-				// TODO Auto-generated catch block
-				break;
-			} catch (Exception e2) {
-				break;
-			}
-			
-			PaymentResponseDTO responseObject = response.getBody();
-			System.out.println(responseObject);
-			if(responseObject.getReceive_amount() != "") {
-				try {
-					transaction.setReceiveAmount(Double.parseDouble(responseObject.getReceive_amount()));
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					break;
-				}
-			}
-
-			transaction.setReceiveCurrency(responseObject.getReceive_currency());
-			transaction.setStatus(responseObject.getStatus());
-			transaction = this.saveTransaction(transaction);
-
-			if (transaction == null) {
-				return;
-			}
+			this.changeTransaction(transaction);
 		}
 
 	}

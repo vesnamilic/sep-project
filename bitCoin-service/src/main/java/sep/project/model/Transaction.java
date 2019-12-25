@@ -42,7 +42,7 @@ public class Transaction {
 	private Double receiveAmount;
 	
 	@Column
-	private long paymentId;
+	private Long paymentId;
 	
 	@ManyToOne
 	private Merchant merchant;
@@ -116,11 +116,11 @@ public class Transaction {
 		this.creationDate = creationDate;
 	}
 
-	public long getPaymentId() {
+	public Long getPaymentId() {
 		return paymentId;
 	}
 
-	public void setPaymentId(long paymentId) {
+	public void setPaymentId(Long paymentId) {
 		this.paymentId = paymentId;
 	}
 

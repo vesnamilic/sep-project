@@ -6,15 +6,15 @@ public class CallBackDTO {
 
 	private Long id;
 
-	private String orderId;
+	private String order_id;
 
 	private String status;
 
 	private String price_amount;
 
-	private String priceCurrency;
+	private String price_currency;
 
-	private String receive_currecy;
+	private String receive_currency;
 
 	private String receive_amount;
 	
@@ -44,13 +44,6 @@ public class CallBackDTO {
 		this.id = id;
 	}
 
-	public String getOrderId() {
-		return orderId;
-	}
-
-	public void setOrderId(String orderId) {
-		this.orderId = orderId;
-	}
 
 	public String getStatus() {
 		return status;
@@ -66,22 +59,6 @@ public class CallBackDTO {
 
 	public void setPrice_amount(String price_amount) {
 		this.price_amount = price_amount;
-	}
-
-	public String getPriceCurrency() {
-		return priceCurrency;
-	}
-
-	public void setPriceCurrency(String priceCurrency) {
-		this.priceCurrency = priceCurrency;
-	}
-
-	public String getReceive_currecy() {
-		return receive_currecy;
-	}
-
-	public void setReceive_currecy(String receive_currecy) {
-		this.receive_currecy = receive_currecy;
 	}
 
 	public String getReceive_amount() {

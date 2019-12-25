@@ -49,6 +49,12 @@ public class PaymentController {
 
 	@Value("${cancel_url}")
 	private String cancelURL;
+	
+	@Value("${success_url_front}")
+	private String successFrontURL;
+
+	@Value("${cancel_url_front}")
+	private String cancelFrontURL;
 
 	@Value("${callback_url}")
 	private String callbackURL;
@@ -134,20 +140,35 @@ public class PaymentController {
 
 	@GetMapping("/cancel")
 	public ResponseEntity<?> cancelPayment() {
-
-		return null;
+		this.transactionService.checkTransactionsStatuses();
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", this.cancelFrontURL);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
 
 	@GetMapping("/success")
 	public ResponseEntity<?> successfulPayment() {
-
-		return null;
+		this.transactionService.checkTransactionsStatuses();
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", this.successFrontURL);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
 
 	@PostMapping("/callback")
 	public ResponseEntity<?> paymentStatusChanged(@RequestBody CallBackDTO callback) {
-
-		return ResponseEntity.ok("");
+		Transaction transaction = this.transactionService.getTransactionByPayment(callback.getId());
+		if(transaction == null) {
+			return ResponseEntity.status(400).build();
+		}
+		
+		if(this.transactionService.changeTransaction(transaction)) {
+			return ResponseEntity.ok().build();
+		} else {
+			return ResponseEntity.status(400).build();
+		}
+		
 	}
 	
 

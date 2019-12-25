@@ -60,7 +60,7 @@ public class MerchantController {
 			return new ResponseEntity<>(fields, HttpStatus.OK);
 		}
 		else {
-			logger.error("COMPLETED | Getting fields for registration dynamic form");
+			logger.error("CANCELED | Getting fields for registration dynamic form");
 			return ResponseEntity.status(400).build();
 		}
 	}

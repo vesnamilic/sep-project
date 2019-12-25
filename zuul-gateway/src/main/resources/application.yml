@@ -47,7 +47,6 @@ hystrix:
           thread:
             timeoutInMilliseconds: 12000
 
-
 ribbon:
     ConnectTimeout: 10000
     ReadTimeout: 10000
