@@ -33,7 +33,7 @@ export class PaymentMethodsComponent implements OnInit {
           this.paymentMethods.push(pm);
         }
         
-        // get form for every payment method
+        // create a form form for every payment method
         for (let pm of this.paymentMethods) {
           this.getFields(pm.name.toLowerCase());
         }
@@ -42,8 +42,6 @@ export class PaymentMethodsComponent implements OnInit {
         console.log('An error ocurred.');
       }
     );
-
-    console.log(this.formList);
   }
 
   getFields(paymentMethodName: string) {
@@ -51,6 +49,7 @@ export class PaymentMethodsComponent implements OnInit {
     let list: Field[] = [];
     let form: FormGroup;
 
+    // get fields for a payment method
     this.formService.getFields(paymentMethodName).subscribe(
       data => {
         for (let field of data) {
@@ -59,15 +58,14 @@ export class PaymentMethodsComponent implements OnInit {
 
         this.fields.push(list);
 
+        // create a form group from the list of fields
         form = this.createFormGroup(list);
-
         this.formList.push(form);
       },
       error => {
         console.log('An error ocurred.');
       }
     );
-    
   }
 
   // create a form group from the list of fields

@@ -7,7 +7,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.Links;
@@ -36,9 +41,18 @@ public class PayPalService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PayPalService.class);
 	
+	@Value("${success_url}")
+	private String successURL;
+
+	@Value("${cancel_url}")
+	private String cancelURL;
+	
+	@Value("${success_url_redirect}")
+	private String succesURLRedirect;
+	
 	private String executionMode = "sandbox";
 	
-	public boolean createPayment(CreatePaymentDTO paymentDTO){
+	public ResponseEntity<?> createPayment(CreatePaymentDTO paymentDTO){
 		
 		logger.info("INITIATED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 		
@@ -47,16 +61,15 @@ public class PayPalService {
 		if(client == null) {
 			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 			
-			return false;
+			return ResponseEntity.status(400).build();
 		}
 		
 	    Payer payer = new Payer();
 	    payer.setPaymentMethod("paypal");
 	    
-	    //TODO prepraviti URL-ove
 	    RedirectUrls redirectUrls = new RedirectUrls();
-	    redirectUrls.setCancelUrl("https://localhost:4200/cancel");
-	    redirectUrls.setReturnUrl("https://localhost:4200/return");
+	    redirectUrls.setCancelUrl(cancelURL);
+	    redirectUrls.setReturnUrl(successURL + paymentDTO.getEmail());
 
 		Amount amount = new Amount();
 		amount.setCurrency(paymentDTO.getPaymentCurrency());
@@ -87,17 +100,17 @@ public class PayPalService {
 	    
 	    	if(newPayment != null) {
 	    		
-				logger.error("EXECUTED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
+				logger.info("EXECUTED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 	    		
 	    		for(Links link : newPayment.getLinks()) {
 	    			if(link.getRel().equals("approval_url")) {
 	    				redirectUrl = link.getHref();
-	    				
-	    				System.out.println(redirectUrl);
-	                    
+	    					                    
 	    				break;
 	    			}
 	    		}
+	    		
+	    	    return  ResponseEntity.ok(redirectUrl);    	    
 	    	}
 	    		    	
 		} catch (PayPalRESTException e) {
@@ -109,41 +122,52 @@ public class PayPalService {
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
-			return false;
+			return ResponseEntity.status(500).build();
 		}
 	    
-	    return true;    	    
+	    return ResponseEntity.status(500).build();
  	}
 	
-	public boolean completePayment(ConfirmPaymentDTO paymentDTO){
+	public ResponseEntity<?> completePayment(String email, String paymentId, String token, String PayerID){
+				
+		logger.info("INITIATED | PayPal Transaction Completion");
 		
-		Client client = clientService.getClient(paymentDTO.getEmail());
+		Client client = clientService.getClient(email);
 		
 		if(client == null) {
-			return false;
+			logger.error("CANCELED | PayPal Transaction Completion");
+			
+	        return ResponseEntity.status(500).build();
 		}
 		
 		Payment payment = new Payment();
-		payment.setId(paymentDTO.getPaymentId());
+		payment.setId(paymentId);
 
 	    PaymentExecution paymentExecution = new PaymentExecution();
-	    paymentExecution.setPayerId(paymentDTO.getPayerId());
+	    paymentExecution.setPayerId(PayerID);
 	    
 	    try {
 	        APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+	        
 	        Payment createdPayment = payment.execute(context, paymentExecution);
+	        
 	        if(createdPayment!=null){
-				logger.error("COMPLETED | PayPal Transaction Completion");
+				logger.info("COMPLETED | PayPal Transaction Completion");
+				
+				HttpHeaders headersRedirect = new HttpHeaders();
+				headersRedirect.add("Location", succesURLRedirect);
+				headersRedirect.add("Access-Control-Allow-Origin", "*");
+				return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 
 	        }
 	    } catch (PayPalRESTException e) {
-	        System.err.println(e.getDetails());
+	        //System.err.println(e.getDetails());
 	        
 			logger.error("CANCELED | PayPal Transaction Completion");
 	        
-	        return false;
+	        return ResponseEntity.status(500).build();
 	    }
 	    
-	    return true;
+	    return ResponseEntity.status(500).build();
 	}
 }

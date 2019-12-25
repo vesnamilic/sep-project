@@ -3,13 +3,10 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomePageComponent } from './home-page/home-page.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-<<<<<<< HEAD
 import { PaymentMethodsComponent } from './form/form.component';
-=======
 import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
 import { SuccessComponent } from './success/success.component';
 import { CancelComponent } from './cancel/cancel.component';
->>>>>>> 581f5d2f99e7278b3a1a97d6e1cc34d627380999
 
 
 const routes: Routes = [
@@ -22,12 +19,10 @@ const routes: Routes = [
     component: HomePageComponent
   },
   {
-<<<<<<< HEAD
     path: 'paymentmethods',
     component: PaymentMethodsComponent
   },
   {
-=======
     path: 'payment/:id',
     component: ChoosePaymentMethodComponent
   },
@@ -41,7 +36,6 @@ const routes: Routes = [
   }
   ,
   {
->>>>>>> 581f5d2f99e7278b3a1a97d6e1cc34d627380999
     path: '**',
     component: NotFoundComponent
   }
