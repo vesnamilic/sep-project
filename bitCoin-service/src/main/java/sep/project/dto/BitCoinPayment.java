@@ -8,9 +8,6 @@ public class BitCoinPayment {
 
 	private String paymentCurrency;
 
-	private String title;
-
-	private String description;
 
 	public BitCoinPayment() {
 		super();
@@ -23,8 +20,6 @@ public class BitCoinPayment {
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
-		this.title = title;
-		this.description = description;
 	}
 
 	public String getEmail() {
@@ -51,20 +46,5 @@ public class BitCoinPayment {
 		this.paymentCurrency = paymentCurrency;
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
 
 }

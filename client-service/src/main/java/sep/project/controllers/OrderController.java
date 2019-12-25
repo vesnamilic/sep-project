@@ -123,7 +123,7 @@ public class OrderController {
 		PaymentResponse url = new PaymentResponse();
 		url.setUrl(response.getBody());
 
-		logger.error("COMPLETED | Sending order to payment service | Order id: " + orderId + ", Payment method: " + paymentMethodName);
+		logger.info("COMPLETED | Sending order to payment service | Order id: " + orderId + ", Payment method: " + paymentMethodName);
 		
 		return ResponseEntity.ok(url);
 	}

@@ -121,18 +121,18 @@ public class TransactionService {
 		
 		for (Transaction transaction : transactions) {
 			HttpHeaders headers = new HttpHeaders();
-			headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + transaction.getMerchant().getUserToken());
+			headers.add(this.AUTH_HEADER, this.TOKEN_TYPE + " " + transaction.getMerchant().getToken());
 			HttpEntity<PaymentRequestDTO> request = new HttpEntity<>(headers);
 			ResponseEntity<PaymentResponseDTO> response = null;
 			
 			try {
-				response = restTemplate.exchange(this.sandBoxURL + transaction.getPaymentId(), HttpMethod.GET, request,
+				response = restTemplate.exchange("https://api-sandbox.coingate.com/v2/orders/" + transaction.getPaymentId(), HttpMethod.GET, request,
 							PaymentResponseDTO.class);
 			} catch (RestClientException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				break;
 			} catch (Exception e2) {
-				e2.printStackTrace();
+				break;
 			}
 			
 			PaymentResponseDTO responseObject = response.getBody();

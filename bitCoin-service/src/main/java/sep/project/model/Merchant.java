@@ -1,9 +1,14 @@
 package sep.project.model;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+
+import sep.project.encryption.CryptoConverter;
 
 /**
  * Klasa koja predstavlja prodavca
@@ -15,23 +20,26 @@ import javax.persistence.SequenceGenerator;
 public class Merchant {
 	
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqMer")
 	private Long id;
 	
+	@Column
 	private String email;
 	
-	private String userToken;
+	@Column
+	@Convert(converter = CryptoConverter.class)
+	private String token;
 
 	public Merchant() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Merchant(Long id, String email, String userToken) {
+	public Merchant(Long id, String email, String token) {
 		super();
 		this.id = id;
 		this.email = email;
-		this.userToken = userToken;
+		this.token = token;
 	}
 
 	public Long getId() {
@@ -43,12 +51,12 @@ public class Merchant {
 	}
 
 
-	public String getUserToken() {
-		return userToken;
+	public String getToken() {
+		return token;
 	}
 
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	public String getEmail() {

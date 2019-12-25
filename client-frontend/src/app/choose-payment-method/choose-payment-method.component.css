@@ -30,7 +30,19 @@
     position: relative;
     margin-bottom: 1rem;
   }
+
+  select {
+    width: 100%;
+    outline: none;
+  }
   
+  select:focus {
+    box-shadow: 0 0 3pt 2pt rgb(189, 221, 255);
+    border: 1px solid;
+    border-color: rgb(128, 189, 255);    
+    border-radius: 2rem;
+}
+
   .form-label-group>select{
     border-radius: 2rem;
   }

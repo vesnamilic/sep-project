@@ -4,6 +4,8 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
+import { SuccessComponent } from './success/success.component';
+import { CancelComponent } from './cancel/cancel.component';
 
 
 const routes: Routes = [
@@ -18,6 +20,14 @@ const routes: Routes = [
   {
     path: 'payment/:id',
     component: ChoosePaymentMethodComponent
+  },
+  {
+    path: 'success',
+    component: SuccessComponent
+  },
+  {
+    path: 'cancel',
+    component: CancelComponent
   }
   ,
   {

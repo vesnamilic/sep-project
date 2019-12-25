@@ -9,6 +9,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
+import { SuccessComponent } from './success/success.component';
+import { CancelComponent } from './cancel/cancel.component';
 
 @NgModule({
    declarations: [
@@ -17,7 +19,9 @@ import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-pay
       RegistrationComponent,
       NavigationComponent,
       NotFoundComponent,
-      ChoosePaymentMethodComponent
+      ChoosePaymentMethodComponent,
+      SuccessComponent,
+      CancelComponent
    ],
    imports: [
       BrowserModule,
