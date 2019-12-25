@@ -447,7 +447,8 @@ public class AcquirerService {
 	}
 
 //*****************************************For comunications with PCC********************************************************//	
-
+	
+    @Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
 	public void finalizePayment(PCCResponseDTO pccResponseDTO) {
 
 		Transaction t = transactionRepository.findById(pccResponseDTO.getAcquirerOrderID()).get();

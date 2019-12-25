@@ -29,14 +29,14 @@ import sep.project.services.AcquirerService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
-@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AcquierController {
 
-	private static String BankAddress;
+	private static String BankFrontAddress;
 
-	@Value("${BankAddress}")
+	@Value("${BankFrontAddress}")
 	public void setBank1URL(String bankAdress) {
-		BankAddress = bankAdress;
+		BankFrontAddress = bankAdress;
 	}
 
 	@Autowired
@@ -56,7 +56,7 @@ public class AcquierController {
 		}
 
 		PaymentInfo info = acquirerService.createPaymentInfo(request);
-		retVal.setPaymentURL(BankAddress + "/pay/" + info.getPaymentURL());
+		retVal.setPaymentURL(BankFrontAddress + "/form/" + info.getPaymentURL());
 		retVal.setPaymentID(info.getPaymentID().toString());
 		retVal.setTransactionId(info.getTransaction().getId().toString());
 

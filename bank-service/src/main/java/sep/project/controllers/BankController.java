@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import sep.project.DTOs.BankResponseDTO;
 import sep.project.DTOs.CompletedDTO;
 import sep.project.DTOs.PayRequestDTO;
-import sep.project.DTOs.RegisterSellerDTO;
 import sep.project.services.BankService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
-@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 public class BankController {
 
 	@Autowired
@@ -36,7 +35,6 @@ public class BankController {
 
 	}
 	
-
 	@PostMapping(value = "/finishPayment")
 	public ResponseEntity finishPayment(@RequestBody CompletedDTO completedDTO) {
 
