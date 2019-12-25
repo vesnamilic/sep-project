@@ -85,11 +85,25 @@ public class AcquirerService {
 		BankNumber = bankNumber;
 	}
 
-	private static String BankAddress;
+	private static String BankFrontAddress;
 
-	@Value("${BankAddress}")
+	@Value("${BankFrontAddress}")
 	public void setBank1URL(String bankAdress) {
-		BankAddress = bankAdress;
+		BankFrontAddress = bankAdress;
+	}
+	
+	private static String SuccessUrlFront;
+
+	@Value("${SuccessUrlFront}")
+	public void setSuccessURL(String successUrlFront) {
+		SuccessUrlFront = successUrlFront;
+	}
+	
+	private static String FailedUrlFront;
+
+	@Value("${FailedUrlFront}")
+	public void setFailedURL(String failedUrlFront) {
+		FailedUrlFront = failedUrlFront;
 	}
 
 // *****************************************For /firstRequest********************************************************//
@@ -104,12 +118,20 @@ public class AcquirerService {
 
 		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
 		if (seller == null) {
+	
 			logger.error("Unknown seller");
 			return false;
 		}
 
 		if (request.getAmount() == null || request.getMerchantID() == null || request.getMerchantOrderID() == null
 				|| request.getMerchantPass() == null || request.getMerchantTimestamp() == null) {
+			System.out.println(request.getAmount());
+			System.out.println(request.getMerchantID());
+
+			System.out.println(request.getMerchantOrderID());
+			System.out.println(request.getMerchantPass());
+			System.out.println(request.getMerchantTimestamp());
+
 			logger.error("Invalid data");
 			return false;
 		}
@@ -259,10 +281,9 @@ public class AcquirerService {
 		return true;
 	}
 
-	public ResponseEntity<PayResponseDTO> tryPayment(String url, BuyerDTO buyerDTO, HttpServletResponse response)
+	public ResponseEntity<String> tryPayment(String url, BuyerDTO buyerDTO, HttpServletResponse response)
 			throws PaymentException, InvalidDataException, NoEnoughFundException {
 
-		PayResponseDTO responseDTO = new PayResponseDTO();
 		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentURL(url);
 		if (paymentInfo == null) {
 			logger.error("url: " + url + " does not exists");
@@ -289,9 +310,8 @@ public class AcquirerService {
 			}
 			// Seller and buyer are not in same banke, contacte PCC
 			sendRequestToPCC(t, buyerDTO);
-			responseDTO.setLocation("/paymentSent");
 			logger.info("Request sent to PCC");
-			return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+			return ResponseEntity.ok(SuccessUrlFront.toString());
 		}
 
 		t.setBuyer(buyer);
@@ -304,8 +324,7 @@ public class AcquirerService {
 			logger.error("buyer does not have a card");
 			save(t, Status.UNSUCCESSFULLY);
 			String failedUrl = paymentFailed(paymentInfo, t, url, buyerDTO);
-			responseDTO.setLocation(failedUrl);
-			return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(failedUrl, HttpStatus.BAD_REQUEST);
 		}
 		if (buyerCard.getAvailableFunds() - t.getAmount() < 0) {
 			logger.error("There is no enough money in the card");
@@ -325,7 +344,7 @@ public class AcquirerService {
 		completedDTO.setAcquirerOrderID(t.getId());
 		completedDTO.setAcquirerTimestamp(t.getTimestamp());
 		completedDTO.setPaymentID(paymentInfo.getPaymentID());
-		completedDTO.setRedirectURL(t.getFailedURL());
+		completedDTO.setRedirectURL(FailedUrlFront);
 		save(t, Status.UNSUCCESSFULLY);
 
 		RestTemplate template = new RestTemplate();
@@ -333,16 +352,16 @@ public class AcquirerService {
 			ResponseEntity<Boolean> response = template.postForEntity(replyToKP, completedDTO, Boolean.class);
 			if (response.getBody()) {
 				logger.info("KP is informed");
-				return t.getFailedURL();
+				return FailedUrlFront;
 			} else {
 				logger.info("KP is informed");
-				return "/failed";
+				return FailedUrlFront;
 			}
 		} catch (Exception e) {
 			logger.error("KP is not available");
 			System.out.println("KP is not available!");
 			save(t, Status.UNSUCCESSFULLY_KP);
-			return "/failed";
+			return FailedUrlFront;
 		}
 
 	}
@@ -361,7 +380,7 @@ public class AcquirerService {
 		pccRequestDTO.setLastName(buyerDTO.getLastName());
 		pccRequestDTO.setSenderPan(buyerDTO.getPan());
 		pccRequestDTO.setAmount(t.getAmount());
-		pccRequestDTO.setReturnURL(BankAddress + "pccReply");
+		pccRequestDTO.setReturnURL(BankFrontAddress + "pccReply");
 		pccRequestDTO.setRecieverPan(t.getSellerPan());
 		pccRequestDTO.setSellerBankNumber(BankNumber);
 		pccRequestDTO.setMerchantOrderID(t.getMerchantOrderId());
@@ -402,25 +421,24 @@ public class AcquirerService {
 			ResponseEntity<Boolean> response = template.postForEntity(replyToKP, completedDTO, Boolean.class);
 			if (response.getBody()) {
 				logger.info("KP is informed about success");
-				return t.getSuccessURL();
+				return SuccessUrlFront;
 			} else {
 				logger.info("KP is informed about success");
-				return t.getErrorURL();
+				return FailedUrlFront;
 			}
 		} catch (Exception e) {
-			logger.error("KP is not available");
-			System.out.println("KP is not available");
-			save(t, Status.SUCCESSFULLY_KP);
-			return "/paymentSent";
+			e.printStackTrace();
+			System.out.println("KP is unavilable");
+			logger.error("KP is unavilable");
+			save(t, Status.UNSUCCESSFULLY_KP);
+			return FailedUrlFront;
 		}
 
 	}
 
 	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
-	public ResponseEntity<PayResponseDTO> paymentSameBank(Transaction t, Card buyerCard, CardOwner buyer,
+	public ResponseEntity<String> paymentSameBank(Transaction t, Card buyerCard, CardOwner buyer,
 			String location) {
-
-		PayResponseDTO response = new PayResponseDTO();
 
 		Float available = buyerCard.getAvailableFunds();
 		buyerCard.setAvailableFunds(available - t.getAmount());
@@ -440,10 +458,9 @@ public class AcquirerService {
 		t.setStatus(Status.SUCCESSFULLY);
 		transactionRepository.save(t);
 
-		response.setLocation(location);
 		logger.info("Payed successfull");
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(location, HttpStatus.OK);
 	}
 
 //*****************************************For comunications with PCC********************************************************//	
