@@ -23,20 +23,16 @@ public class BankController {
 	@Autowired
 	BankService bankService;
 
-	@PostMapping(value = "/initiatePayment")
-	public ResponseEntity<BankResponseDTO> initiatePayment(@RequestBody PayRequestDTO request) {
+	@PostMapping(value = "/create")
+	public ResponseEntity<String> initiatePayment(@RequestBody PayRequestDTO request) {
 
-		ResponseEntity<BankResponseDTO> ret = bankService.initiatePayment(request);
-		if (ret != null) {
-			return ret;
-		} else {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
+		return bankService.initiatePayment(request);
 
 	}
-	
+
 	@PostMapping(value = "/finishPayment")
 	public ResponseEntity finishPayment(@RequestBody CompletedDTO completedDTO) {
+		System.out.println("USAOOOOOOO");
 
 		return bankService.finishPayment(completedDTO);
 

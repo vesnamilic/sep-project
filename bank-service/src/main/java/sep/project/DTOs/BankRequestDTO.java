@@ -13,7 +13,7 @@ public class BankRequestDTO {
 	private String merchantPass;
 	
 	@NotNull
-	private Float amount;
+	private Double amount;
 	
 	@NotNull
 	private Long merchantOrderID;
@@ -31,7 +31,7 @@ public class BankRequestDTO {
 		
 	}
 	
-	public BankRequestDTO(@NotNull String merchantID, @NotNull String merchantPass, @NotNull Float amount,
+	public BankRequestDTO(@NotNull String merchantID, @NotNull String merchantPass, @NotNull Double amount,
 			@NotNull Long merchantOrderID, @NotNull Date merchantTimestamp, String successURL, String failedURL,
 			String errorURL) {
 		super();
@@ -61,11 +61,11 @@ public class BankRequestDTO {
 		this.merchantPass = merchantPass;
 	}
 
-	public Float getAmount() {
+	public Double getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Float amount) {
+	public void setAmount(Double amount) {
 		this.amount = amount;
 	}
 

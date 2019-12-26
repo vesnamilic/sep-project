@@ -53,3 +53,7 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        
+success_url : "https://localhost:8762/api/paypal/complete?email="
+cancel_url : "https://localhost:4200/#/cancel"
+success_url_redirect : "https://localhost:4200/#/success"

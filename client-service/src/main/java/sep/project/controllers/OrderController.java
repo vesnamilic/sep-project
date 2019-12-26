@@ -108,7 +108,7 @@ public class OrderController {
 		System.out.println(paymentMethodName);
 		ResponseEntity<String> response = null;
 		try {
-			response = restTemplate.exchange(this.paymentMethodsRedirectURL + paymentMethodName + "/create", HttpMethod.POST, request, String.class);
+			response = restTemplate.exchange(this.paymentMethodsRedirectURL + paymentMethodName.toLowerCase() + "/create", HttpMethod.POST, request, String.class);
 		} catch (RestClientException e) {
 			// TODO Auto-generated catch block
 			logger.error("CANCELED | Sending the request to payment method service |  Payment method: " + paymentMethod);

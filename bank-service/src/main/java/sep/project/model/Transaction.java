@@ -43,7 +43,7 @@ public class Transaction {
 	private Status status;
 
 	@Column
-	private Float amount;
+	private Double amount;
 
 	public Transaction() {
 
@@ -73,11 +73,11 @@ public class Transaction {
 		this.status = status;
 	}
 
-	public Float getAmount() {
+	public Double getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Float amount) {
+	public void setAmount(Double amount) {
 		this.amount = amount;
 	}
 

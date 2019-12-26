@@ -4,7 +4,7 @@ public class PayRequestDTO {
 
 	private String email;
 
-	private Float priceAmount;
+	private Double paymentAmount;
 
 	public PayRequestDTO() {
 		
@@ -18,12 +18,13 @@ public class PayRequestDTO {
 		this.email = email;
 	}
 
-	public Float getPriceAmount() {
-		return priceAmount;
+	public Double getPaymentAmount() {
+		return paymentAmount;
 	}
 
-	public void setPriceAmount(Float priceAmount) {
-		this.priceAmount = priceAmount;
+	public void setPaymentAmount(Double paymentAmount) {
+		this.paymentAmount = paymentAmount;
 	}
+
 
 }

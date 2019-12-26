@@ -1,7 +1,6 @@
 package sep.project.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -9,9 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import sep.project.dto.ConfirmPaymentDTO;
 import sep.project.dto.CreatePaymentDTO;
 import sep.project.services.PayPalService;
 
@@ -33,21 +32,21 @@ public class PayPalController {
     @PostMapping(value = "/create")
     public ResponseEntity<?> makePayment(@RequestBody CreatePaymentDTO paymentDTO){  	
         
-    	boolean result = payPalService.createPayment(paymentDTO);
+    	ResponseEntity<?> response = payPalService.createPayment(paymentDTO);
         
-        return result ? ResponseEntity.status(200).build() : ResponseEntity.status(400).build();
+        return response;
 
     }
     
     /**
      * Completing an existing PayPal transaction
      */
-    @PostMapping(value = "/complete")
-    public ResponseEntity<?> completePayment(@RequestBody ConfirmPaymentDTO paymentDTO){   	
+    @GetMapping(value = "/complete")
+    public ResponseEntity<?> completePayment(@RequestParam String email, @RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID){ 
     	
-    	boolean result = payPalService.completePayment(paymentDTO);
+    	ResponseEntity<?> result = payPalService.completePayment(email, paymentId, token, PayerID);
         
-        return result ? ResponseEntity.status(200).build() : ResponseEntity.status(400).build();
+        return result;
     }
     
 	@GetMapping("/nesto")
