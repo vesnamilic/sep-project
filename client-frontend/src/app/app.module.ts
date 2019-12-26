@@ -33,7 +33,8 @@ import { ErrorComponent } from './error/error.component';
       BrowserModule,
       AppRoutingModule,
       ReactiveFormsModule,
-      HttpClientModule
+      HttpClientModule,
+      MatStepperModule
    ],
    providers: [],
    bootstrap: [

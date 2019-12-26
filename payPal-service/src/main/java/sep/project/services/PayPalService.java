@@ -47,6 +47,9 @@ public class PayPalService {
 	@Value("${cancel_url}")
 	private String cancelURL;
 	
+	@Value("${error_url}")
+	private String errorURL;
+	
 	@Value("${success_url_redirect}")
 	private String succesURLRedirect;
 	
@@ -61,7 +64,8 @@ public class PayPalService {
 		if(client == null) {
 			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 			
-			return ResponseEntity.status(400).build();
+    	    return  ResponseEntity.ok(errorURL);    	    
+
 		}
 		
 	    Payer payer = new Payer();
@@ -122,10 +126,12 @@ public class PayPalService {
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
-			return ResponseEntity.status(500).build();
+    	    return  ResponseEntity.ok(errorURL);    	    
+
 		}
 	    
-	    return ResponseEntity.status(500).build();
+	    return  ResponseEntity.ok(errorURL);    	    
+
  	}
 	
 	public ResponseEntity<?> completePayment(String email, String paymentId, String token, String PayerID){
@@ -137,7 +143,10 @@ public class PayPalService {
 		if(client == null) {
 			logger.error("CANCELED | PayPal Transaction Completion");
 			
-	        return ResponseEntity.status(500).build();
+			HttpHeaders headersRedirect = new HttpHeaders();
+			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Access-Control-Allow-Origin", "*");
+			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
 		
 		Payment payment = new Payment();
@@ -165,9 +174,15 @@ public class PayPalService {
 	        
 			logger.error("CANCELED | PayPal Transaction Completion");
 	        
-	        return ResponseEntity.status(500).build();
+			HttpHeaders headersRedirect = new HttpHeaders();
+			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Access-Control-Allow-Origin", "*");
+			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	    }
 	    
-	    return ResponseEntity.status(500).build();
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", errorURL);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
 }
