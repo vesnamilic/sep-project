@@ -7,6 +7,7 @@ callback_url : "https://localhost:8762/api/bitcoin/callback"
 
 cancel_url_front : "https://localhost:4200/#/cancel"
 success_url_front : "https://localhost:4200/#/success"
+error_url_front : "https://localhost:4200/#/error"
 
 
 server:

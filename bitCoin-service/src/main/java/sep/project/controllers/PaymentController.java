@@ -55,6 +55,9 @@ public class PaymentController {
 
 	@Value("${cancel_url_front}")
 	private String cancelFrontURL;
+	
+	@Value("${error_url_front}")
+	private String errorFrontURL;
 
 	@Value("${callback_url}")
 	private String callbackURL;
@@ -77,12 +80,14 @@ public class PaymentController {
 
 		logger.info("INITIATED | Creating payment | Merchant's email: " + paymentInfo.getEmail() + " , Amount: "
 				+ paymentInfo.getPaymentAmount());
+		
 		Merchant merchant = this.merchantService.getMerchant(paymentInfo.getEmail());
 
 		if (merchant == null) {
 			logger.error("CANCELED | Finding a merchant based on the given email address | Merchant's email: "
 					+ paymentInfo.getEmail());
-			return ResponseEntity.badRequest().build();
+			//return ResponseEntity.badRequest().build();
+			return ResponseEntity.ok(this.errorFrontURL);
 		}
 
 		PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO(paymentInfo.getPaymentAmount(),
@@ -101,7 +106,8 @@ public class PaymentController {
 		if (transaction == null) {
 			logger.error("CANCELED | Saving initial transaction for the order | Merchant's email: "
 					+ paymentInfo.getEmail());
-			return ResponseEntity.badRequest().build();
+			//return ResponseEntity.badRequest().build();
+			return ResponseEntity.ok(this.errorFrontURL);
 		}
 
 		ResponseEntity<PaymentResponseDTO> response = null;
@@ -111,12 +117,14 @@ public class PaymentController {
 		} catch (Exception e) {
 			logger.error("CANCELED | Contacting the bitcoin service | Service url: " + sandBoxURL);
 			this.transactionService.changeTransactionStatus(transaction.getId(), "invalid");
-			return ResponseEntity.badRequest().build();
+			//return ResponseEntity.badRequest().build();
+			return ResponseEntity.ok(this.errorFrontURL);
 		}
 
 		if (response.getStatusCode() != HttpStatus.OK) {
 			logger.error("CANCELED | Contacting the bitcoin service | Service url: " + sandBoxURL + " , Status Code: " + response.getStatusCode());
-			return ResponseEntity.status(response.getStatusCode()).build();
+			//return ResponseEntity.status(response.getStatusCode()).build();
+			return ResponseEntity.ok(this.errorFrontURL);
 		}
 
 		PaymentResponseDTO responseObject = response.getBody();
@@ -129,7 +137,9 @@ public class PaymentController {
 
 		if (transaction == null) {
 			logger.error("CANCELED | Saving payment transaction for the payment | Payment id: " + responseObject.getId());
-			return ResponseEntity.status(500).body("Error while trying to save payment");
+			//return ResponseEntity.status(500).body("Error while trying to save payment");
+			return ResponseEntity.ok(this.errorFrontURL);
+			
 		}
 
 		logger.info("COMPLETED | Creating payment | Merchant's email: " + paymentInfo.getEmail() + " , Amount: "

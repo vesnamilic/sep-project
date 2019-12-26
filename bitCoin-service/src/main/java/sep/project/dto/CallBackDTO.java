@@ -124,4 +124,28 @@ public class CallBackDTO {
 	public void setToken(String token) {
 		this.token = token;
 	}
+
+	public String getOrder_id() {
+		return order_id;
+	}
+
+	public void setOrder_id(String order_id) {
+		this.order_id = order_id;
+	}
+
+	public String getPrice_currency() {
+		return price_currency;
+	}
+
+	public void setPrice_currency(String price_currency) {
+		this.price_currency = price_currency;
+	}
+
+	public String getReceive_currency() {
+		return receive_currency;
+	}
+
+	public void setReceive_currency(String receive_currency) {
+		this.receive_currency = receive_currency;
+	}
 }

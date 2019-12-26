@@ -11,6 +11,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-payment-method.component';
 import { SuccessComponent } from './success/success.component';
 import { CancelComponent } from './cancel/cancel.component';
+import { ErrorComponent } from './error/error.component';
 
 @NgModule({
    declarations: [
@@ -21,7 +22,8 @@ import { CancelComponent } from './cancel/cancel.component';
       NotFoundComponent,
       ChoosePaymentMethodComponent,
       SuccessComponent,
-      CancelComponent
+      CancelComponent,
+      ErrorComponent
    ],
    imports: [
       BrowserModule,
