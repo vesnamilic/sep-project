@@ -49,8 +49,13 @@
                             <input class="input--style-1" type="text" formControlName="cvv" placeholder="CVV"
                                 name="cvv">
                         </div>
-                        <div class="p-t-20">
-                            <button class="btn btn--radius btn--green" type="submit">Submit</button>
+                        <div class="row row-space">
+                            <div class="p-t-20">
+                                <button class="btn btn--radius btn--green" type="submit">Submit</button>
+                            </div>
+                            <div class="p-t-20">
+                                <button class="btn btn--radius btn--red" (click) = "handleClick($event)" type="button">Cancel</button>
+                            </div>
                         </div>
                     </form>
                 </div>

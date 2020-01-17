@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.DTOs.BankRequestDTO;
-import sep.project.DTOs.BankResponseDTO;
 import sep.project.DTOs.CompletedDTO;
 import sep.project.DTOs.PayRequestDTO;
 import sep.project.DTOs.RegisterSellerDTO;

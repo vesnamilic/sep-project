@@ -2,20 +2,20 @@ package sep.project.DTOs;
 
 public class PayResponseDTO {
 
-	private String location;
+	private String url;
 	private String message;
 	
 	public PayResponseDTO() {
-		location="";
+		url="";
 		message="";
 	}
 	
-	public String getLocation() {
-		return location;
+	public String getUrl() {
+		return url;
 	}
 	
-	public void setLocation(String location) {
-		this.location = location;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 	
 	public String getMessage() {

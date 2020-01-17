@@ -43,6 +43,10 @@ export class FormComponent implements OnInit {
     );
   }
 
+  handleClick(event) {
+    document.location.href  = "https://localhost:4200/#/cancel";
+  }
+
   submitForm() {
     console.log(this.payForm.value);
     const payInfo: PayModel = {
