@@ -1,0 +1,22 @@
+server:
+  port: 9996
+        
+spring:
+  application: 
+    name: poyy
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pcc
+    username: postgres
+    password: root
+    initialization-mode: always  
+    sql-script-encoding: UTF-8
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate: 
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
