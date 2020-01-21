@@ -38,4 +38,8 @@ export class FormService {
     return this.http.get<PaymentMethod[]>(url, httpOptions);
   }
 
+  addPaymentMethod(paymentmethod: string) {
+
+  }
+
 }

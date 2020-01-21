@@ -24,13 +24,7 @@ public class ClientService {
 	
 	public Client save(Client client) {
 		
-		if(getClient(client.getEmail()) == null && client.getId() == null) {
-			Client saved = clientRepository.save(client);
-					
-			return saved;
-		}
-				
-		return null;
+		return clientRepository.save(client);			
 	}
 
 	public List<FieldDTO> getFields(){

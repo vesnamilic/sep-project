@@ -36,7 +36,7 @@ export class RegistrationComponent implements OnInit {
     this.registrationService.register(seller).subscribe(
       data => {
         alert('Successfully registered.');
-        this.router.navigateByUrl('/');
+        this.router.navigateByUrl('/paymentmethods');
       },
       error => {
         alert('An error ocurred.');

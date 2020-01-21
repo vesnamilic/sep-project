@@ -19,6 +19,10 @@
   .form-label-group>label {
     border-radius: 2rem;
   }
+
+  ::ng-deep .mat-horizontal-stepper-header {
+    pointer-events: none !important;
+}
   
   /* Fallback for Edge
   -------------------------------------------------- */

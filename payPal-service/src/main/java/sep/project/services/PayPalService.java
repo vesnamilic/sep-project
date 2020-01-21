@@ -1,31 +1,40 @@
 package sep.project.services;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import com.paypal.api.payments.Agreement;
 import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.Currency;
 import com.paypal.api.payments.Links;
+import com.paypal.api.payments.MerchantPreferences;
+import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentDefinition;
 import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.Plan;
 import com.paypal.api.payments.RedirectUrls;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 
-import sep.project.dto.ConfirmPaymentDTO;
-import sep.project.dto.CreatePaymentDTO;
+import sep.project.dto.BillingPlanDTO;
+import sep.project.dto.PaymentDTO;
 import sep.project.model.Client;
 import sep.project.model.TransactionStatus;
 
@@ -41,39 +50,25 @@ public class PayPalService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PayPalService.class);
 	
-	@Value("${success_url}")
-	private String successURL;
+	@Value("${success_url_payment}")
+	private String successPaymentURL;
+	
+	@Value("${success_url_agreement}")
+	private String successAgreementURL;
 
 	@Value("${cancel_url}")
 	private String cancelURL;
 	
-	@Value("${error_url}")
-	private String errorURL;
-	
-	@Value("${success_url_redirect}")
-	private String succesURLRedirect;
-	
 	private String executionMode = "sandbox";
 	
-	public ResponseEntity<?> createPayment(CreatePaymentDTO paymentDTO){
-		
-		logger.info("INITIATED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
-		
-		Client client = clientService.getClient(paymentDTO.getEmail());
-		
-		if(client == null) {
-			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
-			
-    	    return  ResponseEntity.ok(errorURL);    	    
-
-		}
+	public String createPayment(PaymentDTO paymentDTO, Client client) throws PayPalRESTException {
 		
 	    Payer payer = new Payer();
 	    payer.setPaymentMethod("paypal");
 	    
 	    RedirectUrls redirectUrls = new RedirectUrls();
 	    redirectUrls.setCancelUrl(cancelURL);
-	    redirectUrls.setReturnUrl(successURL + paymentDTO.getEmail());
+	    redirectUrls.setReturnUrl(successPaymentURL + paymentDTO.getEmail());
 
 		Amount amount = new Amount();
 		amount.setCurrency(paymentDTO.getPaymentCurrency());
@@ -85,69 +80,50 @@ public class PayPalService {
 	    List<Transaction> transactions = new ArrayList<Transaction>();
 	    transactions.add(transaction);
 	    
+	    //create the payment object
 	    Payment payment = new Payment("sale", payer);
 	    payment.setTransactions(transactions);
 	    payment.setRedirectUrls(redirectUrls);
 	    	    	    
-	    //saving transaction with transaction status created
+	    //save transaction with transaction status INITIATED
 	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.INITIATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency());
 	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
 	    
-	    APIContext apiContext = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+	    APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
-	    try {
-	    	String redirectUrl = "";
-	    	
-	    	Payment newPayment = payment.create(apiContext);
-	    	
-	    	//System.out.println("created payment object details:" + newPayment.toString());
-	    
+    	String redirectUrl = "";
+    	
+	    try {	    	
+	    	//create the payment
+	    	Payment newPayment = payment.create(context);
+	    		    
 	    	if(newPayment != null) {
-	    		
-				logger.info("EXECUTED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
-	    		
-	    		for(Links link : newPayment.getLinks()) {
-	    			if(link.getRel().equals("approval_url")) {
-	    				redirectUrl = link.getHref();
-	    					                    
+				//get the approval url from the response 
+				Iterator links = newPayment.getLinks().iterator();		
+				
+				while(links.hasNext()) {
+					Links link = (Links) links.next();
+					
+					if(link.getRel().equalsIgnoreCase("approval_url")) {
+						redirectUrl = link.getHref();                  
 	    				break;
-	    			}
-	    		}
-	    		
-	    	    return  ResponseEntity.ok(redirectUrl);    	    
-	    	}
-	    		    	
-		} catch (PayPalRESTException e) {
-			//System.err.println(e.getDetails());
-			
-			logger.error("CANCELED | PayPal Transaction | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
-			
-			//edit transaction status to canceled
+					}
+				}
+	    	}    	
+		} 
+	    catch (PayPalRESTException e) {						
+			//edit transaction status to CANCELED
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
-    	    return  ResponseEntity.ok(errorURL);    	    
-
+    	    throw e;    
 		}
-	    
-	    return  ResponseEntity.ok(errorURL);    	    
-
+	 
+		//to redirect the customer to the paypal site	    
+	    return redirectUrl;    
  	}
 	
-	public ResponseEntity<?> completePayment(String email, String paymentId, String token, String PayerID){
-				
-		logger.info("INITIATED | PayPal Transaction Completion");
-		
-		Client client = clientService.getClient(email);
-		
-		if(client == null) {
-			logger.error("CANCELED | PayPal Transaction Completion");
-			
-			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
-			headersRedirect.add("Access-Control-Allow-Origin", "*");
-			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
-		}
+	public void executePayment(String paymentId, String token, String PayerID, Client client) throws PayPalRESTException {
 		
 		Payment payment = new Payment();
 		payment.setId(paymentId);
@@ -155,34 +131,149 @@ public class PayPalService {
 	    PaymentExecution paymentExecution = new PaymentExecution();
 	    paymentExecution.setPayerId(PayerID);
 	    
-	    try {
-	        APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
-	        
-	        Payment createdPayment = payment.execute(context, paymentExecution);
-	        
-	        if(createdPayment!=null){
-				logger.info("COMPLETED | PayPal Transaction Completion");
-				
-				HttpHeaders headersRedirect = new HttpHeaders();
-				headersRedirect.add("Location", succesURLRedirect);
-				headersRedirect.add("Access-Control-Allow-Origin", "*");
-				return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
+        APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
-	        }
-	    } catch (PayPalRESTException e) {
-	        //System.err.println(e.getDetails());
-	        
-			logger.error("CANCELED | PayPal Transaction Completion");
-	        
-			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
-			headersRedirect.add("Access-Control-Allow-Origin", "*");
-			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
-	    }
-	    
-		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", errorURL);
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
+	    try {
+	        //execute the payment
+	        Payment createdPayment = payment.execute(context, paymentExecution);       
+	    } 
+	    catch (PayPalRESTException e) {      
+			throw e;
+	    }    
+	}
+	
+	public void createBillingPlan(BillingPlanDTO billingPlanDTO, Client client) throws PayPalRESTException {
+						
+		//set currency and value
+		Currency currency = new Currency(billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getPaymentAmount().toString());
+						
+		PaymentDefinition paymentDefinition = new PaymentDefinition();
+		paymentDefinition.setName("Magazine Payment");
+		paymentDefinition.setType("REGULAR");
+		paymentDefinition.setFrequency(billingPlanDTO.getFrequency().toString());
+		paymentDefinition.setFrequencyInterval("1");
+		//paymentDefinition.setCycles("12");
+		
+		paymentDefinition.setAmount(currency);
+		
+		List<PaymentDefinition> paymentDefinitionList = new ArrayList<PaymentDefinition>();
+		paymentDefinitionList.add(paymentDefinition);
+				
+		MerchantPreferences merchantPreferences = new MerchantPreferences(cancelURL, successAgreementURL+client.getEmail());
+		merchantPreferences.setAutoBillAmount("YES");
+		merchantPreferences.setInitialFailAmountAction("CONTINUE");
+				
+		//create a plan with infinite number of payment cycles
+		Plan plan = new Plan("Magazine Billing Plan", "Magazine subscription", "infinite");
+		plan.setPaymentDefinitions(paymentDefinitionList);
+		plan.setMerchantPreferences(merchantPreferences);
+		
+		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+		
+		try {
+			  //create the plan
+			  Plan createdPlan = plan.create(context);
+			  
+			  //update plan state to ACTIVE
+			  List<Patch> patchRequestList = new ArrayList<Patch>();
+			  Map<String, String> value = new HashMap<String, String>();
+			  value.put("state", "ACTIVE");
+
+			  Patch patch = new Patch();
+			  patch.setPath("/");
+			  patch.setValue(value);
+			  patch.setOp("replace");
+			  patchRequestList.add(patch);
+
+			  //activate the plan
+			  createdPlan.update(context, patchRequestList);
+			  
+			  //save billing plan id
+			  client.setBillingPlan(createdPlan.getId());
+			  clientService.save(client);	  			  
+		} 
+		catch (PayPalRESTException e) {			
+			throw e;
+		}	
+	}
+	
+	public String createBillingAgreement(Client client) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
+		//get date for the agreement				
+		Date date = new Date();		
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MINUTE, 1);
+		
+		//format defined in ISO8601
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		String formattedDate = sdf.format(c.getTime());
+		
+		//set billing plan id
+		Plan plan = new Plan();
+		plan.setId(client.getBillingPlan());
+		
+		Payer payer = new Payer();
+		payer.setPaymentMethod("paypal");
+				
+		//create the agreement object
+		Agreement agreement = new Agreement();
+		agreement.setName(client.getEmail() + " subscription");
+		agreement.setDescription(client.getEmail() + " subscription");
+		agreement.setStartDate(formattedDate);
+		
+		agreement.setPlan(plan);	
+		agreement.setPayer(payer);
+		
+		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+		
+		String redirectUrl = "";
+		
+		try {
+			//create the agreement
+			Agreement newAgreement = agreement.create(context);
+			
+			if(newAgreement != null) {
+				//get the approval url from the response 
+				Iterator links = newAgreement.getLinks().iterator();		
+				
+				while(links.hasNext()) {
+					Links link = (Links) links.next();
+					
+					if(link.getRel().equalsIgnoreCase("approval_url")) {
+						redirectUrl = link.getHref();                  
+	    				break;
+					}
+				}
+			}
+		} 
+		catch (PayPalRESTException e) {
+			throw e;
+		} 
+		catch (MalformedURLException e) {
+			throw e;
+		} 
+		catch (UnsupportedEncodingException e) {
+			throw e;
+		}
+		
+		//to redirect the customer to the paypal site	    
+	    return redirectUrl;  
+	}
+	
+	public void executeBillingAgreement(Client client, String token) throws PayPalRESTException {
+		
+		Agreement agreement =  new Agreement();
+		agreement.setToken(token);
+		
+		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+
+		try {
+			//execute the agreement and sign up the user for the subscription
+			Agreement createdAgreement = agreement.execute(context, agreement.getToken());
+		} 
+		catch (PayPalRESTException e) {
+		  throw e;
+		}
 	}
 }
+		
