@@ -30,14 +30,14 @@ export class PaymentMethodsComponent implements OnInit {
   }
 
   createForms() {
-    // get all payment methods
+    // get all available payment methods
     this.formService.getPaymentMethods().subscribe(
       data => {
         for (let pm of data) {
           this.paymentMethods.push(pm);
         }
-        
-        // create a form form for every payment method
+
+        // create a form for every payment method
         for (let pm of this.paymentMethods) {
           this.getFields(pm.name.toLowerCase());
         }
@@ -88,6 +88,7 @@ export class PaymentMethodsComponent implements OnInit {
 
   submitForm(stepper: MatStepper, paymentMethod: string) {
 
+    // TODO: finish submit method
 
     stepper.next();
   }

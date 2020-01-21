@@ -1,27 +1,32 @@
-<header class="masthead">
-    <div class="container h-100">
-        <div class="row h-100 align-items-center">
-            <div class="col-12">
-                <mat-horizontal-stepper #stepper labelPosition="bottom">
-                    <mat-step editable="false" *ngFor="let paymentMethod of paymentMethods; let i = index" [completed]="false" [label]="paymentMethod.name">                        
-                        <form id="form" [formGroup]="forms[paymentMethod.name.toLowerCase()]">
-                            <div class="form-label-group" *ngFor="let field of fields[paymentMethod.name.toLowerCase()]">
-                                <label [attr.for]="field.name" class="form-control-label">{{field.label}}</label>
-                                <input class="form-control" [formControlName]="field.name" [placeholder] = "field.label" [id]="field.name" [type]="field.type">
-                            </div>
-                        </form>
-                        <div class="row">
-                            <div class="col-6">
-                                <button class="btn btn-md btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="submitForm(stepper)" type="button" form="forms[paymentMethod.name.toLowerCase()]" [disabled]="!forms[paymentMethod.name.toLowerCase()].valid">Confirm</button>
-                            </div>
-                            <div class="col-6">
-                               <button class="btn btn-md btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" *ngIf="i < paymentMethods.length-1" mat-button matStepperNext>Skip</button>
-                                <button class="btn btn-md btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2 " *ngIf="i == paymentMethods.length-1" mat-button>Skip</button>
-                            </div>
-                        </div> 
-                    </mat-step>
-                </mat-horizontal-stepper>
-            </div>
+
+<div style="margin-top: 100px" class="container">
+    <div class="row">
+        <div class="col-12 m-auto">
+            <h1 style="margin-bottom: 30px" class="font-weight-light text-center"> Almost there... </h1>
+            <h2 style="margin-bottom: 30px" class="font-weight-light text-center"> Sign up for one or more available payment methods </h2>
+            <mat-horizontal-stepper #stepper labelPosition="bottom">
+                <mat-step editable="false" *ngFor="let paymentMethod of paymentMethods; let i = index" [completed]="false" [label]="paymentMethod.name">                        
+                    <div class="row">
+                        <div class="col-8 m-auto">
+                            <form id="form" [formGroup]="forms[paymentMethod.name.toLowerCase()]">
+                                <div class="form-label-group" *ngFor="let field of fields[paymentMethod.name.toLowerCase()]">
+                                    <label style="margin-left:5px" [attr.for]="field.name" class="form-control-label">{{field.label}}</label>
+                                    <input class="form-control" [formControlName]="field.name" [placeholder] = "field.label" [id]="field.name" [type]="field.type">
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col-6">
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="submitForm(stepper)" type="button" form="forms[paymentMethod.name.toLowerCase()]" [disabled]="!forms[paymentMethod.name.toLowerCase()].valid">Confirm</button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" *ngIf="i < paymentMethods.length-1" mat-button matStepperNext>Skip</button>
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2 " *ngIf="i == paymentMethods.length-1" mat-button>Skip</button>
+                                </div>
+                            </div> 
+                        </div>
+                    </div>
+                </mat-step>
+            </mat-horizontal-stepper>
         </div>
     </div>
-</header>
+</div>

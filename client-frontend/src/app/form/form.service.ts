@@ -12,30 +12,24 @@ export class FormService {
 
   baseUrl = 'https://localhost:8762/api/';
 
+  httpOptions = {
+    headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
+  };
+
   constructor(private http: HttpClient) { }
 
   getFields(service: string): Observable<Field[]> {
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
-    };
 
     const url = this.baseUrl + service + '/client/fields';
 
-    // console.log(url);
-
-    return this.http.get<Field[]>(url, httpOptions);
+    return this.http.get<Field[]>(url, this.httpOptions);
   }
 
   getPaymentMethods(): Observable<PaymentMethod[]> {
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
-    };
 
     const url = this.baseUrl + 'client/paymentmethod';
 
-    // console.log(url);
-
-    return this.http.get<PaymentMethod[]>(url, httpOptions);
+    return this.http.get<PaymentMethod[]>(url, this.httpOptions);
   }
 
   addPaymentMethod(paymentmethod: string) {
