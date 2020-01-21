@@ -25,11 +25,11 @@ public class CardOwner {
 	private String lastName;
 
 	@Column(nullable = true, length = 400)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String merchantID; // id trgovca
 
 	@Column(nullable = true, length = 400)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String merchantPass;
 
 	@Column(nullable = false, length = 90)

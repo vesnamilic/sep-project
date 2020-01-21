@@ -1,19 +1,11 @@
 server:
-  ssl:
-    enabled: true
-    key-store: classpath:bank_acquirer_keyStore.jks
-    key-store-password: password
-    key-alias: bank-acquirer
-    key-store-type: JKS
-    trust-store: classpath:bank_acquirer_trustedStore.jks
-    trust-store-password: password
-    trust-store-type: JKS
-    
-    
+  port: 9996
+        
 spring:
   application: 
-    name: bank1
+    name: poyy
   datasource:
+    url: jdbc:postgresql://localhost:5432/pcc
     username: postgres
     password: root
     initialization-mode: always  

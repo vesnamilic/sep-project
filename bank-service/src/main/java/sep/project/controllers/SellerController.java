@@ -32,17 +32,17 @@ public class SellerController {
 	@PostMapping("")
 	public ResponseEntity<?> addSeller(@RequestBody Seller seller) {
 
-		logger.info("INITIATED | Adding a new PaymentHub seller to the PayPal database | Email: " + seller.getEmail());
+		logger.info("INITIATED | Adding a new PaymentHub seller to the Bank database | Email: " + seller.getEmail());
 
 		Seller newSeller = sellerService.save(seller);
 
 		if (newSeller != null) {
 			logger.info(
-					"COMPLETED | Adding a new PaymentHub seller to the PayPal database | Email: " + seller.getEmail());
+					"COMPLETED | Adding a new PaymentHub seller to the Bank database | Email: " + seller.getEmail());
 			return ResponseEntity.status(201).build();
 		} else {
 			logger.error(
-					"CANCELED | Adding a new PaymentHub client to the PayPal database | Email: " + seller.getEmail());
+					"CANCELED | Adding a new PaymentHub client to the Bank database | Email: " + seller.getEmail());
 			return ResponseEntity.status(400).build();
 		}
 	}

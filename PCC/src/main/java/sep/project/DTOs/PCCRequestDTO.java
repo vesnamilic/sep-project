@@ -1,23 +1,12 @@
-package sep.project.model;
+package sep.project.DTOs;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
-import sep.project.DTOs.PCCRequestDTO;
-
-@Entity
-public class PCCRequest {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+public class PCCRequestDTO {
 
 	@NotNull
 	private Long acquirerOrderID;
@@ -31,8 +20,9 @@ public class PCCRequest {
 	@NotNull
 	private Date merchantTimestamp;
 
+	@NotNull
 	@Length(min = 8, max = 19)
-	private String senderPan;
+	private String buyerPan;
 
 	@NotNull
 	@Length(min = 3, max = 4)
@@ -52,42 +42,36 @@ public class PCCRequest {
 	@NotNull
 	private int year;
 
-	private String returnURL;
-
 	@NotNull
 	private Float amount;
 
-	private String recieverPan;
+	private String sellerPan;
 
 	private String sellerBankNumber;
 
-	public PCCRequest() {
-
+	public PCCRequestDTO() {
+		
 	}
 
-	public PCCRequest(PCCRequestDTO pccRequestDTO) {
-		this.acquirerOrderID = pccRequestDTO.getAcquirerOrderID();
-		this.acquirerTimestamp = pccRequestDTO.getAcquirerTimestamp();
-		this.merchantOrderID = pccRequestDTO.getMerchantOrderID();
-		this.merchantTimestamp = pccRequestDTO.getMerchantTimestamp();
-		this.senderPan = pccRequestDTO.getSenderPan();
-		this.cvv = pccRequestDTO.getCvv();
-		this.name = pccRequestDTO.getName();
-		this.lastName = pccRequestDTO.getLastName();
-		this.month = pccRequestDTO.getMonth();
-		this.year = pccRequestDTO.getYear();
-		this.returnURL = pccRequestDTO.getReturnURL();
-		this.amount = pccRequestDTO.getAmount();
-		this.recieverPan = pccRequestDTO.getRecieverPan();
-		this.sellerBankNumber = pccRequestDTO.getSellerBankNumber();
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
+	public PCCRequestDTO(@NotNull Long acquirerOrderID, @NotNull Date acquirerTimestamp, @NotNull Long merchantOrderID,
+			@NotNull Date merchantTimestamp, @NotNull @Length(min = 8, max = 19) String buyerPan,
+			@NotNull @Length(min = 3, max = 4) String cvv, @NotNull @Length(min = 1) String name,
+			@NotNull @Length(min = 1) String lastName, @NotNull int month, @NotNull int year, @NotNull Float amount,
+			String sellerPan, String sellerBankNumber) {
+		super();
+		this.acquirerOrderID = acquirerOrderID;
+		this.acquirerTimestamp = acquirerTimestamp;
+		this.merchantOrderID = merchantOrderID;
+		this.merchantTimestamp = merchantTimestamp;
+		this.buyerPan = buyerPan;
+		this.cvv = cvv;
+		this.name = name;
+		this.lastName = lastName;
+		this.month = month;
+		this.year = year;
+		this.amount = amount;
+		this.sellerPan = sellerPan;
+		this.sellerBankNumber = sellerBankNumber;
 	}
 
 	public Long getAcquirerOrderID() {
@@ -122,12 +106,12 @@ public class PCCRequest {
 		this.merchantTimestamp = merchantTimestamp;
 	}
 
-	public String getSenderPan() {
-		return senderPan;
+	public String getBuyerPan() {
+		return buyerPan;
 	}
 
-	public void setSenderPan(String senderPan) {
-		this.senderPan = senderPan;
+	public void setBuyerPan(String buyerPan) {
+		this.buyerPan = buyerPan;
 	}
 
 	public String getCvv() {
@@ -170,14 +154,6 @@ public class PCCRequest {
 		this.year = year;
 	}
 
-	public String getReturnURL() {
-		return returnURL;
-	}
-
-	public void setReturnURL(String returnURL) {
-		this.returnURL = returnURL;
-	}
-
 	public Float getAmount() {
 		return amount;
 	}
@@ -186,12 +162,12 @@ public class PCCRequest {
 		this.amount = amount;
 	}
 
-	public String getRecieverPan() {
-		return recieverPan;
+	public String getSellerPan() {
+		return sellerPan;
 	}
 
-	public void setRecieverPan(String recieverPan) {
-		this.recieverPan = recieverPan;
+	public void setSellerPan(String sellerPan) {
+		this.sellerPan = sellerPan;
 	}
 
 	public String getSellerBankNumber() {

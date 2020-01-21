@@ -15,7 +15,7 @@ public class PaymentInfo {
 	private Long paymentID;
 
 	@Column(nullable = false, length = 256)
-	private String paymentURL;
+	private String paymentToken;
 
 	@OneToOne
 	private Transaction transaction;
@@ -25,7 +25,7 @@ public class PaymentInfo {
 	}
 
 	public PaymentInfo(String url, Transaction t) {
-		this.paymentURL = url;
+		this.paymentToken = url;
 		this.transaction = t;
 	}
 
@@ -37,12 +37,12 @@ public class PaymentInfo {
 		this.paymentID = paymentID;
 	}
 
-	public String getPaymentURL() {
-		return paymentURL;
+	public String getPaymentToken() {
+		return paymentToken;
 	}
 
-	public void setPaymentURL(String paymentURL) {
-		this.paymentURL = paymentURL;
+	public void setPaymentToken(String paymentURL) {
+		this.paymentToken = paymentURL;
 	}
 
 	public Transaction getTransaction() {

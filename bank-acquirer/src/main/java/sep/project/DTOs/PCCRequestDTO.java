@@ -21,7 +21,7 @@ public class PCCRequestDTO {
 	private Date merchantTimestamp;
 
 	@Length(min = 8, max = 19)
-	private String senderPan;
+	private String buyerPan;
 
 	@NotNull
 	@Length(min = 3, max = 4)
@@ -41,37 +41,16 @@ public class PCCRequestDTO {
 	@NotNull
 	private int year;
 
-	private String returnURL;
-
 	@NotNull
 	private Float amount;
 
-	private String recieverPan;
+	private String sellerPan;
 
 	private String sellerBankNumber;
 
 	public PCCRequestDTO() {
 
 	}
-
-	/*public PCCRequestDTO(PCCRequest pccRequest) {
-		
-        this.cvv =  pccRequest.getCvv();
-		this.name =  pccRequest.getName();
-        this.lastName =  pccRequest.getLastName();
-        this.month =  pccRequest.getMonth();
-        this.year =  pccRequest.getYear();
-        this.acquirerOrderID =  pccRequest.getAcquirerOrderID();
-        this.acquirerTimestamp =  pccRequest.getAcquirerTimestamp();
-        this.merchantOrderID =  pccRequest.getMerchantOrderID();
-        this.merchantTimestamp =  pccRequest.getMerchantTimestamp();
-        this.senderPan =  pccRequest.getSenderPan();
-        this.returnURL =  pccRequest.getReturnURL();
-        this.amount =  pccRequest.getAmount();
-        this.recieverPan =  pccRequest.getRecieverPan();
-        this.sellerBankNumber =  pccRequest.getSellerBankNumber();
-        
-    }*/
 
 	public Long getAcquirerOrderID() {
 		return acquirerOrderID;
@@ -105,12 +84,12 @@ public class PCCRequestDTO {
 		this.merchantTimestamp = merchantTimestamp;
 	}
 
-	public String getSenderPan() {
-		return senderPan;
+	public String getBuyerPan() {
+		return buyerPan;
 	}
 
-	public void setSenderPan(String senderPan) {
-		this.senderPan = senderPan;
+	public void setBuyerPan(String buyerPan) {
+		this.buyerPan = buyerPan;
 	}
 
 	public String getCvv() {
@@ -153,14 +132,6 @@ public class PCCRequestDTO {
 		this.year = year;
 	}
 
-	public String getReturnURL() {
-		return returnURL;
-	}
-
-	public void setReturnURL(String returnURL) {
-		this.returnURL = returnURL;
-	}
-
 	public Float getAmount() {
 		return amount;
 	}
@@ -169,12 +140,12 @@ public class PCCRequestDTO {
 		this.amount = amount;
 	}
 
-	public String getRecieverPan() {
-		return recieverPan;
+	public String getSellerPan() {
+		return sellerPan;
 	}
 
-	public void setRecieverPan(String recieverPan) {
-		this.recieverPan = recieverPan;
+	public void setSellerPan(String sellerPan) {
+		this.sellerPan = sellerPan;
 	}
 
 	public String getSellerBankNumber() {

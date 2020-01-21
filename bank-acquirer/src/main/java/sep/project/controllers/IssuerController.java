@@ -9,26 +9,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import sep.project.DTOs.CompletedDTO;
-import sep.project.DTOs.PayRequestDTO;
-import sep.project.services.BankService;
+import sep.project.DTOs.PCCRequestDTO;
+import sep.project.DTOs.PCCResponseDTO;
+import sep.project.services.IssuerService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
-@RequestMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-public class BankController {
+@RequestMapping(value = "/acquirer", produces = MediaType.APPLICATION_JSON_VALUE)
+public class IssuerController {
 
 	@Autowired
-	BankService bankService;
+    private IssuerService issuerService;
 
-	@PostMapping(value = "/create")
-	public ResponseEntity<String> initiatePayment(@RequestBody PayRequestDTO request) {
-		return bankService.initiatePayment(request);
-	}
-
-	@PostMapping(value = "/finishPayment")
-	public ResponseEntity finishPayment(@RequestBody CompletedDTO completedDTO) {
-		return bankService.finishPayment(completedDTO);
+	@PostMapping(value = "/paymentRequest")
+	public ResponseEntity<PCCResponseDTO> paymentRequest(@RequestBody PCCRequestDTO request) {
+		return issuerService.checkPayment(request);
 	}
 
 }
