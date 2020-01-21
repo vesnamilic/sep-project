@@ -1,5 +1,4 @@
 server:
-  port: 8081
   ssl:
     enabled: true
     key-store: classpath:bank_acquirer_keyStore.jks
@@ -13,9 +12,8 @@ server:
     
 spring:
   application: 
-    name: poyy
+    name: bank1
   datasource:
-    url: jdbc:postgresql://localhost:5432/bank1
     username: postgres
     password: root
     initialization-mode: always  

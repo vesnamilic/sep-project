@@ -74,7 +74,7 @@ public class BankService {
 		try {
 			ResponseEntity<String> responseDTO = template
 					.postForEntity("https://localhost:8081/firstRequest", bankRequest, String.class);
-			if (responseDTO != null) {
+			if (responseDTO.getStatusCode()==HttpStatus.OK) {
 				logger.info("INFO | Bank return value");
 				return ResponseEntity.ok(responseDTO.getBody());
 			} else {
@@ -82,7 +82,6 @@ public class BankService {
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			logger.error("ERROR | Bank is not available");
 			t.setStatus(Status.UNSECCESSFULY_BANK);
 			transactionRepository.save(t);
@@ -149,6 +148,8 @@ public class BankService {
 	}
 
 	public ResponseEntity finishPayment(CompletedDTO completedDTO) {
+		
+		System.out.println("FINISH USAO");
 		
 		Transaction t = transactionRepository.findByMerchantOrderId(completedDTO.getMerchantOrderID());
 		t.setStatus(completedDTO.getTransactionStatus());

@@ -1,0 +1,2 @@
+INSERT INTO public.bank(id, bank_number, bankurl) VALUES (100, '111111', 'https://localhost:8081/acquirer/paymentRequest');
+INSERT INTO public.bank(id, bank_number, bankurl) VALUES (101, '222222', 'https://localhost:8082/acquirer/paymentRequest');

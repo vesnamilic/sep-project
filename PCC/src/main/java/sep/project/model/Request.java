@@ -25,7 +25,6 @@ public class Request {
 	private Long acquirerOrderID; // id transkacije kreirane u banci prodavca koja se referencira na ovaj zahtev
 									// na pcc
 	
-	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date acquirerTimestamp;
 
@@ -44,14 +43,11 @@ public class Request {
 	@ManyToOne
 	private Bank customerBank;
 
-	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createTime;
 
 	@Enumerated(EnumType.STRING)
 	private Status status;
-
-	private String returnURL;
 
 	public Request() {
 
@@ -135,14 +131,6 @@ public class Request {
 
 	public void setStatus(Status status) {
 		this.status = status;
-	}
-
-	public String getReturnURL() {
-		return returnURL;
-	}
-
-	public void setReturnURL(String returnURL) {
-		this.returnURL = returnURL;
 	}
 
 }

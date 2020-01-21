@@ -3,7 +3,6 @@ package sep.project.model;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,7 +13,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import sep.project.encryption.CryptoConverter;
 import sep.project.enums.Status;
 
 @Entity
@@ -31,40 +29,40 @@ public class Transaction {
 	private CardOwner buyer;
 
 	@Column(length = 256)
-	private String paymentURL;
+	private String paymentToken;
 
-	@Column(nullable = false)
+	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date timestamp; 
 
-	@Column(nullable = false)
+	@Column
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
 	@Column(length = 400)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String buyerPan;
 
 	@Column(length = 400)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String sellerPan;
 
-	@Column(nullable = false)
+	@Column
 	private Float amount;
 
-	@Column(nullable = false)
+	@Column
 	private String successURL;
 
-	@Column(nullable = false)
+	@Column
 	private String failedURL;
 
-	@Column(nullable = false)
+	@Column
 	private String errorURL;
 
-	@Column(nullable = false)
+	@Column	
 	private Long merchantOrderId;
 
-	@Column(nullable = false)
+	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date merchantTimestamp;
 
@@ -86,7 +84,7 @@ public class Transaction {
 		this.id = id;
 		this.seller = seller;
 		this.buyer = buyer;
-		this.paymentURL = paymentURL;
+		this.paymentToken = paymentURL;
 		this.timestamp = timestamp;
 		this.status = status;
 		this.buyerPan = buyerPan;
@@ -125,12 +123,12 @@ public class Transaction {
 		this.buyer = reciever;
 	}
 
-	public String getPaymentURL() {
-		return paymentURL;
+	public String getPaymentToken() {
+		return paymentToken;
 	}
 
-	public void setPaymentURL(String paymentURL) {
-		this.paymentURL = paymentURL;
+	public void setPaymentToken(String paymentURL) {
+		this.paymentToken = paymentURL;
 	}
 
 	public Date getTimestamp() {

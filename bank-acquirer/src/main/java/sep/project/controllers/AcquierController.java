@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import sep.project.DTOs.BuyerDTO;
 import sep.project.DTOs.KPRequestDTO;
-import sep.project.DTOs.KPResponseDTO;
-import sep.project.DTOs.PCCResponseDTO;
 import sep.project.DTOs.UrlDTO;
 import sep.project.customExceptions.InvalidDataException;
 import sep.project.customExceptions.NoEnoughFundException;
@@ -44,60 +42,63 @@ public class AcquierController {
 
 	@Autowired
 	PaymentInfoRepository paymentInfoRepository;
-
+	
 	@PostMapping(value = "/firstRequest")
 	public ResponseEntity<String> initiatePayment(@RequestBody KPRequestDTO request) {
 
 		System.out.println("DEBUG: initiatePayment called");
-		KPResponseDTO retVal = new KPResponseDTO();
 		if (!acquirerService.validate(request)) {
-			retVal.setMessage("MerchantID or MerchantPass is not valid");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		PaymentInfo info = acquirerService.createPaymentInfo(request);
 		
-		return ResponseEntity.ok(BankFrontAddress + "/form/" + info.getPaymentURL());
+		//if seller does not exists PaymentInfo is null
+		if(info==null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		return ResponseEntity.ok(BankFrontAddress + "/form/" + info.getPaymentToken());
 	}
 
-	@PostMapping(value = "/pay/{url}")
-	public ResponseEntity<UrlDTO> postPaymentForm(HttpServletResponse httpServletResponse, @PathVariable String url,
+	@PostMapping(value = "/pay/{token}")
+	public ResponseEntity<UrlDTO> postPaymentForm(HttpServletResponse httpServletResponse, @PathVariable String token,
 			@RequestBody BuyerDTO buyerDTO) {
 
-		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentURL(url);
+		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentToken(token);
 		if (paymentInfo == null) {
+			System.out.println("paymentInfo is null");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		Transaction t = paymentInfo.getTransaction();
 		if (t == null) {
+			System.out.println("transaction is null");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
-		if (acquirerService.checkCredentials(url, buyerDTO)) {
+		if (acquirerService.checkCredentials(token, buyerDTO)) {
 			try {
-				String location = acquirerService.tryPayment(url, buyerDTO, httpServletResponse).getBody();
+				System.out.println("checking crecentials");
+				String location = acquirerService.tryPayment(token, buyerDTO, httpServletResponse).getBody();
 				UrlDTO retVal=new UrlDTO(location);
 				return ResponseEntity.ok(retVal);
 			} catch (InvalidDataException e) {
+				System.out.println("invalid data exception");
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			} catch (PaymentException e) {
-				acquirerService.paymentFailed(paymentInfo, t, url, buyerDTO);
+				System.out.println("payment exception");
+				acquirerService.paymentFailed(paymentInfo, t);
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			} catch (NoEnoughFundException e) {
-				String location = acquirerService.paymentFailed(paymentInfo, t, url, buyerDTO);
+				System.out.println("no enoygh money");
+				String location = acquirerService.paymentFailed(paymentInfo, t);
 				UrlDTO retVal=new UrlDTO(location);
 				return ResponseEntity.ok(retVal);
 			}
 		} else {
+			System.out.println("credential is not valid");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-	}
-
-	@PostMapping(value = "/pccReply")
-	public void pccReply(@RequestBody PCCResponseDTO pccResponseDTO) {
-		System.out.println("DEBUG: pccReplay called");
-		acquirerService.finalizePayment(pccResponseDTO);
 	}
 
 }

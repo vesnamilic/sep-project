@@ -17,18 +17,18 @@ public class Card {
 	private long id;
 
 	@Column(nullable = false)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String pan; //permanent account number
 
 	@Column(nullable = false)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String cvv; //Card Verification Value
 
 	@Column(nullable = false) // Date is in format mm/yy
 	private String expDate;
 
 	@Column(nullable = false)
-	@Convert(converter = CryptoConverter.class)
+	//@Convert(converter = CryptoConverter.class)
 	private String accountNumber;
 
 	@Column(nullable = false)

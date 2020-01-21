@@ -1,6 +1,6 @@
 server: 
-  port: 9999
-  ssl:
+  port: 9999 
+  ssl: 
     enabled: true
     key-store: classpath:bank_service_keyStore.jks
     key-store-password: password
@@ -11,6 +11,8 @@ server:
     trust-store-type: JKS
     
 spring: 
+  application: 
+    name: bank-service
   datasource:
     url: jdbc:postgresql://localhost:5432/bank-service
     username: postgres

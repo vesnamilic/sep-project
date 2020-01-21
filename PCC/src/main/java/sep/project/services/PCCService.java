@@ -50,8 +50,8 @@ public class PCCService {
 		request.setCustomerBank(customerBank);
 		request.setSellerBank(sellerBank);
 		request.setCreateTime(new Date(System.currentTimeMillis()));
-		request.setReturnURL(requestDTO.getReturnURL());
 		request.setMerchantOrderId(requestDTO.getMerchantOrderID());
+		requestRepository.save(request);
 		return request;
 	}
 
@@ -84,21 +84,27 @@ public class PCCService {
 		try {
 			ResponseEntity<PCCResponseDTO> response = template.postForEntity(url, requestDTO, PCCResponseDTO.class);
 
+			if(response.getStatusCode()==HttpStatus.BAD_REQUEST) {
+				System.out.println("Issuer return error.");
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
 			Request savedRequest = requestRepository.findByAcquirerOrderID(response.getBody().getAcquirerOrderID());
-			
+
 			if (savedRequest == null) {
 				request.setStatus(Status.FAILED_B2_DATA);
 				requestRepository.save(request);
 				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 			}
 			
-			if (response.getBody().getStatus() == Status.FAILURE) {
+			if (response.getBody().getStatus() == Status.UNSUCCESSFULLY) {
 				request.setStatus(Status.FAILURE);
 			} 
 			else {
-				request.setStatus(Status.SUCCESSFUL);
+				request.setStatus(Status.SUCCESSFULLY);
 			}
 
+			request.setIssuerOrderID(response.getBody().getIssuerOrderID());
+			request.setIssuerTimestamp(response.getBody().getIssuerTimestamp());
 			requestRepository.save(request);
 
 			return response;
