@@ -1,5 +1,14 @@
 server:
   port: 9996
+  ssl:
+    enabled: true
+    key-store: classpath:pcc_keyStore.jks
+    key-store-password: password
+    key-alias: pcc
+    key-store-type: JKS
+    trust-store: classpath:pcc_trustedStore.jks
+    trust-store-password: password
+    trust-store-type: JKS
         
 spring:
   application: 

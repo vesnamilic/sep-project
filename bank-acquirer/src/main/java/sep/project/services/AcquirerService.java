@@ -166,6 +166,7 @@ public class AcquirerService {
 		sb.append(request.getMerchantID());
 		sb.append(request.getAmount());
 		sb.append(request.getMerchantOrderID());
+		sb.append(new Date().toString());
 		String hashCode = Hashing.sha256().hashString(sb.toString(), StandardCharsets.UTF_8).toString();
 		return hashCode.substring(0, 50);
 	}

@@ -22,15 +22,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SSLTrustManagerHelper {
 
-   // @Value("bank_acquirer_keyStore.jks")
-	@Value("issuer_bank_keyStore.jks")
+    @Value("pcc_keyStore.jks")
     private String keyStore;
 
     @Value("password")
     private String keyStorePassword;
 
-   // @Value("bank_acquirer_trustedStore.jks")
-    @Value("issuer_bank_trustedStore.jks")
+    @Value("pcc_trustedStore.jks")
     private String trustStore;
 
     @Value("password")
