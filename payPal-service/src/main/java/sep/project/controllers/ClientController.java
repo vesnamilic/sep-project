@@ -36,6 +36,13 @@ public class ClientController {
 	public ResponseEntity<?> addClient(@RequestBody Client client) {
 		
 		logger.info("INITIATED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
+		
+		//check if client with this email address already exists
+		Client checkClient = clientService.getClient(client.getEmail());	
+		if(checkClient != null) {
+			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
+			return ResponseEntity.status(400).build();
+		}
 
 		Client newClient = clientService.save(client);
 		

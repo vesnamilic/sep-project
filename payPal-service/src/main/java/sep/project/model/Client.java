@@ -26,6 +26,9 @@ public class Client {
     @Column
     @Convert(converter = CryptoConverter.class)
     private String clientSecret;
+    
+    @Column
+    private String billingPlan;
 	
 	public Client(){
 		
@@ -68,6 +71,14 @@ public class Client {
 
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
+	}
+
+	public String getBillingPlan() {
+		return billingPlan;
+	}
+
+	public void setBillingPlan(String billingPlan) {
+		this.billingPlan = billingPlan;
 	}
 
 }

@@ -44,5 +44,13 @@ public class FieldDTO {
 	public void setRequired(Boolean required) {
 		this.required = required;
 	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 	
 }

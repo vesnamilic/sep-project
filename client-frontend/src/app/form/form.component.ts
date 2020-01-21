@@ -4,6 +4,7 @@ import { FormService } from './form.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Field } from '../model/field';
 import { PaymentMethod } from '../model/paymentmethod';
+import { MatStepper } from '@angular/material/stepper';
 
 @Component({
   selector: 'app-form',
@@ -17,12 +18,15 @@ export class PaymentMethodsComponent implements OnInit {
 
 
   paymentMethods: PaymentMethod[] = [];
-  fields: Field[][] = [];
+  fields: any = {};
 
-  formList: FormGroup[] = [];
+  forms: any = {};
 
   ngOnInit() {
     this.createForms();
+
+    console.log(this.fields);
+    console.log(this.forms);
   }
 
   createForms() {
@@ -37,11 +41,13 @@ export class PaymentMethodsComponent implements OnInit {
         for (let pm of this.paymentMethods) {
           this.getFields(pm.name.toLowerCase());
         }
+
       },
       error => {
         console.log('An error ocurred.');
       }
     );
+ 
   }
 
   getFields(paymentMethodName: string) {
@@ -56,11 +62,11 @@ export class PaymentMethodsComponent implements OnInit {
           list.push(field);
         }
 
-        this.fields.push(list);
+        this.fields[paymentMethodName] = list;
 
         // create a form group from the list of fields
         form = this.createFormGroup(list);
-        this.formList.push(form);
+        this.forms[paymentMethodName] = form;
       },
       error => {
         console.log('An error ocurred.');
@@ -73,14 +79,17 @@ export class PaymentMethodsComponent implements OnInit {
     const group: any = {};
 
     fields.forEach(field => {
+      console.log(field.name + " " + field.required);
       group[field.name] = field.required ? new FormControl('', Validators.required) : new FormControl('');
     });
 
     return new FormGroup(group);
   }
 
-  submitForm() {
-    // do something
+  submitForm(stepper: MatStepper, paymentMethod: string) {
+
+
+    stepper.next();
   }
 
 }

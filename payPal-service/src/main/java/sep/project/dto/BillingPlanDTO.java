@@ -1,32 +1,33 @@
 package sep.project.dto;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import sep.project.model.BillingPlanFrequency;
 
-import com.paypal.api.payments.Transaction;
-
-public class CreatePaymentDTO {
+public class BillingPlanDTO {
 	
 	private String email;
 	
 	private Double paymentAmount;
 	
 	private String paymentCurrency;
+	
+	private BillingPlanFrequency frequency;
 			
-	public CreatePaymentDTO(){
+	public BillingPlanDTO(){
 		
 	}
 	
-	public CreatePaymentDTO(String email, Double paymentAmount, String paymentCurrency){
+	public BillingPlanDTO(String email, Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency){
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
+		this.frequency = frequency;
 	}
 	
-	public CreatePaymentDTO(String email, Double paymentAmount){
+	public BillingPlanDTO(String email, Double paymentAmount){
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = "USD";
+		this.frequency = BillingPlanFrequency.MONTH;
 	}
 
 	public String getEmail() {
@@ -51,6 +52,14 @@ public class CreatePaymentDTO {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public BillingPlanFrequency getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(BillingPlanFrequency frequency) {
+		this.frequency = frequency;
 	}
 	
 }
