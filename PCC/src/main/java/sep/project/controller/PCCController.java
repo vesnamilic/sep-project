@@ -1,5 +1,7 @@
 package sep.project.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +26,18 @@ public class PCCController {
 	@Autowired
 	private RequestRepository requestRepository;
 
+	private static final Logger logger = LoggerFactory.getLogger(PCCController.class);
+
 	@PostMapping(value = "/request")
 	public ResponseEntity<PCCResponseDTO> request(@RequestBody PCCRequestDTO requestDTO) {
 
-		System.out.println("PCC recieved request ");
+		logger.info("INFO | PCC recieved request");
 
 		// proverava da li vec postoji zahtev vezan za ovu transakciju, ako postoji
 		// vraca null, ako ne postoji kreira ga
 		Request request = pccService.checkRequest(requestDTO);
 		if (request == null) {
-			System.out.println("Request denied, it already exists for this transaction.");
+			logger.error("ERROR | Request denied, it already exists for this transaction.");
 			return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
 		}
 
@@ -41,6 +45,7 @@ public class PCCController {
 
 		// nema kojoj banci da posalje, vraca odgovor banci prodavca
 		if (buyerBank == null) { 
+			logger.error("ERROR | Buyer bank does not exists.");
 			request.setStatus(Status.FAILURE);
 			requestRepository.save(request);
 			return pccService.makeFiliureResponse(request);
@@ -48,6 +53,7 @@ public class PCCController {
 		
 		//salje request banci kupca
 		else { 
+			logger.info("INFO | Sending request to issuer");
 			return pccService.sendIssuerRequest(request, requestDTO, buyerBank.getBankURL());
 		}
 
