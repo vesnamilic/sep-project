@@ -1,12 +1,13 @@
 package sep.project.services;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import sep.project.dto.RegistrationDTO;
 import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
 import sep.project.repositories.PaymentMethodRepository;
@@ -20,7 +21,20 @@ public class SellerService {
 	
 	@Autowired
 	private PaymentMethodRepository paymentMethodRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 		
+	
+	public Seller createSeller(RegistrationDTO registrationDTO) {
+		Seller seller = new Seller();
+		seller.setName(registrationDTO.getName());
+		seller.setEmail(registrationDTO.getEmail());
+		seller.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
+		seller.setPaymentMethods(new HashSet<>());
+		
+		return seller;
+	}
 	public Seller getSeller(String email) {
 		
 		return sellerRepository.findByEmailAndDeleted(email, false);
