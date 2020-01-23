@@ -28,12 +28,19 @@ eureka:
 zuul:
   prefix: /api
   routes:
-    mock-bitcoin-service:
-      service-id: mock-bitcoin-service
-      path: /mock-bitcoin-service/**
     bank-service:
       service-id: bank-service
       path: /bank/**
+    bitcoin-service:
+      path: "/bitcoin/**"
+      service-id: bitcoin-service
+    payPal-service:
+      path: "/paypal/**"
+      service-id: paypal-service
+    client-service:
+      path: "/client/**"
+      service-id: client-service
+      sensitive-headers: Cookie,Set-Cookie
   host:
     connect-timeout-millis: 5000000
     socket-timeout-millis: 5000000
@@ -50,5 +57,4 @@ hystrix:
 ribbon:
     ConnectTimeout: 10000
     ReadTimeout: 10000
-    
-
+   

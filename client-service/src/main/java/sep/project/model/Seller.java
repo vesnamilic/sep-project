@@ -1,5 +1,6 @@
 package sep.project.model;
 
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+
+import org.joda.time.DateTime;
 
 @Entity
 public class Seller {
@@ -20,17 +23,24 @@ public class Seller {
 	@Column
 	private String email;
 	
+	@Column
+	private String password;
+	
     @Column
     private String name;
     
     @Column
     private boolean deleted;
     
+    @Column(name = "lastPasswordResetDate")
+	private Timestamp lastPasswordResetDate;
+    
     @ManyToMany
     private Set<PaymentMethod> paymentMethods = new HashSet<>();
     
     public Seller() {
-    	
+    	Timestamp now = new Timestamp(DateTime.now().getMillis());
+		this.lastPasswordResetDate = now;
     }
 
 	public Long getId() {
@@ -71,6 +81,22 @@ public class Seller {
 
 	public void setPaymentMethods(Set<PaymentMethod> paymentMethods) {
 		this.paymentMethods = paymentMethods;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Timestamp getLastPasswordResetDate() {
+		return lastPasswordResetDate;
+	}
+
+	public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
+		this.lastPasswordResetDate = lastPasswordResetDate;
 	}
 
 }
