@@ -19,6 +19,9 @@ public class Client {
 	@Column
 	private String email;
 	
+	@Column
+	private String name;
+	
     @Column
     @Convert(converter = CryptoConverter.class)
     private String clientId;
@@ -34,9 +37,10 @@ public class Client {
 		
 	}
 	
-	public Client(Long id, String clientId, String email, String clientSecret){
+	public Client(Long id, String clientId, String email, String name, String clientSecret){
 		this.id = id;
 		this.email = email;
+		this.name = name;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 	}
@@ -79,6 +83,14 @@ public class Client {
 
 	public void setBillingPlan(String billingPlan) {
 		this.billingPlan = billingPlan;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.paypal.api.payments.Agreement;
@@ -76,6 +77,7 @@ public class PayPalService {
 	    
 	    Transaction transaction = new Transaction();
 	    transaction.setAmount(amount);
+	    transaction.setDescription(client.getName() + " payment");
 	    
 	    List<Transaction> transactions = new ArrayList<Transaction>();
 	    transactions.add(transaction);
@@ -109,10 +111,14 @@ public class PayPalService {
 	    				break;
 					}
 				}
+				
+				//save payment id
+				savedTransaction.setPaymentId(newPayment.getId());
+				transactionService.save(savedTransaction);
 	    	}    	
 		} 
 	    catch (PayPalRESTException e) {						
-			//edit transaction status to CANCELED
+			//set transaction status to CANCELED
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
@@ -127,17 +133,28 @@ public class PayPalService {
 		
 		Payment payment = new Payment();
 		payment.setId(paymentId);
-
+		
 	    PaymentExecution paymentExecution = new PaymentExecution();
 	    paymentExecution.setPayerId(PayerID);
+	    
+	    sep.project.model.Transaction transaction = transactionService.findByPaymentId(paymentId);
 	    
         APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
 	    try {
 	        //execute the payment
-	        Payment createdPayment = payment.execute(context, paymentExecution);       
+	        Payment createdPayment = payment.execute(context, paymentExecution);  
+	        
+	        //set transaction status to COMPLETED
+			
+			transaction.setStatus(TransactionStatus.COMPLETED);
+			transactionService.save(transaction);
 	    } 
-	    catch (PayPalRESTException e) {      
+	    catch (PayPalRESTException e) {    
+	    	//set transaction status to CANCELED
+			transaction.setStatus(TransactionStatus.CANCELED);
+			transactionService.save(transaction);
+			
 			throw e;
 	    }    
 	}
@@ -148,7 +165,7 @@ public class PayPalService {
 		Currency currency = new Currency(billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getPaymentAmount().toString());
 						
 		PaymentDefinition paymentDefinition = new PaymentDefinition();
-		paymentDefinition.setName("Magazine Payment");
+		paymentDefinition.setName(client.getName() + " subscription");
 		paymentDefinition.setType("REGULAR");
 		paymentDefinition.setFrequency(billingPlanDTO.getFrequency().toString());
 		paymentDefinition.setFrequencyInterval("1");
@@ -164,7 +181,11 @@ public class PayPalService {
 		merchantPreferences.setInitialFailAmountAction("CONTINUE");
 				
 		//create a plan with infinite number of payment cycles
-		Plan plan = new Plan("Magazine Billing Plan", "Magazine subscription", "infinite");
+		Plan plan = new Plan();
+		plan.setType("INFINITE");
+		plan.setName(client.getName() + " subscription");
+		plan.setDescription(billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency() + " a " + billingPlanDTO.getFrequency().toString().toLowerCase());
+		
 		plan.setPaymentDefinitions(paymentDefinitionList);
 		plan.setMerchantPreferences(merchantPreferences);
 		
@@ -217,8 +238,8 @@ public class PayPalService {
 				
 		//create the agreement object
 		Agreement agreement = new Agreement();
-		agreement.setName(client.getEmail() + " subscription");
-		agreement.setDescription(client.getEmail() + " subscription");
+		agreement.setName(client.getName() + " subscription");
+		agreement.setDescription(client.getName() + " subscription");
 		agreement.setStartDate(formattedDate);
 		
 		agreement.setPlan(plan);	
@@ -273,6 +294,46 @@ public class PayPalService {
 		} 
 		catch (PayPalRESTException e) {
 		  throw e;
+		}
+	}
+	
+	@Scheduled(initialDelay = 10000, fixedRate = 300000)
+	public void synchronizeTransactions() {
+		//find all PayPal clients
+		List<Client> clientsList = clientService.findAll();
+		
+		for(Client client : clientsList) {
+			//find all transaction with status INITIATED
+			List<sep.project.model.Transaction> transactions = transactionService.findAllCreatedTransactions(client);
+			
+			if(transactions.size() > 0) {				
+				APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+				
+				for(sep.project.model.Transaction transaction : transactions) {
+					try {
+						//get payment details
+						Payment payment = Payment.get(context, transaction.getPaymentId());						
+						
+						if(payment.getState().equalsIgnoreCase("APPROVED")){
+							//update transaction status to COMPLETED
+							transaction.setStatus(TransactionStatus.COMPLETED);
+							transactionService.save(transaction);
+						}
+						else if(payment.getState().equalsIgnoreCase("FAILED")){
+							//update transaction status to CANCELED
+							transaction.setStatus(TransactionStatus.CANCELED);
+							transactionService.save(transaction);
+						}
+					}
+					catch(PayPalRESTException e) {
+						//if transaction doesn't exist
+						if(e.getResponsecode() == 404) {
+							transaction.setStatus(TransactionStatus.CANCELED);
+							transactionService.save(transaction);
+						}
+					}
+				}
+			}	
 		}
 	}
 }

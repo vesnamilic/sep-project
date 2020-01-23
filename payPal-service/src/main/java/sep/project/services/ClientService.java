@@ -26,6 +26,11 @@ public class ClientService {
 		
 		return clientRepository.save(client);			
 	}
+	
+	public List<Client> findAll() {
+		
+		return clientRepository.findAll();
+	}
 
 	public List<FieldDTO> getFields(){
 		

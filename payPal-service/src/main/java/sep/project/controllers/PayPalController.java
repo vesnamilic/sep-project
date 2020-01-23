@@ -1,5 +1,7 @@
 package sep.project.controllers;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +18,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.paypal.api.payments.Payment;
+import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 
 import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
 import sep.project.model.Client;
+import sep.project.model.Transaction;
 import sep.project.services.ClientService;
 import sep.project.services.PayPalService;
+import sep.project.services.TransactionService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
@@ -35,6 +41,9 @@ public class PayPalController {
 
 	@Autowired
 	private PayPalService payPalService;
+	
+	@Autowired
+	private TransactionService transactionService;
 
 	private static final Logger logger = LoggerFactory.getLogger(PayPalController.class);
 
@@ -226,8 +235,7 @@ public class PayPalController {
 		headersRedirect.add("Location", succesURLRedirect);
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
-	}	
-			 
+	}		 
 
 	@GetMapping("/nesto")
 	public String proba() {

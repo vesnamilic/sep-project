@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
+
 import sep.project.dto.FieldDTO;
 import sep.project.model.Client;
 import sep.project.services.ClientService;
@@ -33,27 +35,31 @@ public class ClientController {
 	 * Adding a new PaymentHub client to the PayPal database 
 	 */
 	@PostMapping("")
-	public ResponseEntity<?> addClient(@RequestBody Client client) {
+	public ResponseEntity<?> addClient(@RequestBody String clientString) {		
+        
+		logger.info("INITIATED | Adding a new PaymentHub client to the PayPal database");
 		
-		logger.info("INITIATED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
-		
+		Gson gson = new Gson();
+        Client client = gson.fromJson(clientString, Client.class); 
+        		
 		//check if client with this email address already exists
 		Client checkClient = clientService.getClient(client.getEmail());	
 		if(checkClient != null) {
-			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
+			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
 			return ResponseEntity.status(400).build();
 		}
 
 		Client newClient = clientService.save(client);
 		
 		if(newClient != null) {
-			logger.info("COMPLETED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
+			logger.info("COMPLETED | Adding a new PaymentHub client to the PayPal database");
 			return ResponseEntity.status(201).build();
 		}
 		else {
-			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database | Email: " + client.getEmail());
+			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
 			return ResponseEntity.status(400).build();
 		}
+		
 	}
 	
 	/**
