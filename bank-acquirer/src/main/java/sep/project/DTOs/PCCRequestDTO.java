@@ -47,6 +47,8 @@ public class PCCRequestDTO {
 	private String sellerPan;
 
 	private String sellerBankNumber;
+	
+	private String paymentId;
 
 	public PCCRequestDTO() {
 
@@ -154,6 +156,14 @@ public class PCCRequestDTO {
 
 	public void setSellerBankNumber(String sellerBankNumber) {
 		this.sellerBankNumber = sellerBankNumber;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentToken) {
+		this.paymentId = paymentToken;
 	}
 
 }

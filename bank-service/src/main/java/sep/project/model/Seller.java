@@ -16,16 +16,19 @@ public class Seller {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column
 	private String email;
 	
-	@Column(nullable = false)
+	@Column
 	@Convert(converter = CryptoConverter.class)
 	private String merchantID;
 	
-	@Column(nullable = false)
+	@Column
 	@Convert(converter = CryptoConverter.class)
 	private String merchantPassword;
+	
+	@Column
+	String name;
 	
 	public Seller() {
 		
@@ -61,6 +64,14 @@ public class Seller {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

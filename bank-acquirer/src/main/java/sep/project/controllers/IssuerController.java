@@ -22,7 +22,7 @@ import sep.project.services.IssuerService;
 public class IssuerController {
 
 	@Autowired
-    private IssuerService issuerService;
+	private IssuerService issuerService;
 
 	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
@@ -30,6 +30,12 @@ public class IssuerController {
 	public ResponseEntity<PCCResponseDTO> paymentRequest(@RequestBody PCCRequestDTO request) {
 		logger.info("INFO | paymentRequest is called");
 		return issuerService.checkPayment(request);
+	}
+
+	@PostMapping(value = "/paymentRequest/returnMonay")
+	public Boolean retrunMonay(@RequestBody String request) {
+		logger.info("INFO | retrunMonay is called");
+		return issuerService.returnMonay(request);
 	}
 
 }

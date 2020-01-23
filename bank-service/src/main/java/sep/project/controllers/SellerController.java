@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
+
 import sep.project.DTOs.FieldDTO;
 import sep.project.model.Seller;
 import sep.project.services.SellerService;
@@ -30,9 +32,19 @@ public class SellerController {
 	private static final Logger logger = LoggerFactory.getLogger(SellerController.class);
 
 	@PostMapping("")
-	public ResponseEntity<?> addSeller(@RequestBody Seller seller) {
+	public ResponseEntity<?> addSeller(@RequestBody String clientString) {
 
-		logger.info("INITIATED | Adding a new PaymentHub seller to the Bank database | Email: " + seller.getEmail());
+		logger.info("INITIATED | Adding a new PaymentHub seller to the Bank database");
+
+		Gson gson = new Gson();
+		Seller seller = gson.fromJson(clientString, Seller.class);
+
+		// check if client with this email address already exists
+		Seller checkClient = sellerService.getSeller(seller.getEmail());
+		if (checkClient != null) {
+			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			return ResponseEntity.status(400).build();
+		}
 
 		Seller newSeller = sellerService.save(seller);
 
@@ -45,6 +57,7 @@ public class SellerController {
 					"CANCELED | Adding a new PaymentHub client to the Bank database | Email: " + seller.getEmail());
 			return ResponseEntity.status(400).build();
 		}
+
 	}
 
 	/**

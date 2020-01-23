@@ -12,10 +12,10 @@ public class PaymentInfo {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long paymentID;
+	private Long id;
 
 	@Column(nullable = false, length = 256)
-	private String paymentToken;
+	private String paymentId;
 
 	@OneToOne
 	private Transaction transaction;
@@ -25,24 +25,16 @@ public class PaymentInfo {
 	}
 
 	public PaymentInfo(String url, Transaction t) {
-		this.paymentToken = url;
+		this.paymentId = url;
 		this.transaction = t;
 	}
 
-	public Long getPaymentID() {
-		return paymentID;
+	public String getPaymentId() {
+		return paymentId;
 	}
 
-	public void setPaymentID(Long paymentID) {
-		this.paymentID = paymentID;
-	}
-
-	public String getPaymentToken() {
-		return paymentToken;
-	}
-
-	public void setPaymentToken(String paymentURL) {
-		this.paymentToken = paymentURL;
+	public void setPaymentId(String paymentURL) {
+		this.paymentId = paymentURL;
 	}
 
 	public Transaction getTransaction() {
@@ -51,6 +43,14 @@ public class PaymentInfo {
 
 	public void setTransaction(Transaction transaction) {
 		this.transaction = transaction;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 }

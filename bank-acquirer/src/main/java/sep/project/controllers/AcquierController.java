@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import sep.project.DTOs.BuyerDTO;
 import sep.project.DTOs.KPRequestDTO;
+import sep.project.DTOs.KPResponseDTO;
 import sep.project.DTOs.UrlDTO;
 import sep.project.customExceptions.InvalidDataException;
 import sep.project.customExceptions.NoEnoughFundException;
@@ -49,7 +50,7 @@ public class AcquierController {
 	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
 	@PostMapping(value = "/firstRequest")
-	public ResponseEntity<String> initiatePayment(@RequestBody KPRequestDTO request) {
+	public ResponseEntity<KPResponseDTO> initiatePayment(@RequestBody KPRequestDTO request) {
 		logger.info("INFO | initiatePayment started");
 
 		if (!acquirerService.validate(request)) {
@@ -64,15 +65,19 @@ public class AcquierController {
 			logger.error("ERROR | paymentInfo does not exists");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		return ResponseEntity.ok(BankFrontAddress + "/form/" + info.getPaymentToken());
+		
+		KPResponseDTO response=new KPResponseDTO();
+		response.setPaymentID(info.getPaymentId());
+		response.setPaymentURL(BankFrontAddress + "/form/");
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping(value = "/pay/{token}")
-	public ResponseEntity<UrlDTO> postPaymentForm(HttpServletResponse httpServletResponse, @PathVariable String token,
+	@PostMapping(value = "/pay/{paymentId}")
+	public ResponseEntity<UrlDTO> postPaymentForm(HttpServletResponse httpServletResponse, @PathVariable String paymentId,
 			@RequestBody BuyerDTO buyerDTO) {
 		logger.info("INFO | postPaymentForm started");
 
-		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentToken(token);
+		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentId(paymentId);
 		if (paymentInfo == null) {
 			logger.error("ERROR | paymentInfo does not exists");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -88,10 +93,10 @@ public class AcquierController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
-		if (acquirerService.checkCredentials(token, buyerDTO)) {
+		if (acquirerService.checkCredentials(paymentId, buyerDTO)) {
 			try {
 
-				String location = acquirerService.tryPayment(token, buyerDTO, httpServletResponse).getBody();
+				String location = acquirerService.tryPayment(paymentId, buyerDTO, httpServletResponse).getBody();
 				UrlDTO retVal = new UrlDTO(location);
 
 				if (location.equals(t.getFailedURL()) || location.equals(t.getErrorURL())) {
@@ -111,8 +116,8 @@ public class AcquierController {
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			} catch (NoEnoughFundException e) {
 				logger.error("ERROR | No enough money");
-				String location = acquirerService.paymentFailed(paymentInfo, t);
-				UrlDTO retVal = new UrlDTO(location);
+				acquirerService.paymentFailed(paymentInfo, t);
+				UrlDTO retVal = new UrlDTO(t.getFailedURL());
 				return ResponseEntity.badRequest().body(retVal);
 			}
 		} else {
@@ -120,5 +125,12 @@ public class AcquierController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	@PostMapping(value = "/checkTransaction")
+	public Status checkTransaction(@RequestBody String request) {
+		logger.info("INFO | retrunMonay is called");
+		return acquirerService.checkTransaction(request);
+	}
+
 
 }

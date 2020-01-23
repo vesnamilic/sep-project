@@ -11,7 +11,7 @@ import javax.persistence.Converter;
 @Converter
 public class CryptoConverter implements AttributeConverter<String, String> {
 
-	private static final String ALGORITHM = "AES/ECB/PKCS5Padding";
+	private static final String ALGORITHM = "AES/ECB/PKCS7Padding";
 	private static final byte[] KEY = "MySuperSecretKey".getBytes();
 
 	@Override

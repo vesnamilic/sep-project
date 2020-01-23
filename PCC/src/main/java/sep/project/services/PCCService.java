@@ -1,14 +1,22 @@
 package sep.project.services;
 
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.gson.Gson;
 
 import sep.project.DTOs.PCCRequestDTO;
 import sep.project.DTOs.PCCResponseDTO;
@@ -59,6 +67,7 @@ public class PCCService {
 		request.setSellerBank(sellerBank);
 		request.setCreateTime(new Date(System.currentTimeMillis()));
 		request.setMerchantOrderId(requestDTO.getMerchantOrderID());
+		request.setPaymentId(requestDTO.getPaymentId());
 		requestRepository.save(request);
 		return request;
 	}
@@ -82,6 +91,10 @@ public class PCCService {
 		rersponseDTO.setAcquirerTimestamp(request.getAcquirerTimestamp());
 		rersponseDTO.setMerchantOrderID(request.getMerchantOrderId());
 		rersponseDTO.setStatus(Status.FAILURE);
+		rersponseDTO.setPaymentId(request.getPaymentId());
+		request.setIssuerOrderID(request.getIssuerOrderID());
+		request.setIssuerTimestamp(request.getIssuerTimestamp());
+
 		return new ResponseEntity<PCCResponseDTO>(rersponseDTO, HttpStatus.BAD_REQUEST);
 	}
 
@@ -92,30 +105,25 @@ public class PCCService {
 
 		logger.info("INFO | send issuer request is called function is called");
 
+		request.setStatus(Status.WAITING);
+		requestRepository.save(request);
+
 		RestTemplate template = new RestTemplate();
 		try {
 			logger.info("INFO | sending request to issuer bank");
 
 			ResponseEntity<PCCResponseDTO> response = template.postForEntity(url, requestDTO, PCCResponseDTO.class);
 
-			if(response.getStatusCode()==HttpStatus.BAD_REQUEST) {
-				logger.info("INFO | issuer bank return bad request.");
-				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-			}
 			Request savedRequest = requestRepository.findByAcquirerOrderID(response.getBody().getAcquirerOrderID());
 
 			if (savedRequest == null) {
 				logger.error("ERROR | Request does not exists in PCC.");
-				request.setStatus(Status.FAILED_B2_DATA);
+				request.setStatus(Status.UNSUCCESSFULLY);
 				requestRepository.save(request);
 				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 			}
-			
-			if (response.getBody().getStatus() == Status.UNSUCCESSFULLY) {
-				logger.info("INFO | issuer bank return status UNSUCCESSFULLY");
-				request.setStatus(Status.FAILURE);
-			} 
-			else {
+
+			if (response.getBody().getStatus() == Status.SUCCESSFULLY) {
 				logger.info("INFO | issuer bank return status SUCCESSFULLY");
 				request.setStatus(Status.SUCCESSFULLY);
 			}
@@ -124,18 +132,72 @@ public class PCCService {
 			request.setIssuerTimestamp(response.getBody().getIssuerTimestamp());
 			requestRepository.save(request);
 
-			if (response.getBody().getStatus() == Status.UNSUCCESSFULLY) {
-				logger.info("INFO | issuer bank return bad request, sending bad request response to acquierer bank.");
-				return  new ResponseEntity<>(response.getBody(), HttpStatus.BAD_REQUEST);
-			}
 			return response;
 
+		} catch (HttpClientErrorException e) {
+			if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+				// znaci da zaista nije moguce obaciti transakciju nema nova, pogresni
+				// kredencijali, ne postoji taj klijent...
+				logger.info("INFO | issuer bank return status UNSUCCESSFULLY");
+				request.setStatus(Status.FAILURE);
+
+				Gson gson = new Gson(); // Or use new GsonBuilder().create();
+				PCCResponseDTO response = gson.fromJson(((HttpClientErrorException) e).getResponseBodyAsString(),
+						PCCResponseDTO.class); // deserializes json into target2
+
+				request.setIssuerOrderID(response.getIssuerOrderID());
+				request.setIssuerTimestamp(response.getIssuerTimestamp());
+				requestRepository.save(request);
+
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			} else {
+				logger.error("ERROR | issuer is not avialable");
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
 		} catch (Exception e) {
 			logger.error("ERROR | issuer is not avialable");
-			request.setStatus(Status.FAILURE_SENDING_TO_B2);
-			requestRepository.save(request);
 			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
+	}
 
+	@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
+	public void checkWaitingTransactions() {
+		System.out.println("POZVALA SE checkWaitingTransactions");
+		List<Request> requests = requestRepository.findAllByStatus(Status.WAITING);
+		for (Request r : requests) {
+			String url=r.getCustomerBank().getBankURL()+"/returnMonay";
+			
+			//sending request to return money
+			RestTemplate template = new RestTemplate();
+			try {
+				String paymentId=r.getPaymentId();
+				ResponseEntity<Boolean> response = template.postForEntity(url, paymentId, Boolean.class);
+				if(response.getBody()) {
+					r.setStatus(Status.CANCELED);
+					requestRepository.save(r);
+				}
+			}catch (Exception e) {
+				logger.error("ERROR| Transaction does not exists in buyer bank");
+			}
+		}
+	}
+
+	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+	public Boolean returnMonay(String paymentId) {
+		Request r=requestRepository.findByPaymentId(paymentId);
+		RestTemplate template = new RestTemplate();
+		String url=r.getCustomerBank().getBankURL()+"/returnMonay";
+		try {
+			ResponseEntity<Boolean> response = template.postForEntity(url, paymentId, Boolean.class);
+			if(response.getBody()) {
+				r.setStatus(Status.CANCELED);
+				requestRepository.save(r);
+				return true;
+			}
+			return false;
+		}catch (Exception e) {
+			logger.error("ERROR| Transaction does not exists in buyer bank");
+			return false;
+		}
 	}
 }

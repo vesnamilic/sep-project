@@ -39,7 +39,9 @@ public class IssuerService {
 
 		CardOwner cardOwner = cardOwnerRepository.findByCardPan(request.getBuyerPan());
 		Transaction t = createTransaction(request, cardOwner);
-
+		t.setIssuerOrderId(t.getId());
+		transactionRepository.save(t);
+		
 		if (cardOwner != null) {
 			t.setIssuerOrderId(t.getId());
 			if (checkCredentials(request, cardOwner)) {
@@ -51,7 +53,10 @@ public class IssuerService {
 				pccResponseDTO.setAcquirerOrderID(request.getAcquirerOrderID());
 				pccResponseDTO.setMerchantOrderID(request.getMerchantOrderID());
 				pccResponseDTO.setStatus(Status.UNSUCCESSFULLY);
-				return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.OK);
+				pccResponseDTO.setIssuerOrderID(t.getIssuerOrderId());
+				pccResponseDTO.setIssuerTimestamp(t.getIssuerTimestamp());
+				pccResponseDTO.setPaymentId(t.getPaymentId());
+				return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.BAD_REQUEST);
 			}
 		} else {
 			System.out.println("Buyer does not have account in this bank!");	
@@ -60,7 +65,10 @@ public class IssuerService {
 			pccResponseDTO.setAcquirerOrderID(request.getAcquirerOrderID());
 			pccResponseDTO.setMerchantOrderID(request.getMerchantOrderID());
 			pccResponseDTO.setStatus(Status.UNSUCCESSFULLY);
-			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.OK);
+			pccResponseDTO.setIssuerOrderID(t.getIssuerOrderId());
+			pccResponseDTO.setIssuerTimestamp(t.getIssuerTimestamp());
+			pccResponseDTO.setPaymentId(t.getPaymentId());
+			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -84,7 +92,8 @@ public class IssuerService {
 		t.setAmount(request.getAmount());
 		t.setMerchantOrderId(request.getMerchantOrderID());
 		t.setMerchantTimestamp(request.getMerchantTimestamp());
-
+		t.setPaymentId(request.getPaymentId());
+		
 		transactionRepository.save(t);
 		return t;
 
@@ -153,6 +162,10 @@ public class IssuerService {
 		PCCResponseDTO pccResponseDTO = new PCCResponseDTO();
 		pccResponseDTO.setAcquirerOrderID(request.getAcquirerOrderID());
 		pccResponseDTO.setMerchantOrderID(request.getMerchantOrderID());
+		pccResponseDTO.setIssuerOrderID(t.getIssuerOrderId());
+		pccResponseDTO.setIssuerTimestamp(t.getIssuerTimestamp());
+		pccResponseDTO.setPaymentId(request.getPaymentId());
+		
 		Card card = cardRepository.findByPan(t.getBuyerPan());
 
 		if (card == null) {
@@ -160,7 +173,7 @@ public class IssuerService {
 			t.setStatus(Status.UNSUCCESSFULLY);
 			transactionRepository.save(t);
 			pccResponseDTO.setStatus(Status.UNSUCCESSFULLY);
-			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.OK);
+			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.BAD_REQUEST);
 		}
 
 		Float available = card.getAvailableFunds();
@@ -170,7 +183,7 @@ public class IssuerService {
 			t.setStatus(Status.UNSUCCESSFULLY);
 			transactionRepository.save(t);
 			pccResponseDTO.setStatus(Status.UNSUCCESSFULLY);
-			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.OK);
+			return new ResponseEntity<PCCResponseDTO>(pccResponseDTO, HttpStatus.BAD_REQUEST);
 		}
 
 		card.setAvailableFunds(available - t.getAmount());
@@ -194,6 +207,22 @@ public class IssuerService {
 	public void save(Transaction t, Status s) {
 		t.setStatus(s);
 		transactionRepository.save(t);
+	}
+	
+	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+	public Boolean returnMonay(String paymentId) {
+		Transaction t=transactionRepository.findByPaymentId(paymentId);
+		CardOwner buyer=t.getBuyer();
+		if(buyer!=null) {
+			Card card=buyer.getCard();
+			card.setAvailableFunds(card.getAvailableFunds()+t.getAmount());
+			cardRepository.save(card);
+			buyer.setCard(card);
+			cardOwnerRepository.save(buyer);
+			t.setStatus(Status.CANCELED);
+			return true;
+		}
+		return false;
 	}
 
 }

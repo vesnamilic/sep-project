@@ -26,7 +26,7 @@ public class Transaction {
 	private Seller seller;
 
 	@Column
-	private Long paymentID;
+	private String paymentID;
 
 	@Column
 	private Long merchantOrderId;
@@ -81,14 +81,6 @@ public class Transaction {
 		this.amount = amount;
 	}
 
-	public Long getPaymentID() {
-		return paymentID;
-	}
-
-	public void setPaymentID(Long paymentID) {
-		this.paymentID = paymentID;
-	}
-
 	public Long getAcquirerOrderId() {
 		return acquirerOrderId;
 	}
@@ -111,6 +103,14 @@ public class Transaction {
 
 	public void setSeller(Seller seller) {
 		this.seller = seller;
+	}
+
+	public String getPaymentID() {
+		return paymentID;
+	}
+
+	public void setPaymentID(String paymentID) {
+		this.paymentID = paymentID;
 	}
 
 }

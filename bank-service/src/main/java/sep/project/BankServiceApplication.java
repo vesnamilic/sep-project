@@ -5,11 +5,13 @@ import java.security.NoSuchAlgorithmException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 
 @SpringBootApplication
+@EnableScheduling
 public class BankServiceApplication {
 
 	public static void main(String[] args) {

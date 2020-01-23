@@ -7,7 +7,7 @@ import sep.project.model.Transaction;
 
 public interface PaymentInfoRepository extends JpaRepository<PaymentInfo, Long> {
 	
-	PaymentInfo findByPaymentToken(String token);
+	PaymentInfo findByPaymentId(String id);
 
 	PaymentInfo findByTransaction(Transaction t);
 
