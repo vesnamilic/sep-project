@@ -6,7 +6,7 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule} from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PaymentMethodsComponent } from './form/form.component';
@@ -15,6 +15,7 @@ import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-pay
 import { SuccessComponent } from './success/success.component';
 import { CancelComponent } from './cancel/cancel.component';
 import { ErrorComponent } from './error/error.component';
+import { AuthInterceptor } from './authentication/auth.interceptor';
 
 @NgModule({
    declarations: [
@@ -37,7 +38,13 @@ import { ErrorComponent } from './error/error.component';
       MatStepperModule,
       BrowserAnimationsModule
    ],
-   providers: [],
+   providers: [
+      {
+         provide: HTTP_INTERCEPTORS,
+         useClass: AuthInterceptor,
+         multi: true
+      }
+   ],
    bootstrap: [
       AppComponent
    ]

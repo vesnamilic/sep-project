@@ -11,10 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.paypal.api.payments.Agreement;
@@ -35,7 +34,10 @@ import com.paypal.base.rest.PayPalRESTException;
 
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
+import sep.project.model.BillingPlan;
 import sep.project.model.Client;
+import sep.project.model.Subscription;
+import sep.project.model.SubscriptionStatus;
 import sep.project.model.TransactionStatus;
 
 
@@ -48,8 +50,12 @@ public class PayPalService {
 	@Autowired
 	private TransactionService transactionService;
 	
-	private static final Logger logger = LoggerFactory.getLogger(PayPalService.class);
+	@Autowired
+	private BillingPlanService billingPlanService;
 	
+	@Autowired
+	private SubscriptionService subscriptionService;
+		
 	@Value("${success_url_payment}")
 	private String successPaymentURL;
 	
@@ -76,6 +82,7 @@ public class PayPalService {
 	    
 	    Transaction transaction = new Transaction();
 	    transaction.setAmount(amount);
+	    transaction.setDescription(client.getEmail() + " payment");
 	    
 	    List<Transaction> transactions = new ArrayList<Transaction>();
 	    transactions.add(transaction);
@@ -109,10 +116,15 @@ public class PayPalService {
 	    				break;
 					}
 				}
+								
+				//save payment id and set status to CREATED
+				savedTransaction.setPaymentId(newPayment.getId());
+				savedTransaction.setStatus(TransactionStatus.CREATED);
+				transactionService.save(savedTransaction);
 	    	}    	
 		} 
 	    catch (PayPalRESTException e) {						
-			//edit transaction status to CANCELED
+			//set transaction status to CANCELED
 			savedTransaction.setStatus(TransactionStatus.CANCELED);
 			transactionService.save(savedTransaction);
 			
@@ -127,17 +139,27 @@ public class PayPalService {
 		
 		Payment payment = new Payment();
 		payment.setId(paymentId);
-
+		
 	    PaymentExecution paymentExecution = new PaymentExecution();
 	    paymentExecution.setPayerId(PayerID);
+	    
+	    sep.project.model.Transaction transaction = transactionService.findByPaymentId(paymentId);
 	    
         APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
 	    try {
 	        //execute the payment
-	        Payment createdPayment = payment.execute(context, paymentExecution);       
+	        Payment createdPayment = payment.execute(context, paymentExecution);  
+	        
+	        //set transaction status to COMPLETED
+			transaction.setStatus(TransactionStatus.COMPLETED);
+			transactionService.save(transaction);
 	    } 
-	    catch (PayPalRESTException e) {      
+	    catch (PayPalRESTException e) {    
+	    	//set transaction status to CANCELED
+			transaction.setStatus(TransactionStatus.CANCELED);
+			transactionService.save(transaction);
+			
 			throw e;
 	    }    
 	}
@@ -148,7 +170,7 @@ public class PayPalService {
 		Currency currency = new Currency(billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getPaymentAmount().toString());
 						
 		PaymentDefinition paymentDefinition = new PaymentDefinition();
-		paymentDefinition.setName("Magazine Payment");
+		paymentDefinition.setName(client.getEmail() + " subscription");
 		paymentDefinition.setType("REGULAR");
 		paymentDefinition.setFrequency(billingPlanDTO.getFrequency().toString());
 		paymentDefinition.setFrequencyInterval("1");
@@ -164,7 +186,11 @@ public class PayPalService {
 		merchantPreferences.setInitialFailAmountAction("CONTINUE");
 				
 		//create a plan with infinite number of payment cycles
-		Plan plan = new Plan("Magazine Billing Plan", "Magazine subscription", "infinite");
+		Plan plan = new Plan();
+		plan.setType(billingPlanDTO.getType().toString());
+		plan.setName(client.getEmail() + " subscription");
+		plan.setDescription(billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency() + " a " + billingPlanDTO.getFrequency().toString().toLowerCase());
+		
 		plan.setPaymentDefinitions(paymentDefinitionList);
 		plan.setMerchantPreferences(merchantPreferences);
 		
@@ -188,16 +214,20 @@ public class PayPalService {
 			  //activate the plan
 			  createdPlan.update(context, patchRequestList);
 			  
-			  //save billing plan id
-			  client.setBillingPlan(createdPlan.getId());
-			  clientService.save(client);	  			  
+			  //save the billing plan
+			  BillingPlan billingPlan = new BillingPlan(billingPlanDTO.getPaymentAmount(), billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getFrequency(), billingPlanDTO.getType(), createdPlan.getId());
+			  BillingPlan savedBillingPlan = billingPlanService.save(billingPlan);
+			  
+			  //add billing plan to the client
+			  client.getBillingPlans().add(savedBillingPlan);
+			  clientService.save(client);
 		} 
 		catch (PayPalRESTException e) {			
 			throw e;
 		}	
 	}
 	
-	public String createBillingAgreement(Client client) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
+	public String createBillingAgreement(Client client, BillingPlan billingPlan) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
 		//get date for the agreement				
 		Date date = new Date();		
 		Calendar c = Calendar.getInstance();
@@ -210,7 +240,7 @@ public class PayPalService {
 		
 		//set billing plan id
 		Plan plan = new Plan();
-		plan.setId(client.getBillingPlan());
+		plan.setId(billingPlan.getBillingPlanId());
 		
 		Payer payer = new Payer();
 		payer.setPaymentMethod("paypal");
@@ -220,9 +250,18 @@ public class PayPalService {
 		agreement.setName(client.getEmail() + " subscription");
 		agreement.setDescription(client.getEmail() + " subscription");
 		agreement.setStartDate(formattedDate);
+
+		/*AgreementDetails agd = new AgreementDetails();
+		agd.set
 		
 		agreement.setPlan(plan);	
 		agreement.setPayer(payer);
+		
+		agreement.*/
+		
+		//save subscription with status INITIATED
+		Subscription subscription = new Subscription(billingPlan, client, SubscriptionStatus.INITIATED);
+		Subscription savedSubscription = subscriptionService.save(subscription);
 		
 		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 		
@@ -231,7 +270,7 @@ public class PayPalService {
 		try {
 			//create the agreement
 			Agreement newAgreement = agreement.create(context);
-			
+						
 			if(newAgreement != null) {
 				//get the approval url from the response 
 				Iterator links = newAgreement.getLinks().iterator();		
@@ -245,6 +284,11 @@ public class PayPalService {
 					}
 				}
 			}
+			
+			//save agreement id and set status to CREATED
+			savedSubscription.setToken(newAgreement.getToken());
+			savedSubscription.setStatus(SubscriptionStatus.CREATED);
+			subscriptionService.save(savedSubscription);
 		} 
 		catch (PayPalRESTException e) {
 			throw e;
@@ -270,10 +314,59 @@ public class PayPalService {
 		try {
 			//execute the agreement and sign up the user for the subscription
 			Agreement createdAgreement = agreement.execute(context, agreement.getToken());
+			
+			//set status to COMPLETED
+			Subscription subscription = subscriptionService.findByToken(token);
+			subscription.setStatus(SubscriptionStatus.COMPLETED);
+			subscriptionService.save(subscription);
 		} 
 		catch (PayPalRESTException e) {
-		  throw e;
+			throw e;
 		}
 	}
+	
+	/**
+	 * Compare transaction statues with PayPal every hour
+	 */
+	@Scheduled(initialDelay = 10000, fixedRate = 3600000)
+	public void synchronizeTransactions() {
+		//find all PayPal clients
+		List<Client> clientsList = clientService.findAll();
+		
+		for(Client client : clientsList) {
+			//find all transaction with status INITIATED
+			List<sep.project.model.Transaction> transactions = transactionService.findAllCreatedTransactions(client);
+			
+			if(transactions.size() > 0) {				
+				APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+				
+				for(sep.project.model.Transaction transaction : transactions) {
+					try {
+						//get payment details
+						Payment payment = Payment.get(context, transaction.getPaymentId());						
+						
+						if(payment.getState().equalsIgnoreCase("APPROVED")){
+							//update transaction status to COMPLETED
+							transaction.setStatus(TransactionStatus.COMPLETED);
+							transactionService.save(transaction);
+						}
+						else if(payment.getState().equalsIgnoreCase("FAILED")){
+							//update transaction status to CANCELED
+							transaction.setStatus(TransactionStatus.CANCELED);
+							transactionService.save(transaction);
+						}
+					}
+					catch(PayPalRESTException e) {
+						//if transaction doesn't exist
+						if(e.getResponsecode() == 404) {
+							transaction.setStatus(TransactionStatus.CANCELED);
+							transactionService.save(transaction);
+						}
+					}
+				}
+			}	
+		}
+	}
+	
 }
 		

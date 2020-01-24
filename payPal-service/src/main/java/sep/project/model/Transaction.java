@@ -30,6 +30,9 @@ public class Transaction {
 	@Column
 	@Enumerated(EnumType.STRING)
 	private TransactionStatus status;
+	
+	@Column
+	private String paymentId;
 
 	@Column
 	private Double paymentAmount;
@@ -95,6 +98,14 @@ public class Transaction {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentId) {
+		this.paymentId = paymentId;
 	}
 	
 }

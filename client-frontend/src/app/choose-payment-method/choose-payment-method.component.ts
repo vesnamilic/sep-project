@@ -39,7 +39,7 @@ export class ChoosePaymentMethodComponent implements OnInit {
         this.paymentMethods = data as string[];
       },
       error => {
-        alert(error);
+        alert('An error occurred. Please try again!');
       }
     );
   }

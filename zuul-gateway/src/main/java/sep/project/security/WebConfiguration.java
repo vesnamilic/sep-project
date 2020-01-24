@@ -47,7 +47,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
         	return new JwtConfig();
 	}
 	
-	@Bean
+	/*@Bean
 	public CorsFilter corsFilter() {
 	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	    final CorsConfiguration config = new CorsConfiguration();
@@ -65,5 +65,5 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
 	    source.registerCorsConfiguration("/**", config);
 	    return new CorsFilter(source);
 	}
-
+	*/
 }

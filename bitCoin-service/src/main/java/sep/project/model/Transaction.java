@@ -58,7 +58,6 @@ public class Transaction {
 
 	public Transaction() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Long getId() {
