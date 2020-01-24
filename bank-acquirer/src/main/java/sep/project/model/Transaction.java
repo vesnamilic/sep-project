@@ -29,7 +29,7 @@ public class Transaction {
 	private CardOwner buyer;
 
 	@Column(length = 256)
-	private String paymentToken;
+	private String paymentId;
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
@@ -84,7 +84,7 @@ public class Transaction {
 		this.id = id;
 		this.seller = seller;
 		this.buyer = buyer;
-		this.paymentToken = paymentURL;
+		this.paymentId = paymentURL;
 		this.timestamp = timestamp;
 		this.status = status;
 		this.buyerPan = buyerPan;
@@ -123,12 +123,12 @@ public class Transaction {
 		this.buyer = reciever;
 	}
 
-	public String getPaymentToken() {
-		return paymentToken;
+	public String getPaymentId() {
+		return paymentId;
 	}
 
-	public void setPaymentToken(String paymentURL) {
-		this.paymentToken = paymentURL;
+	public void setPaymentId(String paymentURL) {
+		this.paymentId = paymentURL;
 	}
 
 	public Date getTimestamp() {

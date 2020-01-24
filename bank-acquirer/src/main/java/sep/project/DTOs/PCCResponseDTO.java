@@ -16,6 +16,8 @@ public class PCCResponseDTO {
 	
 	private Long merchantOrderID;
 
+	private String paymentId;
+
 	public PCCResponseDTO() {
 		
 	}
@@ -58,6 +60,14 @@ public class PCCResponseDTO {
 
 	public void setMerchantOrderID(Long merchantOrderID) {
 		this.merchantOrderID = merchantOrderID;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentToken) {
+		this.paymentId = paymentToken;
 	}
 
 }

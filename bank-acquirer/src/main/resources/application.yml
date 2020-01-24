@@ -1,14 +1,14 @@
 server:
   ssl:
     enabled: true
-    #key-store: classpath:bank_acquirer_keyStore.jks
-    key-store: classpath:issuer_bank_keyStore.jks
+    key-store: classpath:bank_acquirer_keyStore.jks
+    #key-store: classpath:issuer_bank_keyStore.jks
     key-store-password: password
-    key-alias: issuer-bank
-    #key-alias: bank-acquirer
+    #key-alias: issuer-bank
+    key-alias: bank-acquirer
     key-store-type: JKS
-    #trust-store: classpath:bank_acquirer_trustedStore.jks
-    trust-store: classpath:issuer_bank_trustedStore.jks
+    trust-store: classpath:bank_acquirer_trustedStore.jks
+    #trust-store: classpath:issuer_bank_trustedStore.jks
     trust-store-password: password
     trust-store-type: JKS
     

@@ -14,7 +14,7 @@ public class CompletedDTO {
 
 	private Date acquirerTimestamp;
 	
-	private Long paymentID;
+	private String paymentId;
 
 	private String redirectURL;
 	
@@ -54,20 +54,20 @@ public class CompletedDTO {
 		this.acquirerTimestamp = acquirerTimestamp;
 	}
 
-	public Long getPaymentID() {
-		return paymentID;
-	}
-
-	public void setPaymentID(Long paymentID) {
-		this.paymentID = paymentID;
-	}
-
 	public String getRedirectURL() {
 		return redirectURL;
 	}
 
 	public void setRedirectURL(String redirectURL) {
 		this.redirectURL = redirectURL;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentId) {
+		this.paymentId = paymentId;
 	}
 	
 }

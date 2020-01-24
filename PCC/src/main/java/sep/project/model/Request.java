@@ -49,6 +49,9 @@ public class Request {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
+	@Column
+	private String paymentId;
+	
 	public Request() {
 
 	}
@@ -131,6 +134,14 @@ public class Request {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentToken) {
+		this.paymentId = paymentToken;
 	}
 
 }

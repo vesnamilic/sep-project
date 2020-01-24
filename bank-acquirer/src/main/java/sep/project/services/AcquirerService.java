@@ -5,18 +5,22 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.hash.Hashing;
@@ -54,6 +58,8 @@ public class AcquirerService {
 	@Autowired
 	CardOwnerRepository cardOwnerRepository;
 
+	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
+
 	private static String replyToKP;
 
 	@Value("${replyToKP}")
@@ -82,49 +88,47 @@ public class AcquirerService {
 	 */
 	public boolean validate(KPRequestDTO request) {
 
-		System.out.println("DEBUG: validate called");
-		
+		logger.info("INFO | validate called");
+
 		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
 		if (seller == null) {
-			System.out.println("DEBUG: seller is null");
-
+			logger.error("ERROR | seller does not exists");
 			return false;
 		}
 
 		if (request.getAmount() == null || request.getMerchantID() == null || request.getMerchantOrderID() == null
 				|| request.getMerchantPass() == null || request.getMerchantTimestamp() == null) {
-			System.out.println("DEBUG: not valid data");
+			logger.error("ERROR | some data is not valid");
 			return false;
 		}
 
 		if (request.getAmount() <= 0) {
-			System.out.println("DEBUG: amount<0");
+			logger.error("ERROR | amount error");
 			return false;
 		}
 
 		if (!seller.getMerchantPass().equals(request.getMerchantPass())) {
-			System.out.println("bad password");
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 		return true;
 	}
 
 	public PaymentInfo createPaymentInfo(KPRequestDTO request) {
-		System.out.println("DEBUG: creating payment info");
+		logger.info("INFO | creating payment info");
 
 		Transaction t = createTransaction(request);
 		if (t == null) {
-			System.out.println("transaction does not exists");
+			logger.error("ERROR | transaction does not exists");
 			return null;
 		}
 
 		PaymentInfo paymentInfo = new PaymentInfo(createPaymentURLToken(request), t);
 
-		t.setPaymentToken(paymentInfo.getPaymentToken());
+		t.setPaymentId(paymentInfo.getPaymentId());
 
 		transactionRepository.save(t);
 		paymentInfoRepository.save(paymentInfo);
-		System.out.println("paymentInfo is returned");
 
 		return paymentInfo;
 	}
@@ -133,17 +137,17 @@ public class AcquirerService {
 	 * Function that cretae transaction from KPRequestDTO
 	 */
 	public Transaction createTransaction(KPRequestDTO request) {
-		System.out.println("creating transaction function");
+		logger.info("INFO | creating transaction function");
 
 		Transaction t = new Transaction();
 		CardOwner seller = cardOwnerRepository.findByMerchantID(request.getMerchantID());
 		if (seller == null) {
-			System.out.println("DEBUG: create transaction, seller is null");
+			logger.error("ERROR | seller does not exists, can not create transaction");
 			return null;
 		}
 		t.setBuyer(null);
 		t.setSeller(seller);
-		t.setPaymentToken("");
+		t.setPaymentId("");
 		t.setTimestamp(new Date());
 		t.setStatus(Status.CREATED);
 		t.setSellerPan(seller.getCard().getPan());
@@ -155,6 +159,7 @@ public class AcquirerService {
 		t.setMerchantOrderId(request.getMerchantOrderID());
 		t.setMerchantTimestamp(request.getMerchantTimestamp());
 		transactionRepository.save(t);
+
 		return t;
 	}
 
@@ -162,6 +167,7 @@ public class AcquirerService {
 	 * Function that make hash that present paymentURLRoken
 	 */
 	public String createPaymentURLToken(KPRequestDTO request) {
+		logger.info("INFO | creating payment token");
 		StringBuilder sb = new StringBuilder();
 		sb.append(request.getMerchantID());
 		sb.append(request.getAmount());
@@ -176,54 +182,53 @@ public class AcquirerService {
 	/**
 	 * Function that validate user data from bank front
 	 */
-	public boolean checkCredentials(String token, BuyerDTO buyerDTO) {
+	public boolean checkCredentials(String paymentId, BuyerDTO buyerDTO) {
 
-		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentToken(token);
+		logger.info("INFO | checking credentials function called");
+
+		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentId(paymentId);
 		if (paymentInfo == null) {
-			System.out.println("paymentInfo is null");
-
+			logger.error("ERROR | payment info does not exists");
 			return false;
 		}
 
 		Transaction t = paymentInfo.getTransaction();
 		if (t == null) {
-			System.out.println("transaction is null");
-
+			logger.error("ERROR | transaction does not exists");
 			return false;
 		}
 
 		CardOwner buyer = cardOwnerRepository.findByCardPan(buyerDTO.getPan());
 		if (buyer == null) {
-			System.out.println("buyer is null");
 			// If they are from the same bank it is error
 			if (buyerDTO.getPan().substring(0, 6).equals(BankNumber)) {
-				System.out.println("same bank, error");
+				logger.error("ERROR | seller and buyer is in the same bank, but data is not valid");
 				return false;
 			} else {
-				System.out.println("different bank");
+				logger.info("INFO | seller and buyer are in different banks");
 				return true;
 			}
 		}
 
 		if (!buyer.getName().toLowerCase().equals(buyerDTO.getName().toLowerCase().trim())) {
-			System.out.println("name is not valid");
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 
 		if (!buyer.getLastName().toLowerCase().equals(buyerDTO.getLastName().toLowerCase().trim())) {
-			System.out.println("last name is not valid");
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 
 		if (!buyer.getCard().getCvv().equals(buyerDTO.getCvv().trim())) {
-			System.out.println("cvv is not valid");
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 
 		// Date is in format MM/YY
 		String expDate = buyerDTO.getMonth() + "/" + buyerDTO.getYear();
 		if (!buyer.getCard().getExpDate().equals(expDate)) {
-			System.out.println("date is not valid");
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 
@@ -249,10 +254,11 @@ public class AcquirerService {
 			int daysInMonth = yearMonthObject.lengthOfMonth(); // 28
 			expiresDate = dateFormat.parse("20" + year + "-" + month + "-" + daysInMonth);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			logger.error("ERROR | data is not valid");
 		}
 
 		if (expiresDate.compareTo(now) < 0) {
+			logger.error("ERROR | data is not valid");
 			return false;
 		}
 
@@ -263,82 +269,91 @@ public class AcquirerService {
 	 * Function to pay that check is buyer and seller in same bank and call
 	 * functions for paying in same or in differente banks
 	 */
-	public ResponseEntity<String> tryPayment(String token, BuyerDTO buyerDTO, HttpServletResponse response)
+	public ResponseEntity<String> tryPayment(String paymentId, BuyerDTO buyerDTO, HttpServletResponse response)
 			throws PaymentException, InvalidDataException, NoEnoughFundException {
 
-		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentToken(token);
+		logger.info("INFO | try payment function is called");
+
+		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentId(paymentId);
 		if (paymentInfo == null) {
-			throw new PaymentException("URL does not exists!");
+			logger.error("ERROR | paymentId does not exists");
 		}
 
 		Transaction t = paymentInfo.getTransaction();
 		if (t == null) {
+			logger.error("ERROR | transaction does not exists");
 			throw new PaymentException("This transaction does not exists!");
 		}
 
 		t.setBuyerPan(buyerDTO.getPan());
 		t.setIssuerTimestamp(new Date());
-		t.setIssuerOrderId(paymentInfo.getPaymentID());
+		t.setIssuerOrderId(paymentInfo.getId());
 
 		CardOwner buyer = cardOwnerRepository.findByCardPan(buyerDTO.getPan());
 		if (buyer == null) {
 			// Check is seller and buyer in the same bank
 			if (buyerDTO.getPan().substring(0, 6).equals(BankNumber)) {
+				logger.error("ERROR | Seller and buyer are in the same bank, but data is not valid");
 				throw new InvalidDataException("Data is not valid!");
 			}
-			// Seller and buyer are not in same banke, contacte PCC
-			System.out.println("NISU U ISTOJ BANCI");
-			boolean isSent=sendRequestToPCC(t, buyerDTO);
-			if(isSent) {
-				return ResponseEntity.ok(t.getSuccessURL());
+			logger.error("ERROR | seller and buyer are in different banks");
+			String pccResponseString = sendRequestToPCC(t, buyerDTO);
+			if (pccResponseString.equals("error")) {
+				return new ResponseEntity<>(t.getErrorURL(), HttpStatus.BAD_REQUEST);
 			}
-			return ResponseEntity.badRequest().body(t.getFailedURL());
+			else if(pccResponseString.equals("failed")) {
+				return new ResponseEntity<>(t.getFailedURL(), HttpStatus.BAD_REQUEST);
+			}
+			return ResponseEntity.ok(t.getSuccessURL());
 		}
 
 		t.setBuyer(buyer);
 		transactionRepository.save(t);
 
-		System.out.println("Seller and buyer are in same bank...");
-
 		Card buyerCard = buyer.getCard();
 		// Kartica ne postoji, greska
 		if (buyerCard == null) {
+			logger.error("ERROR | data is not valid");
 			save(t, Status.UNSUCCESSFULLY);
-			String failedUrl = paymentFailed(paymentInfo, t);
-			return new ResponseEntity<>(failedUrl, HttpStatus.BAD_REQUEST);
+			paymentFailed(paymentInfo, t);
+			return new ResponseEntity<>(t.getFailedURL(), HttpStatus.BAD_REQUEST);
 		}
 
 		// nema dovoljno sredstava
 		if (buyerCard.getAvailableFunds() - t.getAmount() < 0) {
+			logger.error("ERROR | data is not valid, no enough founds");
 			throw new NoEnoughFundException();
 		}
 
-		String location = paymentSuccessful(paymentInfo, t);
-		return paymentSameBank(t, buyerCard, buyer, location);
+		paymentSuccessful(paymentInfo, t);
+		return paymentSameBank(t, buyerCard, buyer, t.getSuccessURL());
 
 	}
 
 	/**
 	 * Function that send CompleteDTO to KP if payment failed. Return failedURL
 	 */
-	public String paymentFailed(PaymentInfo paymentInfo, Transaction t) {
+	public boolean paymentFailed(PaymentInfo paymentInfo, Transaction t) {
+
+		logger.info("INFO | payment failed is called");
 
 		CompletedDTO completedDTO = new CompletedDTO();
 		completedDTO.setTransactionStatus(Status.UNSUCCESSFULLY);
 		completedDTO.setMerchantOrderID(t.getMerchantOrderId());
 		completedDTO.setAcquirerOrderID(t.getId());
 		completedDTO.setAcquirerTimestamp(t.getTimestamp());
-		completedDTO.setPaymentID(paymentInfo.getPaymentID());
 		completedDTO.setRedirectURL(t.getFailedURL());
+		completedDTO.setPaymentId(paymentInfo.getPaymentId());
 		
 		RestTemplate template = new RestTemplate();
 		try {
+			logger.info("INFO | sending request to KP");
 			template.postForEntity(replyToKP, completedDTO, Boolean.class);
-			return t.getFailedURL();
+			return true;
 		} catch (Exception e) {
-			System.out.println("KP is not available!");
-			save(t, Status.UNAVAILABLE_KP);
-			return t.getErrorURL();
+			logger.error("ERROR | KP is not available");
+			save(t, Status.UNSUCCESSFULLY);
+			return false;
 		}
 
 	}
@@ -347,27 +362,27 @@ public class AcquirerService {
 	 * Function that send CompleteDTO to KP if payment is successfull. Return
 	 * successURL
 	 */
-	public String paymentSuccessful(PaymentInfo paymentInfo, Transaction t) {
+	public boolean paymentSuccessful(PaymentInfo paymentInfo, Transaction t) {
+
+		logger.info("INFO | payment successful is called");
 
 		CompletedDTO completedDTO = new CompletedDTO();
 		completedDTO.setTransactionStatus(Status.SUCCESSFULLY);
 		completedDTO.setMerchantOrderID(t.getMerchantOrderId());
 		completedDTO.setAcquirerOrderID(t.getId());
 		completedDTO.setAcquirerTimestamp(t.getTimestamp());
-		completedDTO.setPaymentID(paymentInfo.getPaymentID());
+		completedDTO.setPaymentId(paymentInfo.getPaymentId());
 		completedDTO.setRedirectURL(t.getSuccessURL());
 
 		RestTemplate template = new RestTemplate();
 		try {
-			ResponseEntity<Boolean> response=template.postForEntity(replyToKP, completedDTO, Boolean.class);
-			if(response.getStatusCode()==HttpStatus.BAD_REQUEST) {
-				return t.getFailedURL();
-			}
-			return t.getSuccessURL();
+			logger.info("INFO | sending request to KP");
+			template.postForEntity(replyToKP, completedDTO, Boolean.class);
+			return true;
 		} catch (Exception e) {
-			System.out.println("KP is unavilable");
-			save(t, Status.UNAVAILABLE_KP);
-			return t.getErrorURL();
+			logger.error("ERROR | KP is not available");
+			save(t, Status.SUCCESSFULLY);
+			return false;
 		}
 
 	}
@@ -377,6 +392,8 @@ public class AcquirerService {
 	 */
 	@Transactional(readOnly = false, rollbackFor = Exception.class, propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
 	public ResponseEntity<String> paymentSameBank(Transaction t, Card buyerCard, CardOwner buyer, String successURL) {
+
+		logger.info("INFO | payment in same bank is called");
 
 		Float available = buyerCard.getAvailableFunds();
 		buyerCard.setAvailableFunds(available - t.getAmount());
@@ -394,6 +411,7 @@ public class AcquirerService {
 
 		t.setStatus(Status.SUCCESSFULLY);
 		transactionRepository.save(t);
+		logger.info("INFO | payment in same bank is successful");
 
 		return new ResponseEntity<>(successURL, HttpStatus.OK);
 	}
@@ -401,7 +419,9 @@ public class AcquirerService {
 	/**
 	 * Function that send payment request to PCC
 	 */
-	public boolean sendRequestToPCC(Transaction t, BuyerDTO buyerDTO) {
+	public String sendRequestToPCC(Transaction t, BuyerDTO buyerDTO) {
+
+		logger.info("INFO | sending request to PCC function is called");
 
 		save(t, Status.WAITING);
 
@@ -419,55 +439,56 @@ public class AcquirerService {
 		pccRequestDTO.setSellerBankNumber(BankNumber);
 		pccRequestDTO.setMerchantOrderID(t.getMerchantOrderId());
 		pccRequestDTO.setMerchantTimestamp(t.getMerchantTimestamp());
-
+		pccRequestDTO.setPaymentId(t.getPaymentId());
+		
 		RestTemplate template = new RestTemplate();
 		try {
-			System.out.println("SALJEM ZAHTEV NA PCC");
+			logger.info("INFO | sending request to PCC");
 			ResponseEntity<PCCResponseDTO> response = template.postForEntity(requestToPCC, pccRequestDTO,
 					PCCResponseDTO.class);
-			
+
 			Transaction transaction = transactionRepository.findById(response.getBody().getAcquirerOrderID()).get();
 
-			if (response.getBody().getStatus() == Status.FAILURE) {
-				save(transaction, Status.UNSUCCESSFULLY);
-				return false;
-			} else {
-				transaction.setIssuerOrderId(response.getBody().getIssuerOrderID());
-				transaction.setIssuerTimestamp(response.getBody().getIssuerTimestamp());
-				save(transaction, Status.SUCCESSFULLY);
+			logger.info("INFO | PCC send response");
+			transaction.setIssuerOrderId(response.getBody().getIssuerOrderID());
+			transaction.setIssuerTimestamp(response.getBody().getIssuerTimestamp());
+			save(transaction, Status.SUCCESSFULLY);
 
-				Card recieverCard = cardRepository.findByPan(transaction.getSellerPan());
+			Card recieverCard = cardRepository.findByPan(transaction.getSellerPan());
 
-				Float available = recieverCard.getAvailableFunds();
-				recieverCard.setAvailableFunds(available + transaction.getAmount());
-				cardRepository.save(recieverCard);
+			Float available = recieverCard.getAvailableFunds();
+			recieverCard.setAvailableFunds(available + transaction.getAmount());
+			cardRepository.save(recieverCard);
 
-				CardOwner seller = cardOwnerRepository.findByCardPan(recieverCard.getPan());
-				seller.setCard(recieverCard);
-				cardOwnerRepository.save(seller);
-				
-				PaymentInfo pi=paymentInfoRepository.findByTransaction(transaction);
-				String url=paymentSuccessful(pi, transaction);
-				if(url.equals(transaction.getFailedURL()))
-					return false;
-				return true;
-			}
+			CardOwner seller = cardOwnerRepository.findByCardPan(recieverCard.getPan());
+			seller.setCard(recieverCard);
+			cardOwnerRepository.save(seller);
 
-		} catch (HttpStatusCodeException exception) {
-			
-			PaymentInfo pi=paymentInfoRepository.findByTransaction(t);
-			paymentFailed(pi, t);
-			
-			if (exception.getStatusCode().is5xxServerError()) {
-				System.out.println("This transaction already exists on PCC");
+			PaymentInfo pi = paymentInfoRepository.findByTransaction(transaction);
+			paymentSuccessful(pi, transaction);
+			logger.info("INFO | PCC retruned success url");
+			return "success";
+
+		} catch (HttpClientErrorException e) {
+			if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+				if(e.getResponseBodyAsString()==null) {
+					return "error";
+				}
+				logger.info("INFO | PCC return bad request");
 				save(t, Status.UNSUCCESSFULLY);
+				PaymentInfo pi = paymentInfoRepository.findByTransaction(t);
+				paymentFailed(pi, t);
+				return "failed";
 			}
-			return false;
+			else {
+				PaymentInfo pi = paymentInfoRepository.findByTransaction(t);
+				paymentFailed(pi, t);
+				return "error";
+			}
 		} catch (Exception e) {
-			PaymentInfo pi=paymentInfoRepository.findByTransaction(t);
+			PaymentInfo pi = paymentInfoRepository.findByTransaction(t);
 			paymentFailed(pi, t);
-			save(t, Status.WAITING_PCC);
-			return false;
+			return "error";
 		}
 
 	}
@@ -480,5 +501,35 @@ public class AcquirerService {
 		t.setStatus(s);
 		transactionRepository.save(t);
 	}
-
+	
+	@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
+	public void checkWaitingTransactions() {
+		System.out.println("POZVALA SE checkWaitingTransactions");
+		List<Transaction> transactions = transactionRepository.findAllByStatus(Status.WAITING);
+		for (Transaction t : transactions) {
+			String url=requestToPCC+"/returnMonay";
+			
+			//sending request to return money
+			RestTemplate template = new RestTemplate();
+			try {
+				String paymentId=t.getPaymentId();
+				ResponseEntity<Boolean> response = template.postForEntity(url, paymentId, Boolean.class);
+				if(response.getBody()) {
+					t.setStatus(Status.CANCELED);
+					transactionRepository.save(t);
+				}
+			}catch (Exception e) {
+				logger.error("ERROR| Transaction does not exists in pcc");
+			}
+		}
+	}
+	
+	public Status checkTransaction(String paymentId) {
+		Transaction t=transactionRepository.findByPaymentId(paymentId);
+		if(t==null) {
+			return null;
+		}
+		return t.getStatus();
+	}
+	
 }

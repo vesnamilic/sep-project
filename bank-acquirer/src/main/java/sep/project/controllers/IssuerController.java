@@ -1,5 +1,7 @@
 package sep.project.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import sep.project.DTOs.PCCRequestDTO;
 import sep.project.DTOs.PCCResponseDTO;
+import sep.project.model.Transaction;
 import sep.project.services.IssuerService;
 
 @RestController
@@ -19,11 +22,20 @@ import sep.project.services.IssuerService;
 public class IssuerController {
 
 	@Autowired
-    private IssuerService issuerService;
+	private IssuerService issuerService;
+
+	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
 	@PostMapping(value = "/paymentRequest")
 	public ResponseEntity<PCCResponseDTO> paymentRequest(@RequestBody PCCRequestDTO request) {
+		logger.info("INFO | paymentRequest is called");
 		return issuerService.checkPayment(request);
+	}
+
+	@PostMapping(value = "/paymentRequest/returnMonay")
+	public Boolean retrunMonay(@RequestBody String request) {
+		logger.info("INFO | retrunMonay is called");
+		return issuerService.returnMonay(request);
 	}
 
 }

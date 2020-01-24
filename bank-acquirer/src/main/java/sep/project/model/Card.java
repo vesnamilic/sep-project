@@ -1,13 +1,10 @@
 package sep.project.model;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import sep.project.encryption.CryptoConverter;
 
 @Entity
 public class Card {
@@ -34,9 +31,6 @@ public class Card {
 	@Column(nullable = false)
 	private Float availableFunds;
 
-	@Column(nullable = false)
-	private Float reservedFunds;
-	
 	public Card() {
 		
 	}
@@ -79,14 +73,6 @@ public class Card {
 
 	public void setAvailableFunds(Float availableFunds) {
 		this.availableFunds = availableFunds;
-	}
-
-	public Float getReservedFunds() {
-		return reservedFunds;
-	}
-
-	public void setReservedFunds(Float reservedFunds) {
-		this.reservedFunds = reservedFunds;
 	}
 
 	public String getExpDate() {

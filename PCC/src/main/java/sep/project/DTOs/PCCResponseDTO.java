@@ -17,6 +17,8 @@ public class PCCResponseDTO {
 	private Long merchantOrderID;
 
 	private Status status;
+	
+	private String paymentId;
 
 	public PCCResponseDTO() {
 
@@ -81,4 +83,12 @@ public class PCCResponseDTO {
 		this.acquirerTimestamp = acquirerTimestamp;
 	}
 
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(String paymentId) {
+		this.paymentId = paymentId;
+	}
+	
 }
