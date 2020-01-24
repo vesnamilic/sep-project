@@ -17,7 +17,7 @@ public class ClientService {
 	@Autowired
 	ClientRepository clientRepository;
 		
-	public Client getClient(String email) {
+	public Client findByEmail(String email) {
 		
 		return clientRepository.findByEmail(email);
 	}
@@ -36,7 +36,7 @@ public class ClientService {
 		
 		List<FieldDTO> list = new ArrayList<FieldDTO>();
 		
-		list.add(new FieldDTO("clientID", "Client ID", FieldType.TEXT, true));
+		list.add(new FieldDTO("clientId", "Client ID", FieldType.TEXT, true));
 		list.add(new FieldDTO("clientSecret", "Secret", FieldType.TEXT, true));
 		
 		return list;

@@ -58,7 +58,7 @@ public class OrderController {
 	private ResponseEntity<?> createOrder(@RequestBody OrderInformationDTO order) {
 		
 		logger.info("INITIATED | Adding a new order | Seller's email: " + order.getEmail());
-		Seller seller = this.sellersService.getSeller(order.getEmail());
+		Seller seller = this.sellersService.findByEmail((order.getEmail()));
 
 		if (seller == null) {
 			logger.error("CANCELED | Finding a seller based on the given email address | Email: "

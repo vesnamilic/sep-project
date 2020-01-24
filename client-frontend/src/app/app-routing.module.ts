@@ -8,12 +8,15 @@ import { ChoosePaymentMethodComponent } from './choose-payment-method/choose-pay
 import { SuccessComponent } from './success/success.component';
 import { CancelComponent } from './cancel/cancel.component';
 import { ErrorComponent } from './error/error.component';
+import { NonAuthGuardService } from './authentication/non-auth-guard.service';
+import { AuthGuardService } from './authentication/auth-guard.service';
 
 
 const routes: Routes = [
   {
     path: 'registration',
     component: RegistrationComponent
+    //canActivate: [NonAuthGuardService]
   },
   {
     path: '',
@@ -21,7 +24,8 @@ const routes: Routes = [
   },
   {
     path: 'paymentmethods',
-    component: PaymentMethodsComponent
+    component: PaymentMethodsComponent,
+    canActivate: [AuthGuardService]
   },
   {
     path: 'payment/:id',

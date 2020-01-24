@@ -1,7 +1,5 @@
 package sep.project.controllers;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +16,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.paypal.api.payments.Payment;
-import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 
 import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
+import sep.project.model.BillingPlan;
 import sep.project.model.Client;
-import sep.project.model.Transaction;
+import sep.project.services.BillingPlanService;
 import sep.project.services.ClientService;
 import sep.project.services.PayPalService;
-import sep.project.services.TransactionService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
@@ -43,7 +39,7 @@ public class PayPalController {
 	private PayPalService payPalService;
 	
 	@Autowired
-	private TransactionService transactionService;
+	private BillingPlanService billingPlanService;
 
 	private static final Logger logger = LoggerFactory.getLogger(PayPalController.class);
 
@@ -63,7 +59,7 @@ public class PayPalController {
 		logger.info("INITIATED | PayPal Payment | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 
 		//check if paypal client exists
-		Client client = clientService.getClient(paymentDTO.getEmail());
+		Client client = clientService.findByEmail(paymentDTO.getEmail());
 		if (client == null) {
 			logger.error("CANCELED | PayPal Payment | Amount: " + paymentDTO.getPaymentAmount() + " " + paymentDTO.getPaymentCurrency());
 			return ResponseEntity.ok(errorURL);
@@ -95,7 +91,7 @@ public class PayPalController {
 		logger.info("INITIATED | PayPal Payment Execution");
 
 		// check if paypal client exists
-		Client client = clientService.getClient(email);
+		Client client = clientService.findByEmail(email);
 		if (client == null) {
 			logger.error("CANCELED | PayPal Payment Execution");
 
@@ -139,7 +135,7 @@ public class PayPalController {
 		logger.info("INITIATED | PayPal Billing Plan | Amount: " + billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency());
 	  
 		//check if paypal client exists
-		Client client = clientService.getClient(billingPlanDTO.getEmail());
+		Client client = clientService.findByEmail(billingPlanDTO.getEmail());
 		if(client == null) { 
 			logger.error("CANCELED | PayPal Billing Plan | Amount: " + billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency());
 			return ResponseEntity.ok(errorURL); 
@@ -168,9 +164,10 @@ public class PayPalController {
 	  
 		logger.info("INITIATED | PayPal Billing Agreement");
 	  
-		//check if paypal client exists has a billing plan
-		Client client = clientService.getClient(billingAgreementDTO.getEmail());
-		if(client == null || client.getBillingPlan() == null) { 
+		//check if paypal client exists and if billing plan exists
+		Client client = clientService.findByEmail(billingAgreementDTO.getEmail());
+		BillingPlan billingPlan = billingPlanService.getOne(billingAgreementDTO.getBillingPlanId());
+		if(client == null || billingPlan == null) { 
 			logger.error("CANCELED | PayPal Billing Agreement");
 			return ResponseEntity.ok(errorURL); 
 		}
@@ -178,7 +175,7 @@ public class PayPalController {
 		String redirectUrl = "";
 		try {
 			  
-			redirectUrl = payPalService.createBillingAgreement(client);
+			redirectUrl = payPalService.createBillingAgreement(client, billingPlan);
 		}
 		catch (PayPalRESTException e) {			
 			logger.error("CANCELED | PayPal Billing Agreement");
@@ -204,9 +201,9 @@ public class PayPalController {
   
 		logger.info("INITIATED | PayPal Billing Agreement Execution");
   
-		//check if paypal client exists or has a billing plan
-		Client client = clientService.getClient(email);
-		if(client == null || client.getBillingPlan() == null) { 
+		//check if paypal client exists
+		Client client = clientService.findByEmail(email);
+		if(client == null) { 
 			logger.error("CANCELED | PayPal Billing Agreement Execution");
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();

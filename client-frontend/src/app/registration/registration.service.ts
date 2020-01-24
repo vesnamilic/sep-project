@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Seller } from '../model/seller';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { JwtResponse } from '../model/jwtresponse';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,12 +13,12 @@ export class RegistrationService {
 
   constructor(private http: HttpClient) { }
 
-  register(seller: Seller) {
+  register(seller: Seller): Observable<JwtResponse> {
     const httpOptions = {
       headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
     };
 
-    return this.http.post(this.baseUrl, seller, httpOptions);
+    return this.http.post<JwtResponse>(this.baseUrl, seller, httpOptions);
   }
 
 }

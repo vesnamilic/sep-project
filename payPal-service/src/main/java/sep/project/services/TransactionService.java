@@ -28,6 +28,6 @@ public class TransactionService {
 	
 	public List<Transaction> findAllCreatedTransactions(Client client){
 		
-		return transactionRepository.findByClientAndStatus(client, TransactionStatus.INITIATED);
+		return transactionRepository.findByClientAndStatus(client, TransactionStatus.CREATED);
 	}
 }

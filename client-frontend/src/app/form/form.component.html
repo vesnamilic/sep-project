@@ -16,11 +16,10 @@
                             </form>
                             <div class="row">
                                 <div class="col-6">
-                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="submitForm(stepper)" type="button" form="forms[paymentMethod.name.toLowerCase()]" [disabled]="!forms[paymentMethod.name.toLowerCase()].valid">Confirm</button>
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="submitForm(stepper, paymentMethod.name, i)" type="button" form="forms[paymentMethod.name.toLowerCase()]" [disabled]="!forms[paymentMethod.name.toLowerCase()].valid">Confirm</button>
                                 </div>
                                 <div class="col-6">
-                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" *ngIf="i < paymentMethods.length-1" mat-button matStepperNext>Skip</button>
-                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2 " *ngIf="i == paymentMethods.length-1" mat-button>Skip</button>
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="skipForm(stepper, i)" type="button" >Skip</button>
                                 </div>
                             </div> 
                         </div>

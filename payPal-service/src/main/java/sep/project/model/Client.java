@@ -1,11 +1,14 @@
 package sep.project.model;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import sep.project.utils.CryptoConverter;
 
@@ -19,9 +22,6 @@ public class Client {
 	@Column
 	private String email;
 	
-	@Column
-	private String name;
-	
     @Column
     @Convert(converter = CryptoConverter.class)
     private String clientId;
@@ -30,17 +30,16 @@ public class Client {
     @Convert(converter = CryptoConverter.class)
     private String clientSecret;
     
-    @Column
-    private String billingPlan;
+    @OneToMany
+    private Set<BillingPlan> billingPlans;
 	
 	public Client(){
 		
 	}
 	
-	public Client(Long id, String clientId, String email, String name, String clientSecret){
+	public Client(Long id, String clientId, String email, String clientSecret){
 		this.id = id;
 		this.email = email;
-		this.name = name;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 	}
@@ -77,20 +76,12 @@ public class Client {
 		this.clientSecret = clientSecret;
 	}
 
-	public String getBillingPlan() {
-		return billingPlan;
+	public Set<BillingPlan> getBillingPlans() {
+		return billingPlans;
 	}
 
-	public void setBillingPlan(String billingPlan) {
-		this.billingPlan = billingPlan;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public void setBillingPlans(Set<BillingPlan> billingPlans) {
+		this.billingPlans = billingPlans;
 	}
 
 }

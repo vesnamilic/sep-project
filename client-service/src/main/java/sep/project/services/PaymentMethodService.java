@@ -38,7 +38,7 @@ public class PaymentMethodService {
 	 * @see PaymentMethod
 	 */
 	public PaymentMethod getByName(String name) {
-		return this.paymentMethodRepository.findByNameAndDeleted(name, false);
+		return this.paymentMethodRepository.findByDeletedAndNameIgnoreCase(false, name);
 
 	}
 

@@ -12,8 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 
-import sep.project.utils.CryptoConverter;
-
 @EnableScheduling
 @SpringBootApplication
 @EnableEurekaClient

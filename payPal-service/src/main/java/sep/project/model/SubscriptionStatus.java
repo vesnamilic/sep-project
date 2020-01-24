@@ -1,6 +1,6 @@
 package sep.project.model;
 
-public enum TransactionStatus {
+public enum SubscriptionStatus {
 	INITIATED,
 	CREATED,
 	COMPLETED,

@@ -1,24 +1,35 @@
 package sep.project.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import sep.project.dto.FieldDTO;
+import sep.project.model.BillingPlan;
 import sep.project.model.Client;
+import sep.project.services.BillingPlanService;
 import sep.project.services.ClientService;
 
 @RestController
@@ -29,21 +40,61 @@ public class ClientController {
 	@Autowired
 	ClientService clientService;
 	
+	@Autowired
+	BillingPlanService billingPlanService;
+	
 	private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 	
 	/**
 	 * Adding a new PaymentHub client to the PayPal database 
 	 */
 	@PostMapping("")
-	public ResponseEntity<?> addClient(@RequestBody String clientString) {		
+	public ResponseEntity<?> addClient(@RequestHeader("Authorization") String authorization, @RequestBody String clientString) {		
         
 		logger.info("INITIATED | Adding a new PaymentHub client to the PayPal database");
 		
+		String email = "";
+
+		String url = "https://localhost:8762/api/client/seller/whoami";
+	    
+	    RestTemplate restTemplate = new RestTemplate();
+	    	    
+	    //add Authorization header
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.set("Authorization", authorization);
+	    
+	    HttpEntity<?> httpEntity = new HttpEntity<Object>(headers);
+	    
+	    //send request to find out who is logged in
+	    try {
+	    	ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+	      
+	      email = (String) response.getBody();
+	    }
+	    catch(HttpClientErrorException e) {
+	    	logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+	    	return ResponseEntity.status(401).build();
+	    }
+	    catch(Exception e) {
+	    	logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			return ResponseEntity.status(401).build();
+	    }
+	    	
 		Gson gson = new Gson();
-        Client client = gson.fromJson(clientString, Client.class); 
-        		
+		Client client;
+		
+		try {
+			client = gson.fromJson(clientString, Client.class);
+		}
+		catch(JsonSyntaxException e) {
+			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			return ResponseEntity.status(400).build();
+		}
+		        
+        client.setEmail(email);
+                                		
 		//check if client with this email address already exists
-		Client checkClient = clientService.getClient(client.getEmail());	
+		Client checkClient = clientService.findByEmail(client.getEmail());	
 		if(checkClient != null) {
 			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
 			return ResponseEntity.status(400).build();
@@ -53,13 +104,12 @@ public class ClientController {
 		
 		if(newClient != null) {
 			logger.info("COMPLETED | Adding a new PaymentHub client to the PayPal database");
-			return ResponseEntity.status(201).build();
+			return ResponseEntity.status(200).build();
 		}
 		else {
 			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
 			return ResponseEntity.status(400).build();
-		}
-		
+		}	
 	}
 	
 	/**
@@ -78,9 +128,38 @@ public class ClientController {
 			return new ResponseEntity<>(fields, HttpStatus.OK);
 		}
 		else {
-			logger.error("COMPLETED | Getting fields for registration dynamic form");
+			logger.error("CANCELED | Getting fields for registration dynamic form");
 			return ResponseEntity.status(400).build();
 		}
+	}
+	
+	/**
+	 * Getting existing billing plans for a client
+	 */
+	@GetMapping("plans/{sellerEmail}")
+	public ResponseEntity<?> getBillingPlans(@PathVariable String sellerEmail){
+		
+		logger.info("INITIATED | Getting billing plans for a client | Email: " + sellerEmail);
+		
+		//check if client with this email address exists
+		Client client = clientService.findByEmail(sellerEmail);
+		if (client == null) {
+			logger.error("CANCELED | Getting billing plans for a client | Email: " + sellerEmail);
+			return ResponseEntity.status(400).body("There is no PayPal client with the given email");
+		}
+		
+		//get existing billing plans for a client
+		Set<BillingPlan> billingPlans = client.getBillingPlans();
+		
+		if(billingPlans != null) {
+			logger.info("COMPLETED | Getting billing plans for a client | Email: " + sellerEmail);
+			return new ResponseEntity<>(billingPlans, HttpStatus.OK);
+		}
+		else {
+			logger.error("COMPLETED | Getting billing plans for a client | Email: " + sellerEmail);
+			return ResponseEntity.status(400).build();
+		}
+				
 	}
 	
 }

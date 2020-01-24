@@ -13,6 +13,6 @@ public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Lo
 	
 	PaymentMethod findByIdAndDeleted(Long id, Boolean deleted);
 	
-	PaymentMethod findByNameAndDeleted(String name, Boolean deleted);
+	PaymentMethod findByDeletedAndNameIgnoreCase(Boolean deleted, String name);
 
 }
