@@ -9,3 +9,25 @@ server:
     trust-store: classpath:mock_scientific_center_trustedStore.jks
     trust-store-password: password
     trust-store-type: JKS
+   
+  
+spring:
+  application: 
+    name: mock-scientific-center
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mock-scientific-center    
+    username: postgres
+    password: root
+    initialization-mode: always  
+    sql-script-encoding: UTF-8
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate: 
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+   

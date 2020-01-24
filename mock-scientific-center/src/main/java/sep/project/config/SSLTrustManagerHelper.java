@@ -1,4 +1,4 @@
-package sep.config;
+package sep.project.config;
 
 import java.io.IOException;
 import java.security.KeyManagementException;

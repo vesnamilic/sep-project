@@ -17,8 +17,7 @@ public class BankServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BankServiceApplication.class, args);
 	}
-
-
+	
     @Bean
 	public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() throws NoSuchAlgorithmException {
 		DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();

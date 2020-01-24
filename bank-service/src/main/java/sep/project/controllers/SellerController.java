@@ -28,7 +28,7 @@ public class SellerController {
 
 	@Autowired
 	SellerService sellerService;
-
+	
 	private static final Logger logger = LoggerFactory.getLogger(SellerController.class);
 
 	@PostMapping("")

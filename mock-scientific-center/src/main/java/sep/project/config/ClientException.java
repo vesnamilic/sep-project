@@ -1,4 +1,4 @@
-package sep.config;
+package sep.project.config;
 
 public class ClientException extends RuntimeException {
     public ClientException() {

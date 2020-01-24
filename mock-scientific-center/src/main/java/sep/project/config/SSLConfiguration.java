@@ -1,4 +1,4 @@
-package sep.config;
+package sep.project.config;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
