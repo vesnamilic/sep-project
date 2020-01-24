@@ -44,6 +44,15 @@ public class Transaction {
 	@Column
 	private Long paymentId;
 	
+	@Column(name = "successUrl")
+	private String successUrl;
+	
+	@Column(name = "errorUrl")
+	private String errorUrl;
+	
+	@Column(name = "failedUrl")
+	private String failedUrl;
+	
 	@ManyToOne
 	private Merchant merchant;
 
@@ -122,6 +131,30 @@ public class Transaction {
 
 	public void setPaymentId(Long paymentId) {
 		this.paymentId = paymentId;
+	}
+
+	public String getSuccessUrl() {
+		return successUrl;
+	}
+
+	public void setSuccessUrl(String successUrl) {
+		this.successUrl = successUrl;
+	}
+
+	public String getErrorUrl() {
+		return errorUrl;
+	}
+
+	public void setErrorUrl(String errorUrl) {
+		this.errorUrl = errorUrl;
+	}
+
+	public String getFailedUrl() {
+		return failedUrl;
+	}
+
+	public void setFailedUrl(String failedUrl) {
+		this.failedUrl = failedUrl;
 	}
 
 	

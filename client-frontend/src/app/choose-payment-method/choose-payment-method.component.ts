@@ -14,7 +14,7 @@ export class ChoosePaymentMethodComponent implements OnInit {
 
   paymentMethods: string[];
 
-  orderId: number;
+  orderId: string;
 
   constructor(private paymentService: PaymentService, private router: Router, private activeRoute: ActivatedRoute) { }
 
@@ -27,7 +27,7 @@ export class ChoosePaymentMethodComponent implements OnInit {
 
     this.activeRoute.paramMap.subscribe(
       params => {
-        this.orderId = +params.get('id');
+        this.orderId = params.get('id');
       });
 
     this.getPaymentMethods();
@@ -39,7 +39,7 @@ export class ChoosePaymentMethodComponent implements OnInit {
         this.paymentMethods = data as string[];
       },
       error => {
-        alert('An error occurred while getting accommodation information.');
+        alert(error);
       }
     );
   }
@@ -52,7 +52,7 @@ export class ChoosePaymentMethodComponent implements OnInit {
         document.location.href  = response.url;
       },
       error => {
-        alert('An error ocurred.');
+        alert(error);
       }
     );
 

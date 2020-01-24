@@ -3,6 +3,8 @@ package sep.project.controllers;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,41 +57,45 @@ public class OrderController {
 	private String paymentMethodsRedirectURL;
 
 	@PostMapping("/create")
-	private ResponseEntity<?> createOrder(@RequestBody OrderInformationDTO order) {
+	private ResponseEntity<?> createOrder(@RequestBody @Valid OrderInformationDTO order) {
 		
 		logger.info("INITIATED | Adding a new order | Seller's email: " + order.getEmail());
+		
 		Seller seller = this.sellersService.getSeller(order.getEmail());
 
 		if (seller == null) {
-			logger.error("CANCELED | Finding a seller based on the given email address | Email: "
-					+ order.getEmail());
+			logger.error("CANCELED | Finding a seller based on the given email address | Email: " + order.getEmail());
 			return ResponseEntity.status(400).body("There is no seller registred with the given email address");
 		}
-
-		UserOrder saved = this.orderService
-				.saveOrder(new UserOrder(null, order.getPaymentAmount(), order.getPaymentCurrency(), seller));
+		UserOrder createdOrder = this.orderService.createOrder(order, seller);
+		createdOrder = this.orderService.saveOrder(createdOrder);
 
 		// TODO: Dodati poruku korisniku
-		if (saved == null) {
+		if (createdOrder == null) {
 			logger.error("CANCELED | Saving user order | Seller's email: " + order.getEmail());
 			return ResponseEntity.status(400).body("");
 		}
 		
-		logger.info("COMPLETED | Order created | Order id: " + saved.getId());
-
-		return ResponseEntity.ok(saved.getId());
+		logger.info("COMPLETED | Order created | Order id: " + createdOrder.getId());
+		return ResponseEntity.ok(createdOrder.getUuid());
 	}
+	
+  
+	@PutMapping("/complete/{orderUUID}")
+	private ResponseEntity<?> sendOrder(@PathVariable String orderUUID, @RequestBody String paymentMethodName) {
 
-	@PutMapping("/complete/{orderId}")
-	private ResponseEntity<?> sendOrder(@PathVariable Long orderId, @RequestBody String paymentMethodName) {
-
-		logger.info("INITIATED | Sending order to payment service | Order id: " + orderId + ", Payment method: " + paymentMethodName);
+		logger.info("INITIATED | Sending order to payment service | Order uuid: " + orderUUID + ", Payment method: " + paymentMethodName);
 		
-		UserOrder order = this.orderService.getOrder(orderId);
+		UserOrder order = this.orderService.findOrderByUUID(orderUUID);
 
 		if (order == null) {
-			logger.error("CANCELED | Finding an order based on the given id |  Order id: " + orderId);
+			logger.error("CANCELED | Finding an order based on the given id |  Order uuid: " + orderUUID);
 			return ResponseEntity.status(400).body("The order with given id doesn't exist.");
+		}
+		
+		if(this.orderService.isExpired(order.getExpirationDate())) {
+			logger.error("CANCELED | Checking if the order is expired |  Order uuid: " + orderUUID);
+			return ResponseEntity.status(400).body("The order with given id is expired exist.");
 		}
 
 		PaymentMethod paymentMethod = this.paymentMethodService.getByName(paymentMethodName);
@@ -98,12 +104,10 @@ public class OrderController {
 			logger.error("CANCELED | Finding the payment method |  Payment method: " + paymentMethodName);
 			return ResponseEntity.status(400).body("Selected payment method doesn't exist");
 		}
+		
+		// Slanje narudzbine servisu za placanje
 
-		OrderInformationDTO orderDTO = new OrderInformationDTO();
-		orderDTO.setPaymentAmount(order.getPaymentAmount());
-		orderDTO.setPaymentCurrency(order.getPaymentCurrency());
-		orderDTO.setEmail(order.getSeller().getEmail());
-
+		OrderInformationDTO orderDTO = new OrderInformationDTO(order);
 		HttpEntity<OrderInformationDTO> request = new HttpEntity<>(orderDTO);
 		System.out.println(paymentMethodName);
 		ResponseEntity<String> response = null;
@@ -114,37 +118,40 @@ public class OrderController {
 			logger.error("CANCELED | Sending the request to payment method service |  Payment method: " + paymentMethod);
 			return ResponseEntity.status(400).body("An error occurred while trying to contact the payment microservice!");
 		}
-		// TODO: Pitati
-		/*HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", response.getBody());
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);*/
+		
 		
 		PaymentResponse url = new PaymentResponse();
 		url.setUrl(response.getBody());
 
-		logger.info("COMPLETED | Sending order to payment service | Order id: " + orderId + ", Payment method: " + paymentMethodName);
+		logger.info("COMPLETED | Sending order to payment service | Order uuid: " + order.getUuid() + ", Payment method: " + paymentMethodName);
+
 		
 		return ResponseEntity.ok(url);
+		
 	}
 
-	@GetMapping("/paymentMethods/{orderId}")
-	private ResponseEntity<?> getOrdersPossiblePaymentMethod(@PathVariable Long orderId) {
-		UserOrder order = this.orderService.getOrder(orderId);
-		logger.info("INITIATED | Getting all available payment methods for an order | Order id: " + orderId);
+	@GetMapping("/paymentMethods/{uuid}")
+	private ResponseEntity<?> getOrdersPossiblePaymentMethod(@PathVariable String uuid) {
+		
+		logger.info("INITIATED | Getting all available payment methods for an order | Order uuid: " + uuid);
+		
+		UserOrder order = this.orderService.findOrderByUUID(uuid);
+		
 		if (order == null) {
-			logger.error("CANCELED | Finding an order based on the given id |  Order id: " + orderId);
+			logger.error("CANCELED | Finding an order based on the given id |  Order uuid: " + uuid);
 			return ResponseEntity.status(400).body("The order with given id doesn't exist.");
+		}
+		
+		if(this.orderService.isExpired(order.getExpirationDate())) {
+			logger.error("CANCELED | Checking if the order is expired |  Order uuid: " + uuid);
+			return ResponseEntity.status(400).body("The order with given id is expired exist.");
 		}
 
 		Seller seller = order.getSeller();
-
 		Set<PaymentMethod> paymentMethods = this.sellersService.getPayments(seller.getEmail());
 
 		if (paymentMethods != null) {
-
-			Set<String> payments = paymentMethods.stream().map(payment -> payment.getName())
-					.collect(Collectors.toSet());
+			Set<String> payments = paymentMethods.stream().map(payment -> payment.getName()).collect(Collectors.toSet());
 			logger.info("COMPLETED | Getting all available payment methods for an existing client | Email: " + seller.getEmail());
 			return new ResponseEntity<>(payments, HttpStatus.OK);
 		} else {
