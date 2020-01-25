@@ -35,7 +35,8 @@ public class SellerService {
 		
 		return seller;
 	}
-	public Seller getSeller(String email) {
+	
+	public Seller findByEmail(String email) {
 		
 		return sellerRepository.findByEmailAndDeleted(email, false);
 	}
@@ -45,18 +46,14 @@ public class SellerService {
 		return sellerRepository.findByIdAndDeleted(id, false);
 	}
 	
-	public Seller addSeller(Seller seller) {
-		if(getSeller(seller.getEmail()) == null && seller.getId() == null) {
-			Seller saved = sellerRepository.save(seller);
-						
-			return saved;
-		}
-		return null;
+	public Seller save(Seller seller) {
+		
+		return sellerRepository.save(seller);
 	}
 	
 	public Set<PaymentMethod> getPayments(String email) {
 		
-		Seller seller = getSeller(email);
+		Seller seller = findByEmail(email);
 		if(seller == null) {
 			
 			return null;
@@ -65,20 +62,4 @@ public class SellerService {
 		return seller.getPaymentMethods();
 	}
 
-	public Seller addPayment(Long sellerId, PaymentMethod paymentMethod) {
-		
-		Seller seller = getSeller(sellerId);
-		PaymentMethod pm = paymentMethodRepository.findByIdAndDeleted(paymentMethod.getId(),false);
-		
-		if(seller == null || pm == null) {
-			
-			return null;
-		}
-		
-		seller.getPaymentMethods().add(pm);
-		
-		sellerRepository.save(seller);
-		
-		return seller;
-	}
 }

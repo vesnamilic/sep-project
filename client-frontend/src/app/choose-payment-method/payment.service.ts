@@ -13,11 +13,11 @@ httpOptions = {
 
   constructor(private http: HttpClient) { }
 
-  getPaymentMethod(id: number) {
+  getPaymentMethod(id: string) {
     return this.http.get(this.baseUrl + 'paymentMethods/' + id, this.httpOptions);
   }
 
-  sentSelectedPaymentMethod(id: number, paymentMethod: string) {
+  sentSelectedPaymentMethod(id: string, paymentMethod: string) {
     console.log(paymentMethod);
     return this.http.put(this.baseUrl + 'complete/' + id, paymentMethod, this.httpOptions);
   }

@@ -24,10 +24,10 @@ public class Seller {
 	private String email;
 	
 	@Column
-	private String password;
+	private String name;
 	
-    @Column
-    private String name;
+	@Column
+	private String password;
     
     @Column
     private boolean deleted;
@@ -57,14 +57,6 @@ public class Seller {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public boolean isDeleted() {
@@ -97,6 +89,14 @@ public class Seller {
 
 	public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
 		this.lastPasswordResetDate = lastPasswordResetDate;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

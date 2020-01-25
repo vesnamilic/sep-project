@@ -12,7 +12,7 @@ public class PaymentRequestDTO {
 	
 	private String title;
 	
-	private String Description;
+	private String description;
 	
 	private String callback_url;
 	
@@ -27,12 +27,20 @@ public class PaymentRequestDTO {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PaymentRequestDTO(Double price_amount, String price_currency, String receive_currency) {
+	public PaymentRequestDTO(String order_id, Double price_amount, String price_currency, String receive_currency, String callback_url, String cancel_url, String success_url,
+			String token) {
 		super();
+		this.order_id = order_id;
 		this.price_amount = price_amount;
 		this.price_currency = price_currency;
 		this.receive_currency = receive_currency;
+		this.callback_url = callback_url;
+		this.cancel_url = cancel_url;
+		this.success_url = success_url;
+		this.token = token;
 	}
+
+
 
 	public String getOrder_id() {
 		return order_id;
@@ -75,11 +83,11 @@ public class PaymentRequestDTO {
 	}
 
 	public String getDescription() {
-		return Description;
+		return description;
 	}
 
 	public void setDescription(String description) {
-		Description = description;
+		this.description = description;
 	}
 
 	public String getCallback_url() {

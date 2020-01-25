@@ -1,6 +1,9 @@
 
+INSERT INTO crypto(iv, text) VALUES ('ygBGesmG86m77tpQ', 'Jc0XpB+eVJuot9n3ax/bep+3th3q3C/VK8IF7yRMHCrL8nDO3nZwvfq//nrgchd7');
+
+
 -- MERCHANT DATA --
-INSERT INTO merchant(id,email, token) VALUES (1,'test@gmail.com', 'Funpnt4xVdM7J9yPJXJkPTW1NGlk35Moq3DgjmU67fMFfbfFtbDeVkvRFoLaTiZm');
+INSERT INTO merchant(email, token) VALUES ('test@gmail.com', 'Jc0XpB+eVJuot9n3ax/bep+3th3q3C/VK8IF7yRMHCrL8nDO3nZwvfq//nrgchd7');
 
 
 -- TRANSACTION DATA -- 

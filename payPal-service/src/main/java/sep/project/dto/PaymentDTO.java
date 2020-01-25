@@ -1,10 +1,5 @@
 package sep.project.dto;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.paypal.api.payments.Transaction;
-
 public class PaymentDTO {
 	
 	private String email;

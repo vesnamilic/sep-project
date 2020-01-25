@@ -1,6 +1,7 @@
 package sep.project.dto;
 
 import sep.project.model.BillingPlanFrequency;
+import sep.project.model.BillingType;
 
 public class BillingPlanDTO {
 	
@@ -11,16 +12,19 @@ public class BillingPlanDTO {
 	private String paymentCurrency;
 	
 	private BillingPlanFrequency frequency;
+	
+	private BillingType type;
 			
 	public BillingPlanDTO(){
 		
 	}
 	
-	public BillingPlanDTO(String email, Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency){
+	public BillingPlanDTO(String email, Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency, BillingType type){
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
 		this.frequency = frequency;
+		this.type = type;
 	}
 	
 	public BillingPlanDTO(String email, Double paymentAmount){
@@ -28,6 +32,7 @@ public class BillingPlanDTO {
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = "USD";
 		this.frequency = BillingPlanFrequency.MONTH;
+		this.type = BillingType.INFINITE;
 	}
 
 	public String getEmail() {
@@ -60,6 +65,14 @@ public class BillingPlanDTO {
 
 	public void setFrequency(BillingPlanFrequency frequency) {
 		this.frequency = frequency;
+	}
+
+	public BillingType getType() {
+		return type;
+	}
+
+	public void setType(BillingType type) {
+		this.type = type;
 	}
 	
 }

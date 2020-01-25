@@ -32,8 +32,11 @@ export class FormService {
     return this.http.get<PaymentMethod[]>(url, this.httpOptions);
   }
 
-  addPaymentMethod(paymentmethod: string) {
+  addPaymentMethod(paymentmethod: string, valuesList: any) {
 
+    const url = this.baseUrl + 'client/seller/paymentmethod/' + paymentmethod;
+
+    return this.http.post(url, valuesList, this.httpOptions);
   }
 
 }

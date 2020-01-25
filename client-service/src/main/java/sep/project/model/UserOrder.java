@@ -1,7 +1,11 @@
 package sep.project.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,11 +18,30 @@ public class UserOrder {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
+	@Column(name = "uuid")
+	private String uuid;
+	
+	@Column(name = "expirationDate")
+	private Date expirationDate;
+	
+	@Column(name = "orderStatus")
+	@Enumerated(EnumType.STRING)
+	private OrderStatus orderStatus;
+	
+	@Column(name = "paymentAmount")
 	private double paymentAmount;
 	
-	@Column
+	@Column(name = "paymentCurrency")
 	private String paymentCurrency;
+	
+	@Column(name = "successUrl")
+	private String successUrl;
+	
+	@Column(name = "errorUrl")
+	private String errorUrl;
+	
+	@Column(name = "failedUrl")
+	private String failedUrl;
 	
 	@ManyToOne
 	private Seller seller;
@@ -28,11 +51,17 @@ public class UserOrder {
 		// TODO Auto-generated constructor stub
 	}
 
-	public UserOrder(Long id, double amount, String currency, Seller seller) {
+	public UserOrder(String uuid, Date expirationDate, OrderStatus orderStatus, double paymentAmount,
+			String paymentCurrency, String successUrl, String errorUrl, String failedUrl, Seller seller) {
 		super();
-		this.id = id;
-		this.paymentAmount = amount;
-		this.paymentCurrency = currency;
+		this.uuid = uuid;
+		this.expirationDate = expirationDate;
+		this.orderStatus = orderStatus;
+		this.paymentAmount = paymentAmount;
+		this.paymentCurrency = paymentCurrency;
+		this.successUrl = successUrl;
+		this.errorUrl = errorUrl;
+		this.failedUrl = failedUrl;
 		this.seller = seller;
 	}
 
@@ -66,6 +95,54 @@ public class UserOrder {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+	}
+
+	public OrderStatus getOrderStatus() {
+		return orderStatus;
+	}
+
+	public void setOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+
+	public String getSuccessUrl() {
+		return successUrl;
+	}
+
+	public void setSuccessUrl(String successUrl) {
+		this.successUrl = successUrl;
+	}
+
+	public String getErrorUrl() {
+		return errorUrl;
+	}
+
+	public void setErrorUrl(String errorUrl) {
+		this.errorUrl = errorUrl;
+	}
+
+	public String getFailedUrl() {
+		return failedUrl;
+	}
+
+	public void setFailedUrl(String failedUrl) {
+		this.failedUrl = failedUrl;
 	}
 
 }

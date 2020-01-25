@@ -5,6 +5,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Field } from '../model/field';
 import { PaymentMethod } from '../model/paymentmethod';
 import { MatStepper } from '@angular/material/stepper';
+import { ValueTransformer } from '@angular/compiler/src/util';
 
 @Component({
   selector: 'app-form',
@@ -24,9 +25,6 @@ export class PaymentMethodsComponent implements OnInit {
 
   ngOnInit() {
     this.createForms();
-
-    console.log(this.fields);
-    console.log(this.forms);
   }
 
   createForms() {
@@ -47,7 +45,6 @@ export class PaymentMethodsComponent implements OnInit {
         console.log('An error ocurred.');
       }
     );
- 
   }
 
   getFields(paymentMethodName: string) {
@@ -69,7 +66,7 @@ export class PaymentMethodsComponent implements OnInit {
         this.forms[paymentMethodName] = form;
       },
       error => {
-        console.log('An error ocurred.');
+        console.log('An error ocurred. Please try again!');
       }
     );
   }
@@ -79,18 +76,48 @@ export class PaymentMethodsComponent implements OnInit {
     const group: any = {};
 
     fields.forEach(field => {
-      console.log(field.name + " " + field.required);
       group[field.name] = field.required ? new FormControl('', Validators.required) : new FormControl('');
     });
 
     return new FormGroup(group);
   }
 
-  submitForm(stepper: MatStepper, paymentMethod: string) {
+  submitForm(stepper: MatStepper, paymentMethod: string, i: number) {
 
-    // TODO: finish submit method
+    let form = this.forms[paymentMethod.toLowerCase()];
 
-    stepper.next();
+    const valuesList: any = {};
+
+    // create the JSON object for the body
+    Object.keys(form.controls).forEach(key => {
+      valuesList[key] = form.value[key];
+    });
+
+
+    this.formService.addPaymentMethod(paymentMethod.toLowerCase(), valuesList).subscribe(
+      data => {
+        alert('You have successfully added ' + paymentMethod + '!');
+
+        if (i < (this.paymentMethods.length - 1)) {
+          stepper.next();
+        } else {
+          this.router.navigateByUrl('/');
+        }
+      },
+      error => {
+        alert('An error ocurred. Please try again!');
+      }
+    );
+
+  }
+
+  skipForm(stepper: MatStepper, i: number) {
+    if (i < (this.paymentMethods.length - 1)) {
+      stepper.next();
+    } else {
+      alert('You have successfully finished the registration process!');
+      this.router.navigateByUrl('/');
+    }
   }
 
 }
