@@ -17,14 +17,14 @@ public class SellerService {
 	@Autowired
 	SellerRepository sellerRepository;
 		
-	public Seller getSeller(String email) {
+	public Seller findByEmail(String email) {
 		
 		return sellerRepository.findByEmail(email);
 	}
 	
 	public Seller save(Seller seller) {
 		
-		if(getSeller(seller.getEmail()) == null && seller.getId() == null) {
+		if(findByEmail(seller.getEmail()) == null && seller.getId() == null) {
 			Seller saved = sellerRepository.save(seller);	
 			return saved;
 		}
@@ -37,7 +37,7 @@ public class SellerService {
 		List<FieldDTO> list = new ArrayList<FieldDTO>();
 		
 		list.add(new FieldDTO("merchantID", "Merchant ID", FieldType.TEXT, true));
-		list.add(new FieldDTO("merchantPass", "Merchant password", FieldType.PASSWORD, true));
+		list.add(new FieldDTO("merchantPassword", "Merchant password", FieldType.PASSWORD, true));
 		
 		return list;
 	}

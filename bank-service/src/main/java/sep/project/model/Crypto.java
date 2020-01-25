@@ -17,13 +17,13 @@ public class Crypto {
 	private String text;
 	
 	@Column
-	byte[] iv;
+	String iv;
 	
 	public Crypto() {
 		
 	}
 
-	public Crypto(String text, byte[] iv) {
+	public Crypto(String text, String iv) {
 		super();
 		this.text = text;
 		this.iv = iv;
@@ -45,11 +45,11 @@ public class Crypto {
 		this.id = id;
 	}
 
-	public byte[] getIv() {
+	public String getIv() {
 		return iv;
 	}
 
-	public void setIv(byte[] iv) {
+	public void setIv(String iv) {
 		this.iv = iv;
 	}
 	

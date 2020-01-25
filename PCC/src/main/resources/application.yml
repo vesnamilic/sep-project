@@ -1,5 +1,5 @@
 server:
-  port: 9996
+  port: 9998
   ssl:
     enabled: true
     key-store: classpath:pcc_keyStore.jks

@@ -15,6 +15,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
+import org.apache.commons.lang.RandomStringUtils;
+
 import sep.project.BankServiceApplication;
 import sep.project.model.Crypto;
 import sep.project.services.CryptoService;
@@ -23,12 +25,13 @@ import sep.project.services.CryptoService;
 public class CryptoConverter implements AttributeConverter<String, String> {
 
 	private static final String ALGORITHM = "AES/CBC/PKCS5Padding"; // mora PKCS5 jer inace Cannot find any provider supporting AES/CBC/PKCS7Padding
-	//private static final byte[] IvParameterVector = ")H+MbQeThWmZq4t7".getBytes(); // mora biti byte[16] duzina
+
 	@Override
 	public String convertToDatabaseColumn(String something) {
 		
-		byte[] IvParameterVector=new byte[16];
-		
+		String generatedString = RandomStringUtils.randomAlphanumeric(16);
+		byte[] IvParameterVector=generatedString.getBytes();		
+
 		CryptoService cryptoService = SpringContext.getBean(CryptoService.class);
 
 		KeyStore jceks;
@@ -53,7 +56,7 @@ public class CryptoConverter implements AttributeConverter<String, String> {
 		try {
 			Cipher c = Cipher.getInstance(ALGORITHM);
 			c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(IvParameterVector));
-			Crypto crypto=new Crypto(Base64.getEncoder().encodeToString(c.doFinal(something.getBytes())), IvParameterVector);
+			Crypto crypto=new Crypto(Base64.getEncoder().encodeToString(c.doFinal(something.getBytes())), generatedString);
 			cryptoService.save(crypto);
 			return Base64.getEncoder().encodeToString(c.doFinal(something.getBytes()));
 		} catch (Exception e) {
@@ -65,10 +68,7 @@ public class CryptoConverter implements AttributeConverter<String, String> {
 	public String convertToEntityAttribute(String dbData) {
 		
 		CryptoService cryptoService = SpringContext.getBean(CryptoService.class);
-
-		byte[] IvParameterVector=cryptoService.findByText(dbData).getIv();	
-		System.out.println(dbData);
-		System.out.println(IvParameterVector);
+		byte[] IvParameterVector=(cryptoService.findByText(dbData).getIv()).getBytes();	
 		
 		KeyStore jceks;
 		InputStream ins = BankServiceApplication.class.getResourceAsStream("/db.jceks");
