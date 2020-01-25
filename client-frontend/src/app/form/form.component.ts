@@ -45,7 +45,6 @@ export class PaymentMethodsComponent implements OnInit {
         console.log('An error ocurred.');
       }
     );
- 
   }
 
   getFields(paymentMethodName: string) {
@@ -116,6 +115,7 @@ export class PaymentMethodsComponent implements OnInit {
     if (i < (this.paymentMethods.length - 1)) {
       stepper.next();
     } else {
+      alert('You have successfully finished the registration process!');
       this.router.navigateByUrl('/');
     }
   }
