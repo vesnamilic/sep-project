@@ -16,18 +16,17 @@ import sep.project.encryption.CryptoConverter;
  *
  */
 @Entity
-@SequenceGenerator(name="seqMer", initialValue=100, allocationSize=50)
 public class Merchant {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqMer")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
 	@Column
 	private String email;
 	
-	@Column
-	@Convert(converter = CryptoConverter.class)
+    @Column
+    @Convert(converter = CryptoConverter.class)
 	private String token;
 
 	public Merchant() {
