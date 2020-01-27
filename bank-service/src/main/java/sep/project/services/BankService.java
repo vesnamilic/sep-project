@@ -28,31 +28,10 @@ import sep.project.repository.TransactionRepository;
 public class BankService {
 
 	@Autowired
-	SellerRepository sellerRepository;
+	private SellerRepository sellerRepository;
 
 	@Autowired
-	TransactionRepository transactionRepository;
-
-	private static String errorURL;
-
-	@Value("${errorURL}")
-	public void setErrorURL(String s) {
-		errorURL = s;
-	}
-
-	private static String successURL;
-
-	@Value("${successURL}")
-	public void setSuccessURL(String s) {
-		successURL = s;
-	}
-
-	private static String failedURL;
-
-	@Value("${failedURL}")
-	public void setFailedURL(String s) {
-		failedURL = s;
-	}
+	private TransactionRepository transactionRepository;
 
 	private static String firstRequestURL;
 
@@ -60,14 +39,14 @@ public class BankService {
 	public void setFirstRequestURL(String s) {
 		firstRequestURL = s;
 	}
-	
+
 	private static String checkTransactionURL;
 
 	@Value("${checkTransactionURL}")
 	public void setCheckTransactionURL(String s) {
 		checkTransactionURL = s;
 	}
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
 	public ResponseEntity<String> initiatePayment(PayRequestDTO requestDTO) {
@@ -89,12 +68,12 @@ public class BankService {
 
 		RestTemplate template = new RestTemplate();
 		try {
-			ResponseEntity<KPResponseDTO> responseDTO = template.postForEntity(firstRequestURL, bankRequest, KPResponseDTO.class);
+			ResponseEntity<KPResponseDTO> responseDTO = template.postForEntity(firstRequestURL, bankRequest,
+					KPResponseDTO.class);
 			logger.info("INFO | Bank return value");
 			t.setPaymentID(responseDTO.getBody().getPaymentID());
 			transactionRepository.save(t);
-			return ResponseEntity
-					.ok(responseDTO.getBody().getPaymentURL() + responseDTO.getBody().getPaymentID());
+			return ResponseEntity.ok(responseDTO.getBody().getPaymentURL() + responseDTO.getBody().getPaymentID());
 
 		} catch (Exception e) {
 			logger.error("ERROR | Bank is not available");
@@ -118,9 +97,9 @@ public class BankService {
 		bankRequest.setMerchantPass(seller.getMerchantPassword());
 		bankRequest.setMerchantTimestamp(new Date());
 		bankRequest.setMerchantOrderID(orderId);
-		bankRequest.setErrorURL(errorURL);
-		bankRequest.setSuccessURL(successURL);
-		bankRequest.setFailedURL(failedURL);
+		bankRequest.setErrorURL(requestDTO.getErrorUrl());
+		bankRequest.setSuccessURL(requestDTO.getSuccessUrl());
+		bankRequest.setFailedURL(requestDTO.getFailedUrl());
 
 		logger.info("COMPLETED | Bank request created");
 		return bankRequest;
@@ -180,10 +159,8 @@ public class BankService {
 
 	}
 
-	//@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
-	@Scheduled(initialDelay = 60000, fixedRate = 60000)
+	@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
 	public void checkCreatedTransactions() {
-		System.out.println("POZVALA SE checkCreatedTransactions");
 		List<Transaction> transactions = transactionRepository.findAllByStatus(Status.CREATED);
 		for (Transaction t : transactions) {
 			String url = checkTransactionURL;
@@ -192,11 +169,12 @@ public class BankService {
 			try {
 				String paymentId = t.getPaymentID();
 				ResponseEntity<Status> response = template.postForEntity(url, paymentId, Status.class);
-				if(response.getBody()==Status.SUCCESSFULLY || response.getBody()==Status.UNSUCCESSFULLY || response.getBody()==Status.CANCELED) {
+				if (response.getBody() == Status.SUCCESSFULLY || response.getBody() == Status.UNSUCCESSFULLY
+						|| response.getBody() == Status.CANCELED || response.getBody() == Status.EXPIRED) {
 					t.setStatus(response.getBody());
 					transactionRepository.save(t);
 				}
-				if(response.getBody()==null) {
+				if (response.getBody() == null) {
 					t.setStatus(Status.CANCELED);
 					transactionRepository.save(t);
 				}
@@ -204,6 +182,6 @@ public class BankService {
 				logger.error("ERROR| Transaction does not exists in buyer bank");
 			}
 		}
-}
+	}
 
 }

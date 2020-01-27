@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -504,7 +505,6 @@ public class AcquirerService {
 	
 	@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
 	public void checkWaitingTransactions() {
-		System.out.println("POZVALA SE checkWaitingTransactions");
 		List<Transaction> transactions = transactionRepository.findAllByStatus(Status.WAITING);
 		for (Transaction t : transactions) {
 			String url=requestToPCC+"/returnMonay";
@@ -530,6 +530,22 @@ public class AcquirerService {
 			return null;
 		}
 		return t.getStatus();
+	}
+	
+	/**
+	 * Function for checking is transaction expiered.
+	 * @param t Transaction
+	 * @return true if transaction is expired
+	 */
+	public boolean checkExpiration(Transaction t) {
+		Date createDate=t.getTimestamp();
+		Date nowDate=new Date();
+		long diffInMillies = Math.abs(nowDate.getTime() - createDate.getTime());
+		long diffInMinutes = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
+		System.out.println("proslo je minuta: "+diffInMinutes);
+		if(diffInMinutes>30)
+			return true;
+		return false;
 	}
 	
 }

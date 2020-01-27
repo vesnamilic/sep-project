@@ -92,6 +92,11 @@ public class AcquierController {
 			logger.error("ERROR | transaction is already finisheded");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+		if(acquirerService.checkExpiration(t)) {
+			logger.error("ERROR | time for transaction is expiered");
+			acquirerService.save(t, Status.EXPIRED);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 
 		if (acquirerService.checkCredentials(paymentId, buyerDTO)) {
 			try {
