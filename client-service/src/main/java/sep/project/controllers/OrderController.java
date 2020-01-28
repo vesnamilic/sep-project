@@ -26,7 +26,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.dto.OrderInformationDTO;
+import sep.project.dto.OrderResponseDTO;
 import sep.project.dto.PaymentResponse;
+import sep.project.model.OrderStatus;
 import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
 import sep.project.model.UserOrder;
@@ -77,7 +79,11 @@ public class OrderController {
 		}
 		
 		logger.info("COMPLETED | Order created | Order id: " + createdOrder.getId());
-		return ResponseEntity.ok(createdOrder.getUuid());
+		
+		OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
+		orderResponseDTO.setRedirectUrl("https://localhost:4200/#/payment/" + createdOrder.getUuid());
+		orderResponseDTO.setUuid(createdOrder.getUuid());
+		return ResponseEntity.ok(orderResponseDTO);
 	}
 	
   
@@ -113,11 +119,14 @@ public class OrderController {
 		ResponseEntity<String> response = null;
 		try {
 			response = restTemplate.exchange(this.paymentMethodsRedirectURL + paymentMethodName.toLowerCase() + "/create", HttpMethod.POST, request, String.class);
+			order.setOrderStatus(OrderStatus.SENT);
+			this.orderService.saveOrder(order);
 		} catch (RestClientException e) {
 			// TODO Auto-generated catch block
 			logger.error("CANCELED | Sending the request to payment method service |  Payment method: " + paymentMethod);
 			return ResponseEntity.status(400).body("An error occurred while trying to contact the payment microservice!");
 		}
+		
 		
 		
 		PaymentResponse url = new PaymentResponse();

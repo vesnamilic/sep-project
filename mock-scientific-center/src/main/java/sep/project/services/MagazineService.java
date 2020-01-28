@@ -15,14 +15,20 @@ import sep.project.repository.ScientificAreaRepository;
 public class MagazineService {
 
 	@Autowired
-	MagazineRepository magazineRepository;
+	private MagazineRepository magazineRepository;
 
 	@Autowired
-	ScientificAreaRepository scientificAreaRepository;
+	private ScientificAreaRepository scientificAreaRepository;
 
 	public ResponseEntity<List<Magazine>> getMagazines(){
 		List<Magazine>magazines=magazineRepository.findAll();
 		return new ResponseEntity<>(magazines, HttpStatus.OK);
 	}
+	
+	public Magazine findByEmail(String email) 
+	{
+		return this.magazineRepository.findByEmail(email);
+	}
+	
 
 }
