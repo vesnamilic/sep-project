@@ -10,6 +10,7 @@ import { CancelComponent } from './cancel/cancel.component';
 import { ErrorComponent } from './error/error.component';
 import { NonAuthGuardService } from './authentication/non-auth-guard.service';
 import { AuthGuardService } from './authentication/auth-guard.service';
+import { ChooseBillingPlanComponent } from './choose-billing-plan/choose-billing-plan.component';
 
 
 const routes: Routes = [
@@ -30,6 +31,10 @@ const routes: Routes = [
   {
     path: 'payment/:id',
     component: ChoosePaymentMethodComponent
+  },
+  {
+    path: 'subscription/:id',
+    component: ChooseBillingPlanComponent
   },
   {
     path: 'success',

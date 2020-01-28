@@ -3,14 +3,12 @@ package sep.project.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
-public class BillingAgreementDTO {
+public class SubscriptionDTO {
 	
+
 	@NotNull
 	@Email
 	private String email;
-	
-	@NotNull
-	private Long billingPlanId;
 	
 	@NotNull
 	private String successUrl;
@@ -21,17 +19,15 @@ public class BillingAgreementDTO {
 	@NotNull
 	private String failedUrl;
 	
-	public BillingAgreementDTO() {
+	public SubscriptionDTO(){
 		
 	}
-	
-	public BillingAgreementDTO(String email, Long billingPlanId) {
-		this.email = email;
-		this.billingPlanId = billingPlanId;
-	}
 
-	public BillingAgreementDTO(String email) {	
+	public SubscriptionDTO(String email, String successUrl, String errorUrl, String failedUrl) {
 		this.email = email;
+		this.successUrl = successUrl;
+		this.errorUrl = errorUrl;
+		this.failedUrl = failedUrl;
 	}
 
 	public String getEmail() {
@@ -40,14 +36,6 @@ public class BillingAgreementDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public Long getBillingPlanId() {
-		return billingPlanId;
-	}
-
-	public void setBillingPlanId(Long billingPlanId) {
-		this.billingPlanId = billingPlanId;
 	}
 
 	public String getSuccessUrl() {
@@ -73,5 +61,5 @@ public class BillingAgreementDTO {
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
 	}
-	
+
 }

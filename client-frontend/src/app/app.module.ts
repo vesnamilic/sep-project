@@ -16,6 +16,7 @@ import { SuccessComponent } from './success/success.component';
 import { CancelComponent } from './cancel/cancel.component';
 import { ErrorComponent } from './error/error.component';
 import { AuthInterceptor } from './authentication/auth.interceptor';
+import { ChooseBillingPlanComponent } from './choose-billing-plan/choose-billing-plan.component';
 
 @NgModule({
    declarations: [
@@ -28,7 +29,8 @@ import { AuthInterceptor } from './authentication/auth.interceptor';
       PaymentMethodsComponent,
       SuccessComponent,
       CancelComponent,
-      ErrorComponent
+      ErrorComponent,
+      ChooseBillingPlanComponent
    ],
    imports: [
       BrowserModule,

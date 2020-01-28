@@ -25,9 +25,12 @@ public class BillingAgreementDTO {
 		
 	}
 	
-	public BillingAgreementDTO(String email, Long billingPlanId) {
+	public BillingAgreementDTO(String email, Long billingPlanId, String successUrl, String errorUrl, String failedUrl) {
 		this.email = email;
 		this.billingPlanId = billingPlanId;
+		this.successUrl = successUrl;
+		this.errorUrl = errorUrl;
+		this.failedUrl = failedUrl;
 	}
 
 	public BillingAgreementDTO(String email) {	

@@ -32,6 +32,7 @@ import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 
+import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
 import sep.project.model.BillingPlan;
@@ -93,7 +94,7 @@ public class PayPalService {
 	    payment.setRedirectUrls(redirectUrls);
 	    	    	    
 	    //save transaction with transaction status INITIATED
-	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.INITIATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency());
+	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.INITIATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency(), paymentDTO.getSuccessUrl(), paymentDTO.getErrorUrl(), paymentDTO.getFailedUrl());
 	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
 	    
 	    APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
@@ -227,7 +228,7 @@ public class PayPalService {
 		}	
 	}
 	
-	public String createBillingAgreement(Client client, BillingPlan billingPlan) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
+	public String createBillingAgreement(BillingAgreementDTO billingAgreementDTO, Client client, BillingPlan billingPlan) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
 		//get date for the agreement				
 		Date date = new Date();		
 		Calendar c = Calendar.getInstance();
@@ -250,17 +251,13 @@ public class PayPalService {
 		agreement.setName(client.getEmail() + " subscription");
 		agreement.setDescription(client.getEmail() + " subscription");
 		agreement.setStartDate(formattedDate);
-
-		/*AgreementDetails agd = new AgreementDetails();
-		agd.set
 		
 		agreement.setPlan(plan);	
 		agreement.setPayer(payer);
 		
-		agreement.*/
 		
 		//save subscription with status INITIATED
-		Subscription subscription = new Subscription(billingPlan, client, SubscriptionStatus.INITIATED);
+		Subscription subscription = new Subscription(billingPlan, client, SubscriptionStatus.INITIATED, billingAgreementDTO.getSuccessUrl(), billingAgreementDTO.getErrorUrl(), billingAgreementDTO.getFailedUrl());
 		Subscription savedSubscription = subscriptionService.save(subscription);
 		
 		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
