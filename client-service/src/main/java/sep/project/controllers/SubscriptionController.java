@@ -30,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.OrderInformationDTO;
+import sep.project.dto.OrderResponseDTO;
 import sep.project.dto.PaymentResponse;
 import sep.project.dto.SubscriptionDTO;
 import sep.project.model.PaymentMethod;
@@ -87,7 +88,11 @@ public class SubscriptionController {
 		}
 		
 		logger.info("COMPLETED | Creating a new subscription | Email: " + subscriptionDTO.getEmail());
-		return ResponseEntity.ok(newSubscription.getUuid());
+		
+		OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
+		orderResponseDTO.setRedirectUrl("https://localhost:4200/#/subscription/" + newSubscription.getUuid());
+		orderResponseDTO.setUuid(newSubscription.getUuid());
+		return ResponseEntity.ok(orderResponseDTO);
 	}
 	
 	@PutMapping("/complete/{uuid}/{planId}")
