@@ -1,5 +1,7 @@
 package sep.project.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,44 +13,46 @@ import javax.persistence.ManyToOne;
 
 @Entity
 public class Subscription {
-
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne
-	private BillingPlan billingPlan;
+	@Column
+	private String uuid;
 	
-	@ManyToOne
-	private Client client;
+	@Column
+	private Date expirationDate;
 	
 	@Column
 	@Enumerated(EnumType.STRING)
-	private SubscriptionStatus status;
+	private SubscriptionStatus subscriptionStatus;
 	
 	@Column
-	private String token;
-	
-	@Column(name = "successUrl")
 	private String successUrl;
 	
-	@Column(name = "errorUrl")
+	@Column
 	private String errorUrl;
 	
-	@Column(name = "failedUrl")
+	@Column
 	private String failedUrl;
+	
+	@ManyToOne
+	private Seller seller;
 	
 	public Subscription() {
 		
 	}
 
-	public Subscription(BillingPlan billingPlan, Client client, SubscriptionStatus status, String successUrl, String errorUrl, String failedUrl) {
-		this.billingPlan = billingPlan;
-		this.client = client;
-		this.status = status;
+	public Subscription(String uuid, Date expirationDate, SubscriptionStatus subscriptionStatus, String successUrl,
+			String errorUrl, String failedUrl, Seller seller) {
+		this.uuid = uuid;
+		this.expirationDate = expirationDate;
+		this.subscriptionStatus = subscriptionStatus;
 		this.successUrl = successUrl;
 		this.errorUrl = errorUrl;
 		this.failedUrl = failedUrl;
+		this.seller = seller;
 	}
 
 	public Long getId() {
@@ -59,36 +63,20 @@ public class Subscription {
 		this.id = id;
 	}
 
-	public BillingPlan getBillingPlan() {
-		return billingPlan;
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setBillingPlan(BillingPlan billingPlan) {
-		this.billingPlan = billingPlan;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
-	public Client getClient() {
-		return client;
+	public Date getExpirationDate() {
+		return expirationDate;
 	}
 
-	public void setClient(Client client) {
-		this.client = client;
-	}
-
-	public SubscriptionStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(SubscriptionStatus status) {
-		this.status = status;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
 	}
 
 	public String getSuccessUrl() {
@@ -113,6 +101,22 @@ public class Subscription {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Seller getSeller() {
+		return seller;
+	}
+
+	public void setSeller(Seller seller) {
+		this.seller = seller;
+	}
+
+	public SubscriptionStatus getSubscriptionStatus() {
+		return subscriptionStatus;
+	}
+
+	public void setSubscriptionStatus(SubscriptionStatus subscriptionStatus) {
+		this.subscriptionStatus = subscriptionStatus;
 	}
 	
 }
