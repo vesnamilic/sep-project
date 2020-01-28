@@ -52,6 +52,12 @@ public class SubscriptionController {
 	private SellerService sellersService;
 	
 	private static final Logger logger = LoggerFactory.getLogger(SubscriptionController.class);
+	
+	@PostMapping("/create/{paymentMethod}")
+	private ResponseEntity<?> createSubscriptionPlan(@PathVariable String paymentMethod){
+		
+		return ResponseEntity.ok().build();
+	}
 
 	@PostMapping("/create")
 	private ResponseEntity<?> createSubscription(@RequestBody @Valid SubscriptionDTO subscriptionDTO) {

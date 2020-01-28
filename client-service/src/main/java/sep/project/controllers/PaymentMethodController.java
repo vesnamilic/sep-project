@@ -71,6 +71,26 @@ public class PaymentMethodController {
 		}
 	}
 	
+	/**
+	 * Getting all payment methods that offer subscription 
+	 */
+	@GetMapping("/subscription")
+	public ResponseEntity<?> getPaymentMethodsWithSubscription(){
+		
+		logger.info("INITIATED | Getting all available payment methods with subscription");
+		
+		List<PaymentMethod> paymentMethods = paymentMethodService.findPaymentMethodsWithSubscription();
+		
+		if(paymentMethods != null) {
+			logger.info("COMPLETED | Getting all available payment methods with subscription");
+			return new ResponseEntity<>(paymentMethods, HttpStatus.OK);
+		}
+		else {
+			logger.error("CANCELED | Getting all available payment methods with subscription");
+			return ResponseEntity.status(400).build();
+		}
+	}
+	
 	
 	@GetMapping("/nesto")
 	public String proba() {

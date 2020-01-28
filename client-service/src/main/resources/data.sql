@@ -1,6 +1,6 @@
-INSERT INTO payment_method(name, deleted) VALUES ('Bank', false);
-INSERT INTO payment_method(name, deleted) VALUES ('PayPal', false);
-INSERT INTO payment_method(name, deleted) VALUES ('Bitcoin', false);
+INSERT INTO payment_method(name, deleted, subscription) VALUES ('Bank', false, false);
+INSERT INTO payment_method(name, deleted, subscription) VALUES ('PayPal', false, true);
+INSERT INTO payment_method(name, deleted, subscription) VALUES ('Bitcoin', false, false);
 
 INSERT INTO seller(email, name, deleted) VALUES ('mail@gmail.com', 'ProdavnicaNeka', false);
 INSERT INTO seller(email, name, deleted) VALUES ('test@gmail.com', 'Test', false);

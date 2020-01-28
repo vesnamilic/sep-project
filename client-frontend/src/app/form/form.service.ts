@@ -39,4 +39,11 @@ export class FormService {
     return this.http.post(url, valuesList, this.httpOptions);
   }
 
+  getPaymentMethodsWithSubscription(): Observable<PaymentMethod[]> {
+
+    const url = this.baseUrl + 'client/paymentmethod/subscription';
+
+    return this.http.get<PaymentMethod[]>(url, this.httpOptions);
+  }
+
 }

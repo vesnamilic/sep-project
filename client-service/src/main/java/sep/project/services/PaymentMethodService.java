@@ -41,5 +41,10 @@ public class PaymentMethodService {
 		return this.paymentMethodRepository.findByDeletedAndNameIgnoreCase(false, name);
 
 	}
+	
+	public List<PaymentMethod> findPaymentMethodsWithSubscription(){
+		
+		return paymentMethodRepository.findBySubscriptionAndDeleted(true, false);
+	}
 
 }

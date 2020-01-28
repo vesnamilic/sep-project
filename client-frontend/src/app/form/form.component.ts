@@ -24,9 +24,23 @@ export class PaymentMethodsComponent implements OnInit {
   fields: any = {};
 
   forms: any = {};
+  subscriptionForm: FormGroup;
+  paymentMethodsWithSubscription: PaymentMethod[];
 
   ngOnInit() {
     this.createForms();
+
+    // create the form for subscription
+    this.subscriptionForm = new FormGroup(
+      {
+        paymentMethods: new FormControl('', Validators.required),
+        paymentAmount: new FormControl('', [Validators.required, Validators.min(0)]),
+        paymentFrequency: new FormControl('', [Validators.required]),
+        cyclesNumber: new FormControl('', [Validators.required, Validators.min(1)])
+      }
+    );
+
+    this.getPaymentMethodsWithSubscription();
   }
 
   createForms() {
@@ -100,13 +114,7 @@ export class PaymentMethodsComponent implements OnInit {
       data => {
         alert('You have successfully added ' + paymentMethod + '!');
 
-        if (i < (this.paymentMethods.length - 1)) {
-          stepper.next();
-        } else {
-
-          this.tokenStorageService.signOut();
-          this.router.navigateByUrl('/');
-        }
+        stepper.next();
       },
       error => {
         alert('An error ocurred. Please try again!');
@@ -116,7 +124,7 @@ export class PaymentMethodsComponent implements OnInit {
   }
 
   skipForm(stepper: MatStepper, i: number) {
-    if (i < (this.paymentMethods.length - 1)) {
+    if (i < (this.paymentMethods.length)) {
       stepper.next();
     } else {
       alert('You have successfully finished the registration process!');
@@ -124,6 +132,41 @@ export class PaymentMethodsComponent implements OnInit {
       this.tokenStorageService.signOut();
       this.router.navigateByUrl('/');
     }
+  }
+
+  getPaymentMethodsWithSubscription() {
+    this.formService.getPaymentMethodsWithSubscription().subscribe(
+      data => {
+        console.log(data);
+        this.paymentMethodsWithSubscription = data;
+      },
+      error => {
+        alert('An error ocurred.');
+      }
+    );
+  }
+
+  submitSubscriptionForm(continueParameter: boolean) {
+
+    const valuesList: any = {
+      paymentAmount: this.subscriptionForm.value.paymentAmount,
+      paymentFrequency: this.subscriptionForm.value.paymentFrequency,
+      cyclesNumber: this.subscriptionForm.value.cyclesNumber
+    };
+
+    console.log(valuesList);
+
+    // clear form or redirect to home page
+    if (continueParameter) {
+      alert('You have successfully created a subscription plan!');
+      this.subscriptionForm.reset();
+    } else {
+      alert('You have successfully finished the registration process!');
+
+      this.tokenStorageService.signOut();
+      this.router.navigateByUrl('/');
+    }
+
   }
 
 }

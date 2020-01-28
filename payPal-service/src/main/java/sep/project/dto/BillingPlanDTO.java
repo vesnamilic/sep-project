@@ -13,26 +13,26 @@ public class BillingPlanDTO {
 	
 	private BillingPlanFrequency frequency;
 	
-	private BillingType type;
+	private Integer cyclesNumber;
 			
 	public BillingPlanDTO(){
 		
 	}
 	
-	public BillingPlanDTO(String email, Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency, BillingType type){
+	public BillingPlanDTO(String email, Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency, Integer cyclesNumber){
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
 		this.frequency = frequency;
-		this.type = type;
+		this.cyclesNumber = cyclesNumber;
 	}
 	
-	public BillingPlanDTO(String email, Double paymentAmount){
+	public BillingPlanDTO(String email, Double paymentAmount, Integer cyclesNumber){
 		this.email = email;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = "USD";
 		this.frequency = BillingPlanFrequency.MONTH;
-		this.type = BillingType.INFINITE;
+		this.cyclesNumber = cyclesNumber;
 	}
 
 	public String getEmail() {
@@ -67,12 +67,12 @@ public class BillingPlanDTO {
 		this.frequency = frequency;
 	}
 
-	public BillingType getType() {
-		return type;
+	public Integer getCyclesNumber() {
+		return cyclesNumber;
 	}
 
-	public void setType(BillingType type) {
-		this.type = type;
+	public void setCyclesNumber(Integer cyclesNumber) {
+		this.cyclesNumber = cyclesNumber;
 	}
 	
 }

@@ -19,6 +19,9 @@ public class PaymentMethod {
     @Column
     private boolean deleted;
     
+    @Column
+    private boolean subscription;
+    
     public PaymentMethod() {
     	
     }
@@ -47,5 +50,12 @@ public class PaymentMethod {
 		this.deleted = deleted;
 	}
 
+	public boolean isSubscription() {
+		return subscription;
+	}
+
+	public void setSubscription(boolean subscription) {
+		this.subscription = subscription;
+	}
 
 }

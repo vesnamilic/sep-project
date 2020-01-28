@@ -25,6 +25,9 @@ public class BillingPlan {
 	private String paymentCurrency;
 	
 	@Column
+	private Integer cyclesNumber;
+	
+	@Column
 	@Enumerated(EnumType.STRING)
 	private BillingPlanFrequency frequency;
 	
@@ -36,12 +39,13 @@ public class BillingPlan {
 		
 	}
 
-	public BillingPlan(Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency, BillingType type, String billingPlanId) {
+	public BillingPlan(Double paymentAmount, String paymentCurrency, BillingPlanFrequency frequency, BillingType type, String billingPlanId, Integer cyclesNumber) {
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
 		this.frequency = frequency;
 		this.type = type;
 		this.billingPlanId = billingPlanId;
+		this.cyclesNumber = cyclesNumber;
 	}
 
 	public Long getId() {

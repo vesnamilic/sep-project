@@ -25,6 +25,54 @@
                         </div>
                     </div>
                 </mat-step>
+                <mat-step editable="false" [completed]="false" label="Subscriptions"> 
+                    <div class="row">
+                        <div class="col-8 m-auto">
+                            <h4 class="font-weight-light text-center">Create a subscription plan</h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8 m-auto">
+                            <form id="subscriptionForm" [formGroup]="subscriptionForm" (ngSubmit) = "submitSubscriptionForm()">
+                                <div class="form-label-group">
+                                    <label style="margin-left:5px" for="paymentMethods" class="form-control-label">Payment method</label>
+                                    <select formControlName="paymentMethods" class="form-control" >
+                                        <option *ngFor="let method of paymentMethodsWithSubscription; let i = index" [ngValue]=method>
+                                            {{method.name}}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-label-group">
+                                    <label style="margin-left:5px" for="paymentAmount" class="form-control-label">Payment amount</label>
+                                    <input type="number" id="paymentAmount" class="form-control" placeholder="Payment amount" formControlName="paymentAmount">
+                                </div>
+                                <div class="form-label-group">
+                                    <label style="margin-left:5px" for="paymentFrequency" class="form-control-label">Payment cycle</label>
+                                    <select formControlName="paymentFrequency" class="form-control">
+                                        <option>DAY</option>
+                                        <option>MONTH</option>
+                                        <option>YEAR</option>
+                                    </select>
+                                </div>
+                                <div class="form-label-group">
+                                    <label style="margin-left:5px" for="cyclesNumber" class="form-control-label">Number of cycles</label>
+                                    <input type="number" id="cyclesNumber" class="form-control" placeholder="Number of cycles" formControlName="cyclesNumber">
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col-4">
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" (click)="skipForm(stepper, i)" type="button" >Skip</button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" type="button" (click)="submitSubscriptionForm(true)" [disabled]="!subscriptionForm.valid">Confirm and continue</button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-md btn-dark btn-block btn-login text-uppercase font-weight-bold mb-2" type="button" (click)="submitSubscriptionForm(false)" [disabled]="!subscriptionForm.valid">Confirm and finish</button>
+                                </div>
+                            </div> 
+                        </div>
+                    </div>
+                </mat-step>
             </mat-horizontal-stepper>
         </div>
     </div>

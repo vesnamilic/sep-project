@@ -36,6 +36,7 @@ import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
 import sep.project.model.BillingPlan;
+import sep.project.model.BillingType;
 import sep.project.model.Client;
 import sep.project.model.Subscription;
 import sep.project.model.SubscriptionStatus;
@@ -175,7 +176,7 @@ public class PayPalService {
 		paymentDefinition.setType("REGULAR");
 		paymentDefinition.setFrequency(billingPlanDTO.getFrequency().toString());
 		paymentDefinition.setFrequencyInterval("1");
-		//paymentDefinition.setCycles("12");
+		paymentDefinition.setCycles(billingPlanDTO.getCyclesNumber().toString());
 		
 		paymentDefinition.setAmount(currency);
 		
@@ -188,7 +189,7 @@ public class PayPalService {
 				
 		//create a plan with infinite number of payment cycles
 		Plan plan = new Plan();
-		plan.setType(billingPlanDTO.getType().toString());
+		plan.setType("FIXED");
 		plan.setName(client.getEmail() + " subscription");
 		plan.setDescription(billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency() + " a " + billingPlanDTO.getFrequency().toString().toLowerCase());
 		
@@ -216,7 +217,7 @@ public class PayPalService {
 			  createdPlan.update(context, patchRequestList);
 			  
 			  //save the billing plan
-			  BillingPlan billingPlan = new BillingPlan(billingPlanDTO.getPaymentAmount(), billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getFrequency(), billingPlanDTO.getType(), createdPlan.getId());
+			  BillingPlan billingPlan = new BillingPlan(billingPlanDTO.getPaymentAmount(), billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getFrequency(), BillingType.FIXED, createdPlan.getId(), billingPlanDTO.getCyclesNumber());
 			  BillingPlan savedBillingPlan = billingPlanService.save(billingPlan);
 			  
 			  //add billing plan to the client
