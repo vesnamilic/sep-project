@@ -48,10 +48,10 @@ export class MagazinesComponent implements OnInit {
     let x = this.repositoryService.subscriptionForMagazines(subscriptionDTO);
     x.subscribe(
       res => {
-        alert("subscription is success");
+        document.location.href  = res.url;
       },
       err => {
-        console.log("Error occured");
+        console.log(err);
       }
     ); 
    }

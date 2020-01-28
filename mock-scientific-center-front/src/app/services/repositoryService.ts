@@ -25,7 +25,7 @@ export class RepositoryService {
   }
 
   subscriptionForMagazines(subscriptionDTO) {
-    return this.httpClient.post("https://localhost:9897/subscription", subscriptionDTO) as Observable<any>;
+    return this.httpClient.post("https://localhost:9897/subscription/create", subscriptionDTO) as Observable<any>;
   }
 
 }
