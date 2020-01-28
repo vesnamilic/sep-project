@@ -1,0 +1,17 @@
+<!------ Include the above in your HEAD tag ---------->
+<div class="container" style="padding-top: 50px;">
+
+    <figure class="snip1423" *ngFor="let magazine of magazines">
+        <img style="width:100px;height:120px;" src="https://www.adazing.com/wp-content/uploads/2019/02/open-book-clipart-06-1-300x300.png" />
+        <figcaption>
+            <h3>{{magazine.name}}</h3>
+            <p *ngFor="let area of magazine.scientificArea">{{area.name}}</p>
+            <div class="price">
+                {{magazine.price}}USD
+            </div>
+        </figcaption>
+        <button title="pay" class="ion-android-cart left" (click)="buy(magazine)"></button>
+        <button title="subscription" class="fa fa-paypal right" (click)="subscription(magazine)"></button>
+    </figure>
+
+</div>
