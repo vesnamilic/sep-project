@@ -6,6 +6,7 @@ import { Field } from '../model/field';
 import { PaymentMethod } from '../model/paymentmethod';
 import { MatStepper } from '@angular/material/stepper';
 import { ValueTransformer } from '@angular/compiler/src/util';
+import { TokenStorageService } from '../authentication/token-storage.service';
 
 @Component({
   selector: 'app-form',
@@ -15,6 +16,7 @@ import { ValueTransformer } from '@angular/compiler/src/util';
 export class PaymentMethodsComponent implements OnInit {
 
   constructor(private formService: FormService,
+              private tokenStorageService: TokenStorageService,
               private router: Router) { }
 
 
@@ -101,6 +103,8 @@ export class PaymentMethodsComponent implements OnInit {
         if (i < (this.paymentMethods.length - 1)) {
           stepper.next();
         } else {
+
+          this.tokenStorageService.signOut();
           this.router.navigateByUrl('/');
         }
       },
@@ -116,6 +120,8 @@ export class PaymentMethodsComponent implements OnInit {
       stepper.next();
     } else {
       alert('You have successfully finished the registration process!');
+
+      this.tokenStorageService.signOut();
       this.router.navigateByUrl('/');
     }
   }

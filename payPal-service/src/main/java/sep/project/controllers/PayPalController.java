@@ -23,9 +23,13 @@ import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
 import sep.project.model.BillingPlan;
 import sep.project.model.Client;
+import sep.project.model.Subscription;
+import sep.project.model.Transaction;
 import sep.project.services.BillingPlanService;
 import sep.project.services.ClientService;
 import sep.project.services.PayPalService;
+import sep.project.services.SubscriptionService;
+import sep.project.services.TransactionService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
@@ -37,6 +41,12 @@ public class PayPalController {
 
 	@Autowired
 	private PayPalService payPalService;
+	
+	@Autowired 
+	private TransactionService transactionService;
+	
+	@Autowired 
+	private SubscriptionService subscriptionService;
 	
 	@Autowired
 	private BillingPlanService billingPlanService;
@@ -89,6 +99,9 @@ public class PayPalController {
 	public ResponseEntity<?> executePayment(@RequestParam String email, @RequestParam String paymentId, @RequestParam String token, @RequestParam String PayerID) {
 
 		logger.info("INITIATED | PayPal Payment Execution");
+		
+		//TODO: what if transaction doesn't exist
+		Transaction transaction = transactionService.findByPaymentId(paymentId);
 
 		// check if paypal client exists
 		Client client = clientService.findByEmail(email);
@@ -97,7 +110,7 @@ public class PayPalController {
 
 			// redirect to the error page
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Location", transaction.getErrorUrl());
 			headersRedirect.add("Access-Control-Allow-Origin", "*");
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -111,7 +124,7 @@ public class PayPalController {
 
 			// redirect to the error page
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Location", transaction.getErrorUrl());
 			headersRedirect.add("Access-Control-Allow-Origin", "*");
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -120,7 +133,7 @@ public class PayPalController {
 
 		// redirect to the success page
 		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", succesURLRedirect);
+		headersRedirect.add("Location", transaction.getSuccessUrl());
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
@@ -175,7 +188,7 @@ public class PayPalController {
 		String redirectUrl = "";
 		try {
 			  
-			redirectUrl = payPalService.createBillingAgreement(client, billingPlan);
+			redirectUrl = payPalService.createBillingAgreement(billingAgreementDTO, client, billingPlan);
 		}
 		catch (PayPalRESTException e) {			
 			logger.error("CANCELED | PayPal Billing Agreement");
@@ -200,6 +213,9 @@ public class PayPalController {
 	public ResponseEntity<?> executeBillingAgreement(@RequestParam String email, @RequestParam String token) {
   
 		logger.info("INITIATED | PayPal Billing Agreement Execution");
+		
+		//TODO: what if subscription doesn't exist
+		Subscription subscription = subscriptionService.findByToken(token);
   
 		//check if paypal client exists
 		Client client = clientService.findByEmail(email);
@@ -207,7 +223,7 @@ public class PayPalController {
 			logger.error("CANCELED | PayPal Billing Agreement Execution");
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Location", subscription.getErrorUrl());
 			headersRedirect.add("Access-Control-Allow-Origin", "*"); 
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -220,7 +236,7 @@ public class PayPalController {
 			logger.error("CANCELED | PayPal Billing Agreement Execution");
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", errorURL);
+			headersRedirect.add("Location", subscription.getErrorUrl());
 			headersRedirect.add("Access-Control-Allow-Origin", "*"); 
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -229,10 +245,11 @@ public class PayPalController {
 
 		//redirect to the success page
 		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", succesURLRedirect);
+		headersRedirect.add("Location", subscription.getSuccessUrl());
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
-	}		 
+	}
+		
 
 	@GetMapping("/nesto")
 	public String proba() {
