@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.dto.BitCoinPayment;
 import sep.project.dto.PaymentRequestDTO;
 import sep.project.dto.PaymentResponseDTO;
+import sep.project.dto.RedirectDTO;
 import sep.project.model.Merchant;
 import sep.project.model.Transaction;
 import sep.project.services.MerchantService;
@@ -132,15 +134,30 @@ public class PaymentController {
 			return ResponseEntity.status(400).build();
 		}
 
-		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-
-		if (this.transactionService.checkTransaction(transaction)) {
-			headersRedirect.add("Location", transaction.getFailedUrl());
-		} else {
-			headersRedirect.add("Location", transaction.getErrorUrl());
+		ResponseEntity<RedirectDTO> response = null;
+		
+		if(this.transactionService.checkTransaction(transaction)) {
+			try {
+				response = restTemplate.exchange(transaction.getFailedUrl(), HttpMethod.GET, null, RedirectDTO.class);
+			} catch (RestClientException e) {
+				// TODO Auto-generated catch block
+				return ResponseEntity.status(400)
+						.body("An error occurred while trying to contact the payment microservice!");
+			}	
+		}else {
+			try {
+				response = restTemplate.exchange(transaction.getErrorUrl(), HttpMethod.GET, null, RedirectDTO.class);
+			} catch (RestClientException e) {
+				// TODO Auto-generated catch block
+				return ResponseEntity.status(400)
+						.body("An error occurred while trying to contact the payment microservice!");
+			}	
 		}
+		
 
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Access-Control-Allow-Origin", "*"); 
+		headersRedirect.add("Location", response.getBody().getUrl());
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 
 	}
@@ -151,15 +168,32 @@ public class PaymentController {
 		if (transaction == null) {
 			return ResponseEntity.status(400).build();
 		}
-		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-
-		if (this.transactionService.checkTransaction(transaction)) {
-			headersRedirect.add("Location", transaction.getSuccessUrl());
-		} else {
-			headersRedirect.add("Location", transaction.getErrorUrl());
+	
+		ResponseEntity<RedirectDTO> response = null;
+		
+		if(this.transactionService.checkTransaction(transaction)) {
+			try {
+				System.out.println(transaction.getSuccessUrl());
+				response = restTemplate.exchange(transaction.getSuccessUrl(), HttpMethod.GET, null, RedirectDTO.class);
+			} catch (RestClientException e) {
+				// TODO Auto-generated catch block
+				return ResponseEntity.status(400)
+						.body("An error occurred while trying to contact the payment microservice!");
+			}	
+		}else {
+			try {
+				response = restTemplate.exchange(transaction.getErrorUrl(), HttpMethod.GET, null, RedirectDTO.class);
+			} catch (RestClientException e) {
+				// TODO Auto-generated catch block
+				return ResponseEntity.status(400)
+						.body("An error occurred while trying to contact the payment microservice!");
+			}	
 		}
+		
 
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Access-Control-Allow-Origin", "*"); 
+		headersRedirect.add("Location", response.getBody().getUrl());
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 
 	}

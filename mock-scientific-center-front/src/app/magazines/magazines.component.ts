@@ -38,7 +38,7 @@ export class MagazinesComponent implements OnInit {
         document.location.href  = res.url;
       },
       err => {
-        console.log("Error occured");
+        console.log(err);
       }
     );
   }

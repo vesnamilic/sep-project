@@ -3,9 +3,7 @@ package sep.project.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,12 +11,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.dto.OrderInformationDTO;
 import sep.project.dto.OrderResponseDTO;
+import sep.project.dto.RedirectDTO;
 import sep.project.model.Magazine;
 import sep.project.model.OrderStatus;
 import sep.project.model.UserOrder;
@@ -39,13 +39,13 @@ public class OrderController {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("https://localhost:4200/")
+	@Value("https://localhost:4203/success")
 	private String successUrl;
 
-	@Value("https://localhost:4200/")
+	@Value("https://localhost:4203/cancel")
 	private String failedUrl;
 
-	@Value("https://localhost:4200/")
+	@Value("https://localhost:4203/error")
 	private String errorUrl;
 
 	@Value("https://localhost:8762/api/client/orders/create")
@@ -74,9 +74,9 @@ public class OrderController {
 			return ResponseEntity.status(500).build();
 		}
 
-		orderInformationDTO.setErrorUrl(this.errorUrl);
-		orderInformationDTO.setFailedUrl(this.failedUrl);
-		orderInformationDTO.setSuccessUrl(this.successUrl);
+		orderInformationDTO.setErrorUrl(this.errorUrl + "?id=" + userOrder.getId());
+		orderInformationDTO.setFailedUrl(this.failedUrl+ "?id=" + userOrder.getId());
+		orderInformationDTO.setSuccessUrl(this.successUrl+ "?id=" + userOrder.getId());
 
 		HttpEntity<OrderInformationDTO> request = new HttpEntity<>(orderInformationDTO);
 
@@ -91,19 +91,45 @@ public class OrderController {
 		}
 		
 		userOrder.setUuid(response.getBody().getUuid());
-
-		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-		headersRedirect.add("Location", response.getBody().getRedirectUrl());
-		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
+		this.userOrderService.save(userOrder);
+		System.out.println("VEKICA");
+		RedirectDTO redirectDTO = new RedirectDTO();
+		redirectDTO.setUrl(response.getBody().getRedirectUrl());
+		return ResponseEntity.ok(redirectDTO);
 	}
 	
-	@GetMapping("")
-	private ResponseEntity<?> get() {
-		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Access-Control-Allow-Origin", "*");
-		headersRedirect.add("Location", "https://localhost:4203/");
-		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
+	@GetMapping("/success")
+	private ResponseEntity<?> successfulOrder(@RequestParam("id") Long id) {
+		UserOrder userOrder = this.userOrderService.getUserOrder(id);
+		userOrder.setOrderStatus(OrderStatus.SUCCEEDED);
+		this.userOrderService.save(userOrder);
+		RedirectDTO redirectDTO = new RedirectDTO();
+		redirectDTO.setUrl("https://localhost:4203/success");
+		return ResponseEntity.ok(redirectDTO);
+		
+	}
+	
+	@GetMapping("/failed")
+	private ResponseEntity<?> failedOrder(@RequestParam("id") Long id) {
+		UserOrder userOrder = this.userOrderService.getUserOrder(id);
+		userOrder.setOrderStatus(OrderStatus.FAILED);
+		this.userOrderService.save(userOrder);
+		
+		RedirectDTO redirectDTO = new RedirectDTO();
+		redirectDTO.setUrl("https://localhost:4203/cancel");
+		return ResponseEntity.ok(redirectDTO);
+		
+	}
+	
+	@GetMapping("/error")
+	private ResponseEntity<?> errorOrder(@RequestParam("id") Long id) {
+		UserOrder userOrder = this.userOrderService.getUserOrder(id);
+		userOrder.setOrderStatus(OrderStatus.ERROR);
+		this.userOrderService.save(userOrder);
+		RedirectDTO redirectDTO = new RedirectDTO();
+		redirectDTO.setUrl("https://localhost:4203/error");
+		return ResponseEntity.ok(redirectDTO);
+		
 	}
 
 }

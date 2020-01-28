@@ -21,11 +21,11 @@ export class RepositoryService {
   }
 
   payForMagazines(orderDTO) {
-    return this.httpClient.post("http://localhost:9897/pay", orderDTO) as Observable<any>;
+    return this.httpClient.post("https://localhost:9897/orders/create", orderDTO) as Observable<any>;
   }
 
   subscriptionForMagazines(subscriptionDTO) {
-    return this.httpClient.post("http://localhost:9897/subscription", subscriptionDTO) as Observable<any>;
+    return this.httpClient.post("https://localhost:9897/subscription", subscriptionDTO) as Observable<any>;
   }
 
 }

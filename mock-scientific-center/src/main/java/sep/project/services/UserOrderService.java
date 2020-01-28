@@ -1,5 +1,6 @@
 package sep.project.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sep.project.model.UserOrder;
@@ -8,6 +9,7 @@ import sep.project.repository.UserOrderRepository;
 @Service
 public class UserOrderService {
 
+	@Autowired
 	private UserOrderRepository userOrderRepository;
 	
 	public UserOrder save(UserOrder order) {
@@ -22,5 +24,13 @@ public class UserOrderService {
 		
 		
 		return saved;
+	}
+	
+	public UserOrder getUserOrder(String uuid) {
+		return this.userOrderRepository.findByUuid(uuid);
+	}
+	
+	public UserOrder getUserOrder(Long id) {
+		return this.userOrderRepository.getOne(id);
 	}
 }
