@@ -74,9 +74,9 @@ public class OrderController {
 			return ResponseEntity.status(500).build();
 		}
 
-		orderInformationDTO.setErrorUrl(this.errorUrl + "?id=" + userOrder.getId());
-		orderInformationDTO.setFailedUrl(this.failedUrl+ "?id=" + userOrder.getId());
-		orderInformationDTO.setSuccessUrl(this.successUrl+ "?id=" + userOrder.getId());
+		orderInformationDTO.setErrorUrl(this.errorUrl);
+		orderInformationDTO.setFailedUrl(this.failedUrl);
+		orderInformationDTO.setSuccessUrl(this.successUrl);
 
 		HttpEntity<OrderInformationDTO> request = new HttpEntity<>(orderInformationDTO);
 
