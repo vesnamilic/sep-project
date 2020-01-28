@@ -17,6 +17,9 @@ public class Magazine {
 	private long id;
 	
 	@Column
+	private String email;
+	
+	@Column
 	private String name;
 
 	@Column
@@ -81,6 +84,14 @@ public class Magazine {
 
 	public void setScientificArea(Set<ScientificArea> scientificArea) {
 		this.scientificArea = scientificArea;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }

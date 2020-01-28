@@ -9,5 +9,7 @@ import sep.project.model.Magazine;
 public interface MagazineRepository extends JpaRepository<Magazine, Long> {
 
 	Magazine findByName(String name);
+	
+	Magazine findByEmail(String email);
 
 }
