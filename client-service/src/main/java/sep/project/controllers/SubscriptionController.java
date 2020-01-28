@@ -10,9 +10,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,15 +26,12 @@ import org.springframework.web.client.RestTemplate;
 
 import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
-import sep.project.dto.OrderInformationDTO;
 import sep.project.dto.OrderResponseDTO;
 import sep.project.dto.PaymentResponse;
 import sep.project.dto.SubscriptionDTO;
-import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
 import sep.project.model.Subscription;
 import sep.project.model.SubscriptionStatus;
-import sep.project.model.UserOrder;
 import sep.project.services.SellerService;
 import sep.project.services.SubscriptionService;
 

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import com.paypal.base.rest.PayPalRESTException;
 
 import sep.project.dto.BillingAgreementDTO;
 import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
+import sep.project.dto.RedirectDTO;
 import sep.project.model.BillingPlan;
 import sep.project.model.Client;
 import sep.project.model.Subscription;
@@ -107,10 +111,13 @@ public class PayPalController {
 		Client client = clientService.findByEmail(email);
 		if (client == null) {
 			logger.error("CANCELED | PayPal Payment Execution");
+			
+			//update seller and get redirect url
+			String url = updateSeller(transaction.getErrorUrl());
 
 			// redirect to the error page
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", transaction.getErrorUrl());
+			headersRedirect.add("Location", url);
 			headersRedirect.add("Access-Control-Allow-Origin", "*");
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -121,19 +128,25 @@ public class PayPalController {
 		} 
 		catch (PayPalRESTException e) {
 			logger.error("CANCELED | PayPal Payment Execution");
+			
+			//update seller and get redirect url
+			String url = updateSeller(transaction.getErrorUrl());
 
 			// redirect to the error page
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", transaction.getErrorUrl());
+			headersRedirect.add("Location", url);
 			headersRedirect.add("Access-Control-Allow-Origin", "*");
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
 
 		logger.info("COMPLETED | PayPal Payment Execution");
+		
+		//update seller and get redirect url
+		String url = updateSeller(transaction.getSuccessUrl());
 
 		// redirect to the success page
 		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", transaction.getSuccessUrl());
+		headersRedirect.add("Location", url);
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
@@ -221,9 +234,12 @@ public class PayPalController {
 		Client client = clientService.findByEmail(email);
 		if(client == null) { 
 			logger.error("CANCELED | PayPal Billing Agreement Execution");
+			
+			//update seller and get redirect url
+			String url = updateSeller(subscription.getErrorUrl());
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", subscription.getErrorUrl());
+			headersRedirect.add("Location", url);
 			headersRedirect.add("Access-Control-Allow-Origin", "*"); 
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
@@ -234,26 +250,44 @@ public class PayPalController {
 		}
 		catch(PayPalRESTException e) {
 			logger.error("CANCELED | PayPal Billing Agreement Execution");
+			
+			//update seller and get redirect url
+			String url = updateSeller(subscription.getErrorUrl());
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();
-			headersRedirect.add("Location", subscription.getErrorUrl());
+			headersRedirect.add("Location", url);
 			headersRedirect.add("Access-Control-Allow-Origin", "*"); 
 			return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 		}
 		  
 		logger.info("COMPLETED | PayPal Billing Agreement Execution");
+		
+		//update seller and get redirect url
+		String url = updateSeller(subscription.getSuccessUrl());
 
 		//redirect to the success page
 		HttpHeaders headersRedirect = new HttpHeaders();
-		headersRedirect.add("Location", subscription.getSuccessUrl());
+		headersRedirect.add("Location", url);
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 	}
 		
+	private String updateSeller(String url){
+		
+		RestTemplate restTemplate = new RestTemplate();
+		
+		String redirectUrl = null;
+		
+		try {
+	    	ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.GET, null, RedirectDTO.class);
+	       
+	    	RedirectDTO redirect = (RedirectDTO) response.getBody();
+	    	redirectUrl = redirect.getUrl();
+	    } 
+		catch (RestClientException e) {
 
-	@GetMapping("/nesto")
-	public String proba() {
-
-		return "proba";
+		}
+		
+		return redirectUrl;
 	}
 }
