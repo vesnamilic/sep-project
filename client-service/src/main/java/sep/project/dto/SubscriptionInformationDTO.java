@@ -2,15 +2,20 @@ package sep.project.dto;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
-public class BillingAgreementDTO {
+public class SubscriptionInformationDTO {
 	
 	@NotNull
 	@Email
 	private String email;
-	
+
 	@NotNull
-	private Long billingPlanId;
+	@Positive
+	private Double paymentAmount;
+
+	@NotNull
+	private String paymentCurrency;
 	
 	@NotNull
 	private String successUrl;
@@ -21,20 +26,8 @@ public class BillingAgreementDTO {
 	@NotNull
 	private String failedUrl;
 	
-	public BillingAgreementDTO() {
+	public SubscriptionInformationDTO(){
 		
-	}
-	
-	public BillingAgreementDTO(String email, Long billingPlanId, String successUrl, String errorUrl, String failedUrl) {
-		this.email = email;
-		this.billingPlanId = billingPlanId;
-		this.successUrl = successUrl;
-		this.errorUrl = errorUrl;
-		this.failedUrl = failedUrl;
-	}
-
-	public BillingAgreementDTO(String email) {	
-		this.email = email;
 	}
 
 	public String getEmail() {
@@ -43,14 +36,6 @@ public class BillingAgreementDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public Long getBillingPlanId() {
-		return billingPlanId;
-	}
-
-	public void setBillingPlanId(Long billingPlanId) {
-		this.billingPlanId = billingPlanId;
 	}
 
 	public String getSuccessUrl() {
@@ -76,5 +61,21 @@ public class BillingAgreementDTO {
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
 	}
-	
+
+	public Double getPaymentAmount() {
+		return paymentAmount;
+	}
+
+	public void setPaymentAmount(Double paymentAmount) {
+		this.paymentAmount = paymentAmount;
+	}
+
+	public String getPaymentCurrency() {
+		return paymentCurrency;
+	}
+
+	public void setPaymentCurrency(String paymentCurrency) {
+		this.paymentCurrency = paymentCurrency;
+	}
+
 }

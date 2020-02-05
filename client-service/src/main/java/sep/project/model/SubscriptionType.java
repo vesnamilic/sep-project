@@ -1,6 +1,6 @@
 package sep.project.model;
 
-public enum BillingType {
+public enum SubscriptionType {
 	FIXED,
 	INFINITE
 }

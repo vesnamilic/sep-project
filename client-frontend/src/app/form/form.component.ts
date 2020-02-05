@@ -33,14 +33,11 @@ export class PaymentMethodsComponent implements OnInit {
     // create the form for subscription
     this.subscriptionForm = new FormGroup(
       {
-        paymentMethods: new FormControl('', Validators.required),
-        paymentAmount: new FormControl('', [Validators.required, Validators.min(0)]),
         paymentFrequency: new FormControl('', [Validators.required]),
         cyclesNumber: new FormControl('', [Validators.required, Validators.min(1)])
       }
     );
 
-    this.getPaymentMethodsWithSubscription();
   }
 
   createForms() {
@@ -134,39 +131,30 @@ export class PaymentMethodsComponent implements OnInit {
     }
   }
 
-  getPaymentMethodsWithSubscription() {
-    this.formService.getPaymentMethodsWithSubscription().subscribe(
-      data => {
-        console.log(data);
-        this.paymentMethodsWithSubscription = data;
-      },
-      error => {
-        alert('An error ocurred.');
-      }
-    );
-  }
-
   submitSubscriptionForm(continueParameter: boolean) {
 
     const valuesList: any = {
-      paymentAmount: this.subscriptionForm.value.paymentAmount,
-      paymentFrequency: this.subscriptionForm.value.paymentFrequency,
+      frequency: this.subscriptionForm.value.paymentFrequency,
       cyclesNumber: this.subscriptionForm.value.cyclesNumber
     };
 
-    console.log(valuesList);
+    this.formService.addSubscriptionPlan(valuesList).subscribe(
+      data => {
+        // clear form or redirect to home page
+        if (continueParameter) {
+          alert('You have successfully created a subscription plan!');
+          this.subscriptionForm.reset();
+        } else {
+          alert('You have successfully finished the registration process!');
 
-    // clear form or redirect to home page
-    if (continueParameter) {
-      alert('You have successfully created a subscription plan!');
-      this.subscriptionForm.reset();
-    } else {
-      alert('You have successfully finished the registration process!');
-
-      this.tokenStorageService.signOut();
-      this.router.navigateByUrl('/');
-    }
-
+          this.tokenStorageService.signOut();
+          this.router.navigateByUrl('/');
+        }
+      },
+      error => {
+        alert('An error ocurred. Please try again!');
+      }
+    );
   }
 
 }

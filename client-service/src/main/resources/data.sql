@@ -6,9 +6,13 @@ INSERT INTO seller(email, name, deleted) VALUES ('mail@gmail.com', 'ProdavnicaNe
 INSERT INTO seller(email, name, deleted) VALUES ('test@gmail.com', 'Test', false);
 INSERT INTO seller(email, name, deleted) VALUES ('maja@gmail.com', 'Test', false);
 
-
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (1,1);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (1,2);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (1,3);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (2,3);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (3,1);
+
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 3, 1);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 6, 1);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 12, 1);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'YEAR', 2, 1);

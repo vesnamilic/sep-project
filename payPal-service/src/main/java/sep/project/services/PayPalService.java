@@ -1,6 +1,8 @@
 package sep.project.services;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,13 +34,11 @@ import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 
-import sep.project.dto.BillingAgreementDTO;
-import sep.project.dto.BillingPlanDTO;
 import sep.project.dto.PaymentDTO;
-import sep.project.model.BillingPlan;
-import sep.project.model.BillingType;
+import sep.project.dto.SubscriptionDTO;
 import sep.project.model.Client;
 import sep.project.model.Subscription;
+import sep.project.model.SubscriptionFrequency;
 import sep.project.model.SubscriptionStatus;
 import sep.project.model.TransactionStatus;
 
@@ -51,10 +51,7 @@ public class PayPalService {
 	
 	@Autowired
 	private TransactionService transactionService;
-	
-	@Autowired
-	private BillingPlanService billingPlanService;
-	
+		
 	@Autowired
 	private SubscriptionService subscriptionService;
 		
@@ -63,9 +60,6 @@ public class PayPalService {
 	
 	@Value("${success_url_agreement}")
 	private String successAgreementURL;
-
-	@Value("${cancel_url}")
-	private String cancelURL;
 	
 	private String executionMode = "sandbox";
 	
@@ -75,8 +69,8 @@ public class PayPalService {
 	    payer.setPaymentMethod("paypal");
 	    
 	    RedirectUrls redirectUrls = new RedirectUrls();
-	    redirectUrls.setCancelUrl(cancelURL);
-	    redirectUrls.setReturnUrl(successPaymentURL + paymentDTO.getEmail());
+	    redirectUrls.setCancelUrl(paymentDTO.getErrorUrl());
+	    redirectUrls.setReturnUrl(successPaymentURL);
 
 		Amount amount = new Amount();
 		amount.setCurrency(paymentDTO.getPaymentCurrency());
@@ -84,7 +78,7 @@ public class PayPalService {
 	    
 	    Transaction transaction = new Transaction();
 	    transaction.setAmount(amount);
-	    transaction.setDescription(client.getEmail() + " payment");
+	    transaction.setDescription("Payment for client with the email: " + client.getEmail());
 	    
 	    List<Transaction> transactions = new ArrayList<Transaction>();
 	    transactions.add(transaction);
@@ -94,8 +88,8 @@ public class PayPalService {
 	    payment.setTransactions(transactions);
 	    payment.setRedirectUrls(redirectUrls);
 	    	    	    
-	    //save transaction with transaction status INITIATED
-	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(client, new Date(), TransactionStatus.INITIATED, paymentDTO.getPaymentAmount(), paymentDTO.getPaymentCurrency(), paymentDTO.getSuccessUrl(), paymentDTO.getErrorUrl(), paymentDTO.getFailedUrl());
+	    //create and save transaction with status INITIATED
+	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(paymentDTO, client);
 	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
 	    
 	    APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
@@ -106,24 +100,20 @@ public class PayPalService {
 	    	//create the payment
 	    	Payment newPayment = payment.create(context);
 	    		    
-	    	if(newPayment != null) {
-				//get the approval url from the response 
-				Iterator links = newPayment.getLinks().iterator();		
+			//get the approval url from the response 
+			Iterator links = newPayment.getLinks().iterator();		
+			
+			while(links.hasNext()) {
+				Links link = (Links) links.next();
 				
-				while(links.hasNext()) {
-					Links link = (Links) links.next();
-					
-					if(link.getRel().equalsIgnoreCase("approval_url")) {
-						redirectUrl = link.getHref();                  
-	    				break;
-					}
+				if(link.getRel().equalsIgnoreCase("approval_url")) {
+					redirectUrl = link.getHref();                  
+    				break;
 				}
-								
-				//save payment id and set status to CREATED
-				savedTransaction.setPaymentId(newPayment.getId());
-				savedTransaction.setStatus(TransactionStatus.CREATED);
-				transactionService.save(savedTransaction);
-	    	}    	
+			}
+							
+			//save payment id 
+			savedTransaction.setPaymentId(newPayment.getId());
 		} 
 	    catch (PayPalRESTException e) {						
 			//set transaction status to CANCELED
@@ -132,12 +122,16 @@ public class PayPalService {
 			
     	    throw e;    
 		}
+	    
+        //set transaction status to CREATED
+		savedTransaction.setStatus(TransactionStatus.CREATED);
+		transactionService.save(savedTransaction);
 	 
 		//to redirect the customer to the paypal site	    
 	    return redirectUrl;    
  	}
 	
-	public void executePayment(String paymentId, String token, String PayerID, Client client) throws PayPalRESTException {
+	public void executePayment(sep.project.model.Transaction transaction, String paymentId, String PayerID) throws PayPalRESTException {
 		
 		Payment payment = new Payment();
 		payment.setId(paymentId);
@@ -145,7 +139,7 @@ public class PayPalService {
 	    PaymentExecution paymentExecution = new PaymentExecution();
 	    paymentExecution.setPayerId(PayerID);
 	    
-	    sep.project.model.Transaction transaction = transactionService.findByPaymentId(paymentId);
+	    Client client = transaction.getClient();
 	    
         APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
@@ -153,9 +147,6 @@ public class PayPalService {
 	        //execute the payment
 	        Payment createdPayment = payment.execute(context, paymentExecution);  
 	        
-	        //set transaction status to COMPLETED
-			transaction.setStatus(TransactionStatus.COMPLETED);
-			transactionService.save(transaction);
 	    } 
 	    catch (PayPalRESTException e) {    
 	    	//set transaction status to CANCELED
@@ -163,35 +154,50 @@ public class PayPalService {
 			transactionService.save(transaction);
 			
 			throw e;
-	    }    
+	    }  
+	    
+        //set transaction status to COMPLETED
+		transaction.setStatus(TransactionStatus.COMPLETED);
+		transactionService.save(transaction);
 	}
 	
-	public void createBillingPlan(BillingPlanDTO billingPlanDTO, Client client) throws PayPalRESTException {
+	public Long createBillingPlan(SubscriptionDTO subscriptionDTO, Client client) throws PayPalRESTException {
+		
+		//create and save a new subscription with status INITIATED
+		Subscription subscription = new Subscription(subscriptionDTO, client);
+		Subscription savedSubscription = subscriptionService.save(subscription);
 						
 		//set currency and value
-		Currency currency = new Currency(billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getPaymentAmount().toString());
+		Currency currency = new Currency();
+		currency.setCurrency(subscriptionDTO.getPaymentCurrency());
+		
+		Double price = subscriptionDTO.getFrequency() == SubscriptionFrequency.YEAR ? 12*subscriptionDTO.getPaymentAmount() : subscriptionDTO.getPaymentAmount();				
+		price = new BigDecimal(price).setScale(2, RoundingMode.HALF_UP).doubleValue();
+		
+		System.out.println(price);
+		currency.setValue(price.toString());
 						
 		PaymentDefinition paymentDefinition = new PaymentDefinition();
 		paymentDefinition.setName(client.getEmail() + " subscription");
 		paymentDefinition.setType("REGULAR");
-		paymentDefinition.setFrequency(billingPlanDTO.getFrequency().toString());
+		paymentDefinition.setFrequency(subscriptionDTO.getFrequency().toString());
 		paymentDefinition.setFrequencyInterval("1");
-		paymentDefinition.setCycles(billingPlanDTO.getCyclesNumber().toString());
+		paymentDefinition.setCycles(subscriptionDTO.getCyclesNumber().toString());
 		
 		paymentDefinition.setAmount(currency);
 		
 		List<PaymentDefinition> paymentDefinitionList = new ArrayList<PaymentDefinition>();
 		paymentDefinitionList.add(paymentDefinition);
 				
-		MerchantPreferences merchantPreferences = new MerchantPreferences(cancelURL, successAgreementURL+client.getEmail());
+		MerchantPreferences merchantPreferences = new MerchantPreferences(subscriptionDTO.getErrorUrl(), successAgreementURL+savedSubscription.getId());
 		merchantPreferences.setAutoBillAmount("YES");
 		merchantPreferences.setInitialFailAmountAction("CONTINUE");
 				
-		//create a plan with infinite number of payment cycles
+		//create a plan
 		Plan plan = new Plan();
-		plan.setType("FIXED");
+		plan.setType(subscriptionDTO.getType().toString());
 		plan.setName(client.getEmail() + " subscription");
-		plan.setDescription(billingPlanDTO.getPaymentAmount() + " " + billingPlanDTO.getPaymentCurrency() + " a " + billingPlanDTO.getFrequency().toString().toLowerCase());
+		plan.setDescription(subscriptionDTO.getPaymentAmount() + " " + subscriptionDTO.getPaymentCurrency() + " a " + subscriptionDTO.getFrequency().toString().toLowerCase());
 		
 		plan.setPaymentDefinitions(paymentDefinitionList);
 		plan.setMerchantPreferences(merchantPreferences);
@@ -215,21 +221,23 @@ public class PayPalService {
 
 			  //activate the plan
 			  createdPlan.update(context, patchRequestList);
-			  
-			  //save the billing plan
-			  BillingPlan billingPlan = new BillingPlan(billingPlanDTO.getPaymentAmount(), billingPlanDTO.getPaymentCurrency(), billingPlanDTO.getFrequency(), BillingType.FIXED, createdPlan.getId(), billingPlanDTO.getCyclesNumber());
-			  BillingPlan savedBillingPlan = billingPlanService.save(billingPlan);
-			  
-			  //add billing plan to the client
-			  client.getBillingPlans().add(savedBillingPlan);
-			  clientService.save(client);
+			  			  
+			  //save billing plan id
+		   	  savedSubscription.setBillingPlanId(createdPlan.getId());		  
 		} 
 		catch (PayPalRESTException e) {			
-			throw e;
+			//set subscription status to CANCELED
+			savedSubscription.setStatus(SubscriptionStatus.CANCELED);
+			subscriptionService.save(savedSubscription);
 		}	
+		
+		subscriptionService.save(savedSubscription);  
+		
+		return savedSubscription.getId();
 	}
 	
-	public String createBillingAgreement(BillingAgreementDTO billingAgreementDTO, Client client, BillingPlan billingPlan) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
+	
+	public String createBillingAgreement(SubscriptionDTO subscriptionDTO, Client client, Long subscriptionId) throws PayPalRESTException, MalformedURLException, UnsupportedEncodingException {
 		//get date for the agreement				
 		Date date = new Date();		
 		Calendar c = Calendar.getInstance();
@@ -240,9 +248,11 @@ public class PayPalService {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		String formattedDate = sdf.format(c.getTime());
 		
+		Subscription subscription = subscriptionService.getOne(subscriptionId);
+		
 		//set billing plan id
 		Plan plan = new Plan();
-		plan.setId(billingPlan.getBillingPlanId());
+		plan.setId(subscription.getBillingPlanId());
 		
 		Payer payer = new Payer();
 		payer.setPaymentMethod("paypal");
@@ -255,10 +265,8 @@ public class PayPalService {
 		
 		agreement.setPlan(plan);	
 		agreement.setPayer(payer);
-		
-		
-		//save subscription with status INITIATED
-		Subscription subscription = new Subscription(billingPlan, client, SubscriptionStatus.INITIATED, billingAgreementDTO.getSuccessUrl(), billingAgreementDTO.getErrorUrl(), billingAgreementDTO.getFailedUrl());
+						
+		//save subscription with status BILLING_AGREEMENT_INITIATED
 		Subscription savedSubscription = subscriptionService.save(subscription);
 		
 		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
@@ -282,11 +290,6 @@ public class PayPalService {
 					}
 				}
 			}
-			
-			//save agreement id and set status to CREATED
-			savedSubscription.setToken(newAgreement.getToken());
-			savedSubscription.setStatus(SubscriptionStatus.CREATED);
-			subscriptionService.save(savedSubscription);
 		} 
 		catch (PayPalRESTException e) {
 			throw e;
@@ -298,14 +301,20 @@ public class PayPalService {
 			throw e;
 		}
 		
+		//set subscription status to BILLING_AGREEMENT_CREATED
+		savedSubscription.setStatus(SubscriptionStatus.CREATED);
+		subscriptionService.save(savedSubscription);  
+		
 		//to redirect the customer to the paypal site	    
 	    return redirectUrl;  
 	}
 	
-	public void executeBillingAgreement(Client client, String token) throws PayPalRESTException {
+	public void executeBillingAgreement(Subscription subscription, String token) throws PayPalRESTException {
 		
 		Agreement agreement =  new Agreement();
 		agreement.setToken(token);
+		
+		Client client = subscription.getClient();
 		
 		APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
@@ -313,20 +322,23 @@ public class PayPalService {
 			//execute the agreement and sign up the user for the subscription
 			Agreement createdAgreement = agreement.execute(context, agreement.getToken());
 			
-			//set status to COMPLETED
-			Subscription subscription = subscriptionService.findByToken(token);
-			subscription.setStatus(SubscriptionStatus.COMPLETED);
-			subscriptionService.save(subscription);
+			subscription.setBillingAgreementId(createdAgreement.getId());
+			
 		} 
 		catch (PayPalRESTException e) {
 			throw e;
 		}
+		
+		//set status to COMPLETED
+		subscription.setStatus(SubscriptionStatus.COMPLETED);
+		subscriptionService.save(subscription);
 	}
 	
 	/**
 	 * Compare transaction statues with PayPal every hour
 	 */
-	@Scheduled(initialDelay = 10000, fixedRate = 3600000)
+	//@Scheduled(initialDelay = 10000, fixedRate = 3600000)
+	@Scheduled(initialDelay = 10000, fixedRate = 180000)
 	public void synchronizeTransactions() {
 		//find all PayPal clients
 		List<Client> clientsList = clientService.findAll();
@@ -335,15 +347,18 @@ public class PayPalService {
 			//find all transaction with status INITIATED
 			List<sep.project.model.Transaction> transactions = transactionService.findAllCreatedTransactions(client);
 			
+			APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
+			
 			if(transactions.size() > 0) {				
-				APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 				
 				for(sep.project.model.Transaction transaction : transactions) {
 					try {
 						//get payment details
-						Payment payment = Payment.get(context, transaction.getPaymentId());						
+						Payment payment = Payment.get(context, transaction.getPaymentId());	
 						
-						if(payment.getState().equalsIgnoreCase("APPROVED")){
+						System.out.println("KP: " + transaction.getStatus() + " | PP: " + payment.getState());
+						
+						if(payment.getState().equalsIgnoreCase("APPROVED")){ 
 							//update transaction status to COMPLETED
 							transaction.setStatus(TransactionStatus.COMPLETED);
 							transactionService.save(transaction);
@@ -353,6 +368,7 @@ public class PayPalService {
 							transaction.setStatus(TransactionStatus.CANCELED);
 							transactionService.save(transaction);
 						}
+						
 					}
 					catch(PayPalRESTException e) {
 						//if transaction doesn't exist
@@ -362,7 +378,43 @@ public class PayPalService {
 						}
 					}
 				}
-			}	
+			}
+			
+			//find all subscriptions with status ACTIVE
+			List<sep.project.model.Subscription> subscriptions = subscriptionService.getSubscriptionForSynchronizing(client);
+			
+			if(subscriptions.size() > 0) {
+				for(Subscription subscription : subscriptions) {
+					try {
+						Agreement agreement = Agreement.get(context, subscription.getBillingAgreementId());
+						
+						System.out.println("KP: " + subscription.getStatus() + " | PP: " + agreement.getState());
+						
+						if(agreement.getState().equalsIgnoreCase("ACTIVE")){ 
+							//update subscription status to COMPLETED
+							subscription.setStatus(SubscriptionStatus.COMPLETED);
+							subscriptionService.save(subscription);
+						}
+						else if(agreement.getState().equalsIgnoreCase("CANCELLED")){
+							//update subscruption status to CANCELED
+							subscription.setStatus(SubscriptionStatus.CANCELED);
+							subscriptionService.save(subscription);
+						}
+						else if(agreement.getState().equalsIgnoreCase("EXPIRED")){
+							//update subscruption status to EXPIRED
+							subscription.setStatus(SubscriptionStatus.EXPIRED);
+							subscriptionService.save(subscription);
+						}
+					}
+					catch(PayPalRESTException e) {
+						//if subscription doesn't exist
+						if(e.getResponsecode() == 404) {
+							subscription.setStatus(SubscriptionStatus.CANCELED);
+							subscriptionService.save(subscription);
+						}
+					}
+				}
+			}
 		}
 	}
 	

@@ -81,7 +81,6 @@ public class SubscriptionsController {
 		try {
 			response = restTemplate.exchange(this.kpUrl, HttpMethod.POST, request, OrderResponseDTO.class);
 		} catch (RestClientException e) {
-			// TODO Auto-generated catch block
 			userSubscription.setSubscriptionStatus(OrderStatus.ERROR);
 			return ResponseEntity.status(400)
 					.body("An error occurred while trying to contact the payment microservice!");

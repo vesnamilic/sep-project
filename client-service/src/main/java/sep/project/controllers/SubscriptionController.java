@@ -1,38 +1,35 @@
 package sep.project.controllers;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
 import javax.validation.Valid;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import sep.project.dto.BillingAgreementDTO;
-import sep.project.dto.BillingPlanDTO;
+import sep.project.dto.SubscriptionDTO;
 import sep.project.dto.OrderResponseDTO;
 import sep.project.dto.PaymentResponse;
-import sep.project.dto.SubscriptionDTO;
+import sep.project.dto.SubmitSubscriptionDTO;
+import sep.project.dto.SubscriptionInformationDTO;
+import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
 import sep.project.model.Subscription;
+import sep.project.model.SubscriptionPlan;
 import sep.project.model.SubscriptionStatus;
+import sep.project.services.PaymentMethodService;
 import sep.project.services.SellerService;
+import sep.project.services.SubscriptionPlanService;
 import sep.project.services.SubscriptionService;
 
 @RestController
@@ -46,16 +43,19 @@ public class SubscriptionController {
 	@Autowired
 	private SellerService sellersService;
 	
-	private static final Logger logger = LoggerFactory.getLogger(SubscriptionController.class);
+	@Autowired
+	private SubscriptionPlanService subscriptionPlanService;
 	
-	@PostMapping("/create/{paymentMethod}")
-	private ResponseEntity<?> createSubscriptionPlan(@PathVariable String paymentMethod){
-		
-		return ResponseEntity.ok().build();
-	}
+	@Autowired
+	private PaymentMethodService paymentMethodService;
+	
+	private static final Logger logger = LoggerFactory.getLogger(SubscriptionController.class);
 
+	/**
+	 * Create a subscription and return the redirect link
+	 */
 	@PostMapping("/create")
-	private ResponseEntity<?> createSubscription(@RequestBody @Valid SubscriptionDTO subscriptionDTO) {
+	public ResponseEntity<?> createSubscription(@RequestBody @Valid SubscriptionInformationDTO subscriptionDTO) {
 		
 		logger.info("INITIATED | Creating a new subscription | Email: " + subscriptionDTO.getEmail());
 
@@ -66,14 +66,8 @@ public class SubscriptionController {
 			return ResponseEntity.status(400).body("There is no seller with the given email address!");
 		}
 		
-		//TODO: check if he has paypal? or not
-		
-		Date date = new Date();
-		DateTime originalDateTime = new DateTime(date);
-		DateTime expirationDateTime = originalDateTime.plusDays(1);
-		
 		//create and save the subscription
-		Subscription subscription = new Subscription(UUID.randomUUID().toString(), expirationDateTime.toDate(), SubscriptionStatus.CREATED, subscriptionDTO.getSuccessUrl(), subscriptionDTO.getErrorUrl(), subscriptionDTO.getFailedUrl(), seller);		
+		Subscription subscription = new Subscription(subscriptionDTO, seller);		
 		Subscription newSubscription = subscriptionService.save(subscription);
 
 		if (newSubscription == null) {
@@ -89,109 +83,77 @@ public class SubscriptionController {
 		return ResponseEntity.ok(orderResponseDTO);
 	}
 	
-	@PutMapping("/complete/{uuid}/{planId}")
-	private ResponseEntity<?> sendOrder(@PathVariable String uuid, @PathVariable Long planId) {
-
-		logger.info("INITIATED | Sending subscription to the payment service | Subscription uuid: " + uuid);
+	/**
+	 * Submit the chosen subscription plan and send it to the chosen payment service
+	 */
+	@PutMapping("/complete/{orderUUID}")
+	public ResponseEntity<?> submitSubscription(@PathVariable String orderUUID, @RequestBody @Valid SubmitSubscriptionDTO subscriptionDTO) {
 		
-		//check if subscription exists
-		Subscription subscription = this.subscriptionService.findByUuid(uuid);		
-		if (subscription == null) {
-			logger.error("CANCELED | Sending subscription to the payment service | Subscription uuid: " + uuid);
-			return ResponseEntity.status(400).body("There is no subscription with the given id.");
+		logger.info("INITIATED | Submiting subscription to the payment service");
+		
+		//check if subscription with the UUID exists
+		Subscription subscription = subscriptionService.findByUuid(orderUUID);		
+		if(subscription == null) {
+			logger.error("CANCELED | Submiting subscription to the payment service");
+			return ResponseEntity.status(400).build();
 		}
 		
-		//check if subscription is already sent or has expired
+		//check if subscription has expired or is already sent 
 		if(subscription.getSubscriptionStatus().equals(SubscriptionStatus.SENT) || this.subscriptionService.isExpired(subscription.getExpirationDate())) {
-			logger.error("CANCELED | Sending subscription to the payment service | Subscription uuid: " + uuid);
-			return ResponseEntity.status(400).body("Subscription has expired.");
+			logger.error("CANCELED | Submiting subscription to the payment service");
+			return ResponseEntity.status(400).body("The subscription has expired.");
 		}
 		
-		Seller seller = subscription.getSeller();
+		//check if payment method exists and if supports subscription
+		PaymentMethod paymentMethod = paymentMethodService.getByName(subscriptionDTO.getPaymentMethod());
+		if (paymentMethod == null || !paymentMethod.isSubscription()) {
+			logger.error("CANCELED | Submiting subscription to the payment service");
+			return ResponseEntity.status(400).build();
+		}
 		
-		//send subscription information to PayPal service
-		BillingAgreementDTO billingAgreementDTO = new BillingAgreementDTO(seller.getEmail(), planId, subscription.getSuccessUrl(), subscription.getErrorUrl(), subscription.getFailedUrl());
-
-		String url = "https://localhost:8762/api/paypal/agreement/create";
+		//check if subscription plan exists
+		SubscriptionPlan subscriptionPlan = subscriptionPlanService.getOne(subscriptionDTO.getSubscriptionPlanId());
+		if (subscriptionPlan == null) {
+			logger.error("CANCELED | Submiting subscription to the payment service");
+			return ResponseEntity.status(400).build();
+		}
+		
+		//create a new billing agreement and send it to the payment method
+		SubscriptionDTO dto = new SubscriptionDTO(subscriptionPlan, subscription);
+		
+		String url = "https://localhost:8762/api/" + paymentMethod.getName().toLowerCase() + "/subscription/create";
 	    
 	    RestTemplate restTemplate = new RestTemplate();
 
 	    String redirectUrl;
 		try {
-			ResponseEntity<?> response = restTemplate.postForEntity(url, billingAgreementDTO, String.class);  
+			ResponseEntity<?> response = restTemplate.postForEntity(url, dto, String.class);  
+			
+			subscription.setSubscriptionStatus(SubscriptionStatus.SENT);
+			subscriptionService.save(subscription);
 			
 			redirectUrl = (String) response.getBody();
 		} 
 		catch (RestClientException e) {
-			logger.error("CANCELED | Sending subscription to the payment service | Subscription uuid: " + uuid);
+			logger.error("CANCELED | Submiting subscription to the payment service");
+			
+			subscription.setSubscriptionStatus(SubscriptionStatus.CANCELED);
+			subscriptionService.save(subscription);
+			
 			return ResponseEntity.status(400).build();
 		}
 		
 		if (redirectUrl == null) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
+			logger.error("CANCELED | Submiting subscription to the payment service");
 			return ResponseEntity.status(500).build();
 		}
-		
-		logger.info("COMPLETED | Sending subscription to the payment service | Subscription uuid: " + uuid);
-		
-		//change subscription status to SENT and save subscription
-		subscription.setSubscriptionStatus(SubscriptionStatus.SENT);
-		subscriptionService.save(subscription);
-		
+				
 		PaymentResponse response = new PaymentResponse();
 		response.setUrl(redirectUrl);
 		
-		return ResponseEntity.ok(response);	
-	}
-	
-	@GetMapping("/plans/{uuid}")
-	private ResponseEntity<?> getSubscriptionPlans(@PathVariable String uuid) {
-		
-		logger.info("INITIATED | Getting subscription plans | Subscription uuid: " + uuid);
-		
-		//check if subscription exists
-		Subscription subscription = this.subscriptionService.findByUuid(uuid);		
-		if (subscription == null) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
-			return ResponseEntity.status(400).body("There is no subscription with the given id.");
-		}
-		
-		//check if subscription is already sent or has expired
-		if(subscription.getSubscriptionStatus().equals(SubscriptionStatus.SENT) || this.subscriptionService.isExpired(subscription.getExpirationDate())) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
-			return ResponseEntity.status(400).body("Subscription has expired.");
-		}
+		logger.info("COMPLETED | Submiting subscription to the payment service");
 
-		//find the seller
-		Seller seller = subscription.getSeller();
-		
-		String url = "https://localhost:8762/api/paypal/client/plans/" + seller.getEmail();
-	    
-	    RestTemplate restTemplate = new RestTemplate();
-	    
-	    //send request to PayPal to get the billing plans for the subscription
-    	List<BillingPlanDTO> billingPlanDTO;
-	    try {
-	    		    	
-	    	ResponseEntity<?> response = restTemplate.getForEntity(url, List.class);
-	    		      
-	    	billingPlanDTO = (List<BillingPlanDTO>) response.getBody();
-	    }
-	    catch(HttpClientErrorException e) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
-			return new ResponseEntity<>(e.getStatusCode());
-	    }
-	    catch(Exception e) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
-			return ResponseEntity.status(500).build();
-	    }
-
-		if (billingPlanDTO == null) {
-			logger.error("CANCELED | Getting subscription plans | Subscription uuid: " + uuid);
-			return ResponseEntity.status(500).build();
-		}
-		
-		logger.info("COMPLETED | Getting subscription plans | Subscription uuid: " + uuid);
-		return ResponseEntity.ok(billingPlanDTO);
+		return ResponseEntity.ok(response);			
 	}
+		
 }

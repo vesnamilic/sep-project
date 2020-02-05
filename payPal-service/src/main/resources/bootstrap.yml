@@ -1,10 +1,10 @@
 spring:
   application:
     name: payPal-service
-  cloud:
-    config:
-      uri: https://localhost:8888
-      fail-fast: true
+#  cloud:
+#    config:
+#      uri: https://localhost:8888
+#      fail-fast: true
 
 ribbon:
   isSecure: true

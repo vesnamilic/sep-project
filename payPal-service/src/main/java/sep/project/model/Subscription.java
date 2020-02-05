@@ -1,5 +1,7 @@
 package sep.project.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -8,6 +10,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import sep.project.dto.SubscriptionDTO;
 
 @Entity
 public class Subscription {
@@ -15,40 +21,66 @@ public class Subscription {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	
-	@ManyToOne
-	private BillingPlan billingPlan;
-	
+		
 	@ManyToOne
 	private Client client;
+	
+	@Column
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date date;
 	
 	@Column
 	@Enumerated(EnumType.STRING)
 	private SubscriptionStatus status;
 	
 	@Column
-	private String token;
+	private Double paymentAmount;
+
+	@Column
+	private String paymentCurrency;
 	
-	@Column(name = "successUrl")
+	@Column
+	@Enumerated(EnumType.STRING)
+	private SubscriptionFrequency frequency;
+	
+	@Column
+	@Enumerated(EnumType.STRING)
+	private SubscriptionType type;
+	
+	@Column
+	private Integer cyclesNumber;
+	
+	@Column
 	private String successUrl;
 	
-	@Column(name = "errorUrl")
+	@Column
 	private String errorUrl;
 	
-	@Column(name = "failedUrl")
+	@Column
 	private String failedUrl;
+	
+	@Column
+	private String billingPlanId;
+	
+	@Column
+	private String billingAgreementId;
 	
 	public Subscription() {
 		
 	}
-
-	public Subscription(BillingPlan billingPlan, Client client, SubscriptionStatus status, String successUrl, String errorUrl, String failedUrl) {
-		this.billingPlan = billingPlan;
+	
+	public Subscription(SubscriptionDTO subscriptionDTO, Client client) {
 		this.client = client;
-		this.status = status;
-		this.successUrl = successUrl;
-		this.errorUrl = errorUrl;
-		this.failedUrl = failedUrl;
+		this.date = new Date();
+		this.status = SubscriptionStatus.INITIATED;
+		this.paymentAmount = subscriptionDTO.getPaymentAmount();
+		this.paymentCurrency = subscriptionDTO.getPaymentCurrency();
+		this.frequency = subscriptionDTO.getFrequency();
+		this.type = subscriptionDTO.getType();
+		this.cyclesNumber = subscriptionDTO.getCyclesNumber();
+		this.successUrl = subscriptionDTO.getSuccessUrl();
+		this.errorUrl = subscriptionDTO.getErrorUrl();
+		this.failedUrl = subscriptionDTO.getFailedUrl();
 	}
 
 	public Long getId() {
@@ -59,14 +91,6 @@ public class Subscription {
 		this.id = id;
 	}
 
-	public BillingPlan getBillingPlan() {
-		return billingPlan;
-	}
-
-	public void setBillingPlan(BillingPlan billingPlan) {
-		this.billingPlan = billingPlan;
-	}
-
 	public Client getClient() {
 		return client;
 	}
@@ -75,20 +99,52 @@ public class Subscription {
 		this.client = client;
 	}
 
+	public Double getPaymentAmount() {
+		return paymentAmount;
+	}
+
+	public void setPaymentAmount(Double paymentAmount) {
+		this.paymentAmount = paymentAmount;
+	}
+
+	public String getPaymentCurrency() {
+		return paymentCurrency;
+	}
+
+	public void setPaymentCurrency(String paymentCurrency) {
+		this.paymentCurrency = paymentCurrency;
+	}
+
+	public SubscriptionFrequency getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(SubscriptionFrequency frequency) {
+		this.frequency = frequency;
+	}
+
+	public SubscriptionType getType() {
+		return type;
+	}
+
+	public void setType(SubscriptionType type) {
+		this.type = type;
+	}
+
+	public Integer getCyclesNumber() {
+		return cyclesNumber;
+	}
+
+	public void setCyclesNumber(Integer cyclesNumber) {
+		this.cyclesNumber = cyclesNumber;
+	}
+
 	public SubscriptionStatus getStatus() {
 		return status;
 	}
 
 	public void setStatus(SubscriptionStatus status) {
 		this.status = status;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
 	}
 
 	public String getSuccessUrl() {
@@ -113,6 +169,30 @@ public class Subscription {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public String getBillingPlanId() {
+		return billingPlanId;
+	}
+
+	public void setBillingPlanId(String billingPlanId) {
+		this.billingPlanId = billingPlanId;
+	}
+
+	public String getBillingAgreementId() {
+		return billingAgreementId;
+	}
+
+	public void setBillingAgreementId(String billingAgreementId) {
+		this.billingAgreementId = billingAgreementId;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
 	}
 	
 }

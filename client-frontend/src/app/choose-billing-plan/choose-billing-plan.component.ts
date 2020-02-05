@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { BillingPlan } from '../model/billingplan';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BillingPlanService } from './billing-plan.service';
+import { PaymentMethod } from '../model/paymentmethod';
 
 @Component({
   selector: 'app-choose-billing-plan',
@@ -13,6 +14,7 @@ export class ChooseBillingPlanComponent implements OnInit {
 
   billingPlanForm: FormGroup;
   billingPlans: BillingPlan[];
+  paymentMethods: PaymentMethod[];
   subscriptionId: string;
 
   constructor(private billingPlanService: BillingPlanService,
@@ -29,12 +31,16 @@ export class ChooseBillingPlanComponent implements OnInit {
     // initialize the form
     this.billingPlanForm = new FormGroup(
       {
-        billingPlan: new FormControl('')
+        paymentMethod: new FormControl('', [Validators.required]),
+        billingPlan: new FormControl('', [Validators.required])
       }
     );
 
     // get available billing plans
     this.getBillingPlans();
+
+    // get available payment methods
+    this.getSubscriptionPaymentMethods();
   }
 
 
@@ -50,10 +56,29 @@ export class ChooseBillingPlanComponent implements OnInit {
     );
   }
 
+  // get payment methods for the subscription
+  getSubscriptionPaymentMethods() {
+    this.billingPlanService.getSubscriptionPaymentMethods(this.subscriptionId).subscribe(
+      data => {
+        this.paymentMethods = data;
+        console.log(this.paymentMethods);
+      },
+      error => {
+        alert('An error occurred. Please try again!');
+      }
+    );
+  }
+
   // submit form and create the subscription
   submitForm() {
-    console.log(this.billingPlanForm.value.billingPlan);
-    this.billingPlanService.createSubscription(this.subscriptionId, this.billingPlanForm.value.billingPlan.id).subscribe(
+
+    const valuesList: any = {
+      paymentMethod: this.billingPlanForm.value.paymentMethod.name,
+      subscriptionPlanId: this.billingPlanForm.value.billingPlan.id
+    };
+
+    console.log(valuesList);
+    this.billingPlanService.createSubscription(this.subscriptionId, valuesList).subscribe(
       data => {
         const response = data as any;
         document.location.href  = response.url;

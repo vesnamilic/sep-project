@@ -4,18 +4,31 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
-public class PaymentDTO {
+import sep.project.model.SubscriptionFrequency;
+import sep.project.model.SubscriptionType;
+
+public class SubscriptionDTO {
 	
 	@NotNull
 	@Email
 	private String email;
-	
+
 	@NotNull
 	@Positive
 	private Double paymentAmount;
-	
+
 	@NotNull
 	private String paymentCurrency;
+	
+	@NotNull
+	private SubscriptionFrequency frequency;
+	
+	@NotNull
+	private SubscriptionType type;
+	
+	@NotNull
+	@Positive
+	private Integer cyclesNumber;
 	
 	@NotNull
 	private String successUrl;
@@ -25,18 +38,9 @@ public class PaymentDTO {
 	
 	@NotNull
 	private String failedUrl;
-			
-	public PaymentDTO(){
-		
-	}
 	
-	public PaymentDTO(String email, Double paymentAmount, String paymentCurrency, String successUrl, String errorUrl, String failedUrl) {
-		this.email = email;
-		this.paymentAmount = paymentAmount;
-		this.paymentCurrency = paymentCurrency;
-		this.successUrl = successUrl;
-		this.errorUrl = errorUrl;
-		this.failedUrl = failedUrl;
+	public SubscriptionDTO() {
+		
 	}
 
 	public String getEmail() {
@@ -61,6 +65,30 @@ public class PaymentDTO {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public SubscriptionFrequency getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(SubscriptionFrequency frequency) {
+		this.frequency = frequency;
+	}
+
+	public SubscriptionType getType() {
+		return type;
+	}
+
+	public void setType(SubscriptionType type) {
+		this.type = type;
+	}
+
+	public Integer getCyclesNumber() {
+		return cyclesNumber;
+	}
+
+	public void setCyclesNumber(Integer cyclesNumber) {
+		this.cyclesNumber = cyclesNumber;
 	}
 
 	public String getSuccessUrl() {

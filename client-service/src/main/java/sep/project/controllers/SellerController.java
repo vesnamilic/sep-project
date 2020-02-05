@@ -136,6 +136,8 @@ public class SellerController {
 	    	    
 	    //check if payment method exists
 	    PaymentMethod pMethod = paymentMethodService.getByName(paymentMethod);
+	    
+	    System.out.println(pMethod);
 	    	
 	    if(pMethod == null) {
 	    	logger.error("CANCELED | Adding a new payment method to an existing client | Method: " + paymentMethod);

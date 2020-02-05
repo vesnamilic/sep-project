@@ -13,5 +13,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 	
 	Transaction findByPaymentId(String paymentId);
 	
-	List<Transaction> findByClientAndStatus(Client client, TransactionStatus status);
+	List<Transaction> findByClientAndStatusIn(Client client, List<TransactionStatus> statuses);
 }

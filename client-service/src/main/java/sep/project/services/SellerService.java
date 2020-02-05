@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import sep.project.dto.RegistrationDTO;
 import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
-import sep.project.repositories.PaymentMethodRepository;
 import sep.project.repositories.SellerRepository;
 
 @Service
@@ -18,9 +17,6 @@ public class SellerService {
 	
 	@Autowired
 	private SellerRepository sellerRepository;
-	
-	@Autowired
-	private PaymentMethodRepository paymentMethodRepository;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;

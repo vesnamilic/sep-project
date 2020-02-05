@@ -4,5 +4,6 @@ public enum SubscriptionStatus {
 	INITIATED,
 	CREATED,
 	COMPLETED,
-	CANCELED
+	CANCELED,
+	EXPIRED
 }

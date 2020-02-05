@@ -2,13 +2,13 @@
 <Configuration>	    
 	<Appenders>		        
 		<Console name="Console" target="SYSTEM_OUT">         
-			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}{CST}] [%p] %m%n" />
+			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}{CET}] [%p] %m%n" />
 		</Console>		        
 		<RollingFile name="RollingFile"
 			fileName=".target/logs/spring-boot-logger-log4j2-info.log"
 			filePattern="./logs/$${date:yyyy-MM}/spring-boot-logger-log4j2-info-%d{-dd-MMMM-yyyy}-%i.log.gz">
 			<PatternLayout>
-				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CST}] [%p] %m%n</pattern>
+				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CET}] [%p] %m%n</pattern>
 			</PatternLayout>	            
 			<Policies>
 				<!-- rollover on startup, daily and when the file reaches 10 MegaBytes -->				                
@@ -21,7 +21,7 @@
 			fileName="./logs/spring-boot-logger-log4j2-debug.log"
 			filePattern="./logs/$${date:yyyy-MM}/spring-boot-logger-log4j2-debug-%d{-dd-MMMM-yyyy}-%i.log.gz">    
 			<PatternLayout>	                
-				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CST}] [%p] %m%n</pattern>	            
+				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CET}] [%p] %m%n</pattern>	            
 			</PatternLayout>           
 			<Policies>
 			<!-- rollover on startup, daily and when the file reaches 10 MegaBytes -->				                
@@ -34,7 +34,7 @@
 			fileName="./logs/spring-boot-logger-log4j2-error.log"
 			filePattern="./logs/$${date:yyyy-MM}/spring-boot-logger-log4j2-error-%d{-dd-MMMM-yyyy}-%i.log.gz">			    
 			<PatternLayout>				                
-				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CST}] [%p] %m%n</pattern>				            
+				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CET}] [%p] %m%n</pattern>				            
 			</PatternLayout>			            
 			<Policies>
 			<!-- rollover on startup, daily and when the file reaches 10 MegaBytes -->                
@@ -47,7 +47,7 @@
 			fileName="./logs/spring-boot-logger-log4j2-fatal.log"
 			filePattern="./logs/$${date:yyyy-MM}/spring-boot-logger-log4j2-fatal-%d{-dd-MMMM-yyyy}-%i.log.gz">			    
 			<PatternLayout>				                
-				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CST}] [%p] %m%n</pattern>				            
+				<pattern>[%d{yyyy-MM-dd HH:mm:ss}{CET}] [%p] %m%n</pattern>				            
 			</PatternLayout>			            
 			<Policies>
 			<!-- rollover on startup, daily and when the file reaches 10 MegaBytes -->				                

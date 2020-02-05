@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import sep.project.dto.PaymentDTO;
+
 @Entity
 public class Transaction {
 	
@@ -30,9 +32,6 @@ public class Transaction {
 	@Column
 	@Enumerated(EnumType.STRING)
 	private TransactionStatus status;
-	
-	@Column
-	private String paymentId;
 
 	@Column
 	private Double paymentAmount;
@@ -48,20 +47,23 @@ public class Transaction {
 	
 	@Column(name = "failedUrl")
 	private String failedUrl;
+	
+	@Column
+	private String paymentId;
 
 	public Transaction() {
 
 	}
 
-	public Transaction(Client client, Date date, TransactionStatus status, Double paymentAmount, String paymentCurrency, String successUrl, String errorUrl, String failedUrl) {
+	public Transaction(PaymentDTO payment, Client client) {
 		this.client = client;
-		this.date = date;
-		this.status = status;
-		this.paymentAmount = paymentAmount;
-		this.paymentCurrency = paymentCurrency;
-		this.successUrl = successUrl;
-		this.failedUrl = failedUrl;
-		this.errorUrl = errorUrl;
+		this.date = new Date();
+		this.status = TransactionStatus.INITIATED;
+		this.paymentAmount = payment.getPaymentAmount();
+		this.paymentCurrency = payment.getPaymentCurrency();
+		this.successUrl = payment.getSuccessUrl();
+		this.failedUrl = payment.getFailedUrl();
+		this.errorUrl = payment.getErrorUrl();
 	}
 
 	public Long getId() {

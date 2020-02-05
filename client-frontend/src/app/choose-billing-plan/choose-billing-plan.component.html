@@ -15,12 +15,20 @@
         <div class="container">
           <div class="row">
             <div class="col-md-9 col-lg-8 mx-auto">
-              <h3 class="font-weight-light text-center mb-4">Subscription plans</h3>
               <form id="billingPlanForm" [formGroup] = "billingPlanForm" (ngSubmit) = "submitForm()">
                 <div class="form-label-group">
-                  <select formControlName="billingPlan" form-cotrnclass="form-control" >
+                  <label style="margin-left:5px" for="paymentMethod" class="form-control-label">Payment method</label>
+                  <select formControlName="paymentMethod" class="form-control" >
+                    <option *ngFor="let paymentMethod of paymentMethods; let i = index" [ngValue]=paymentMethod>
+                      {{paymentMethod.name}}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-label-group">
+                  <label style="margin-left:5px" for="billingPlan" class="form-control-label">Billing plan</label>
+                  <select formControlName="billingPlan" class="form-control" >
                     <option *ngFor="let plan of billingPlans; let i = index" [ngValue]=plan>
-                      {{plan.paymentAmount}} {{plan.paymentCurrency}} / {{plan.frequency}}
+                      {{plan.cyclesNumber}} {{plan.frequency.toLowerCase()}}s | {{plan.type}}
                     </option>
                   </select>
                 </div>

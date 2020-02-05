@@ -15,10 +15,10 @@
         <div class="container">
           <div class="row">
             <div class="col-md-9 col-lg-8 mx-auto">
-              <h3 class="login-heading mb-4">Payment Methods</h3>
               <form id="paymentForm" [formGroup] = "paymentForm" (ngSubmit) = "submitForm()">
                 <div class="form-label-group">
-                  <select formControlName="paymentMethod" form-cotrnclass="form-control" >
+                  <label style="margin-left:5px" for="paymentMethod" class="form-control-label">Payment method</label>
+                  <select formControlName="paymentMethod" class="form-control" >
                     <option *ngFor="let item of paymentMethods; let i = index" [ngValue]=item>
                       {{item}}
                     </option>

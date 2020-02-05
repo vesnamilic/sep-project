@@ -1,6 +1,7 @@
 package sep.project.model;
 
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+
+import org.joda.time.DateTime;
+
+import sep.project.dto.SubscriptionInformationDTO;
 
 @Entity
 public class Subscription {
@@ -29,6 +34,12 @@ public class Subscription {
 	private SubscriptionStatus subscriptionStatus;
 	
 	@Column
+	private double paymentAmount;
+	
+	@Column
+	private String paymentCurrency;
+	
+	@Column
 	private String successUrl;
 	
 	@Column
@@ -43,15 +54,20 @@ public class Subscription {
 	public Subscription() {
 		
 	}
-
-	public Subscription(String uuid, Date expirationDate, SubscriptionStatus subscriptionStatus, String successUrl,
-			String errorUrl, String failedUrl, Seller seller) {
-		this.uuid = uuid;
-		this.expirationDate = expirationDate;
-		this.subscriptionStatus = subscriptionStatus;
-		this.successUrl = successUrl;
-		this.errorUrl = errorUrl;
-		this.failedUrl = failedUrl;
+	
+	public Subscription(SubscriptionInformationDTO subscriptionDTO, Seller seller) {
+		Date date = new Date();
+		DateTime originalDateTime = new DateTime(date);
+		DateTime expirationDateTime = originalDateTime.plusMinutes(15);
+		
+		this.uuid = UUID.randomUUID().toString();
+		this.expirationDate = expirationDateTime.toDate();
+		this.subscriptionStatus = SubscriptionStatus.CREATED;
+		this.successUrl = subscriptionDTO.getSuccessUrl();
+		this.errorUrl = subscriptionDTO.getErrorUrl();
+		this.failedUrl = subscriptionDTO.getFailedUrl();
+		this.paymentAmount = subscriptionDTO.getPaymentAmount();
+		this.paymentCurrency = subscriptionDTO.getPaymentCurrency();
 		this.seller = seller;
 	}
 
@@ -117,6 +133,22 @@ public class Subscription {
 
 	public void setSubscriptionStatus(SubscriptionStatus subscriptionStatus) {
 		this.subscriptionStatus = subscriptionStatus;
+	}
+
+	public double getPaymentAmount() {
+		return paymentAmount;
+	}
+
+	public void setPaymentAmount(double paymentAmount) {
+		this.paymentAmount = paymentAmount;
+	}
+
+	public String getPaymentCurrency() {
+		return paymentCurrency;
+	}
+
+	public void setPaymentCurrency(String paymentCurrency) {
+		this.paymentCurrency = paymentCurrency;
 	}
 	
 }

@@ -7,7 +7,6 @@ public class RedirectDTO {
 
 	public RedirectDTO() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public String getUrl() {

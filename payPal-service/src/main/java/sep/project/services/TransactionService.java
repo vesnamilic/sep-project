@@ -1,5 +1,6 @@
 package sep.project.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class TransactionService {
 	
 	public List<Transaction> findAllCreatedTransactions(Client client){
 		
-		return transactionRepository.findByClientAndStatus(client, TransactionStatus.CREATED);
+		List<TransactionStatus> list = new ArrayList<TransactionStatus>();
+		list.add(TransactionStatus.CREATED);
+		
+		return transactionRepository.findByClientAndStatusIn(client, list);
 	}
 }
