@@ -15,25 +15,22 @@ import javax.persistence.ManyToOne;
 public class UserOrder {
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@Column(name = "uuid")
-	private String uuid;
-	
+
 	@Column(name = "orderStatus")
 	@Enumerated(EnumType.STRING)
 	private OrderStatus orderStatus;
-	
+
 	@Column(name = "paymentAmount")
 	private double paymentAmount;
-	
+
 	@Column(name = "paymentCurrency")
 	private String paymentCurrency;
-	
+
 	@ManyToOne
 	private RegisteredUser buyer;
-	
+
 	@ManyToOne
 	private Magazine magazine;
 
@@ -42,10 +39,9 @@ public class UserOrder {
 		// TODO Auto-generated constructor stub
 	}
 
-	public UserOrder(String uuid, Date expirationDate, OrderStatus orderStatus, double paymentAmount,
-			String paymentCurrency, String successUrl, String errorUrl, String failedUrl, RegisteredUser buyer) {
+	public UserOrder(Date expirationDate, OrderStatus orderStatus, double paymentAmount, String paymentCurrency,
+			String successUrl, String errorUrl, String failedUrl, RegisteredUser buyer) {
 		super();
-		this.uuid = uuid;
 		this.orderStatus = orderStatus;
 		this.paymentAmount = paymentAmount;
 		this.paymentCurrency = paymentCurrency;
@@ -59,7 +55,6 @@ public class UserOrder {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
 
 	public double getPaymentAmount() {
 		return paymentAmount;
@@ -75,14 +70,6 @@ public class UserOrder {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
-	}
-
-	public String getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
 	}
 
 	public OrderStatus getOrderStatus() {
@@ -108,7 +95,5 @@ public class UserOrder {
 	public void setMagazine(Magazine magazine) {
 		this.magazine = magazine;
 	}
-
-
 
 }

@@ -1,7 +1,11 @@
 package sep.project.model;
 
 public enum OrderStatus {
+	INITIATED,
 	CREATED,
 	EXPIRED,
-	SENT
+	CANCELED,
+	INVALID,
+	COMPLETED
+	
 }

@@ -18,6 +18,7 @@ import sep.project.dto.PaymentRequestDTO;
 import sep.project.dto.PaymentResponseDTO;
 import sep.project.model.Merchant;
 import sep.project.model.Transaction;
+import sep.project.model.TransactionStatus;
 import sep.project.repositories.TransactionRepository;
 
 /**
@@ -25,7 +26,7 @@ import sep.project.repositories.TransactionRepository;
  */
 @Service
 public class TransactionService {
-	
+
 	private TransactionRepository transactionRepository;
 
 	@Autowired
@@ -33,10 +34,10 @@ public class TransactionService {
 
 	@Value("${sandbox_url}")
 	private String sandBoxURL;
-	
+
 	@Value("Authorization")
 	private String AUTH_HEADER;
-	
+
 	@Value("Bearer")
 	private String TOKEN_TYPE;
 
@@ -47,22 +48,23 @@ public class TransactionService {
 
 	/**
 	 * Metoda za pronalazak transakcije sa odgovarajucim id
+	 * 
 	 * @param id identifikator transakcije
 	 * @return transakciju sa datim id-jem
 	 */
 	public Transaction getTransaction(Long id) {
 		return this.transactionRepository.getOne(id);
 	}
-	
+
 	/**
 	 * Metoda za pronalazak transakcije sa odgovarajucim id placanja
+	 * 
 	 * @param id identifikator placanja
 	 * @return transakciju sa datim id-jem placanja
 	 */
 	public Transaction getTransactionByPayment(Long id) {
 		return this.transactionRepository.findByPaymentId(id);
 	}
-
 
 	public Transaction createInitialTransaction(Merchant merchant, BitCoinPayment paymentInfo) {
 		Transaction transaction = new Transaction();
@@ -72,6 +74,7 @@ public class TransactionService {
 		transaction.setErrorUrl(paymentInfo.getErrorUrl());
 		transaction.setSuccessUrl(paymentInfo.getSuccessUrl());
 		transaction.setFailedUrl(paymentInfo.getFailedUrl());
+		transaction.setOrderId(paymentInfo.getOrderId());
 		Transaction saved = this.saveTransaction(transaction);
 
 		return saved;
@@ -79,6 +82,7 @@ public class TransactionService {
 
 	/**
 	 * Metoda za cuvanje transakcije
+	 * 
 	 * @param transaction transakcija za cuvanje
 	 * @return sačuvana transakcija
 	 * @see Transaction
@@ -94,9 +98,18 @@ public class TransactionService {
 		return saved;
 	}
 
+	public Transaction findByOrderId(Long id) {
+		return transactionRepository.findByOrderId(id);
+	}
+
+	public Transaction findMerchantTransactionBasedOnId(Long id, String email) {
+		return transactionRepository.findMerchantTransactionBasedOnId(id, email);
+	}
+	
 	/**
 	 * Metoda za promenu stanja transakcije
-	 * @param id identifikator transakcije kojoj je potrebno promeniti status
+	 * 
+	 * @param id     identifikator transakcije kojoj je potrebno promeniti status
 	 * @param status novi status transakcije
 	 * @return true ukoliko je uspesno izmenjena transakcija u suprotnom false
 	 */
@@ -106,7 +119,7 @@ public class TransactionService {
 		if (transaction == null)
 			return false;
 
-		transaction.setStatus(status);
+		transaction.setStatus(TransactionStatus.valueOf(status));
 		transaction = this.saveTransaction(transaction);
 
 		if (transaction == null)
@@ -114,18 +127,19 @@ public class TransactionService {
 
 		return true;
 	}
-	
+
 	/**
 	 * Metoda za promenu transakcije na osnovu detalja o placanju
+	 * 
 	 * @param transaction transakcija
-	 * @param dto detalji placanja
+	 * @param dto         detalji placanja
 	 * @return promenjena transakcija
 	 */
 	public Transaction changeTransaction(Transaction transaction, PaymentResponseDTO dto) {
 		transaction.setCreationDate(dto.getCreated_at());
 		transaction.setPaymentId(dto.getId());
-		transaction.setStatus(dto.getStatus());
-		if(!dto.getReceive_amount().equals("")) {
+		transaction.setStatus(TransactionStatus.valueOf(dto.getStatus().toUpperCase()));
+		if (!dto.getReceive_amount().equals("")) {
 			try {
 				transaction.setReceiveAmount(Double.parseDouble(dto.getReceive_amount()));
 			} catch (NumberFormatException e) {
@@ -135,11 +149,13 @@ public class TransactionService {
 		transaction.setReceiveCurrency(dto.getReceive_currency());
 		return this.saveTransaction(transaction);
 	}
-	
+
 	/**
 	 * Metoda za proveru stanja transakcije na coingate-u
+	 * 
 	 * @param transaction transakcija
-	 * @return true- ukoliko je provera uspesno prosla, false - ukoliko je u toku provere doslo do greske
+	 * @return true- ukoliko je provera uspesno prosla, false - ukoliko je u toku
+	 *         provere doslo do greske
 	 */
 	public boolean checkTransaction(Transaction transaction) {
 		HttpHeaders headers = new HttpHeaders();
@@ -147,31 +163,32 @@ public class TransactionService {
 		HttpEntity<PaymentRequestDTO> request = new HttpEntity<>(headers);
 		ResponseEntity<PaymentResponseDTO> response = null;
 		try {
-			response = restTemplate.exchange("https://api-sandbox.coingate.com/v2/orders/" + transaction.getPaymentId(), HttpMethod.GET, request,PaymentResponseDTO.class);
+			response = restTemplate.exchange("https://api-sandbox.coingate.com/v2/orders/" + transaction.getPaymentId(),
+					HttpMethod.GET, request, PaymentResponseDTO.class);
 		} catch (RestClientException e) {
 			// TODO Auto-generated catch block
 			return false;
 		} catch (Exception e2) {
 			return false;
 		}
-		
+
 		PaymentResponseDTO responseObject = response.getBody();
 
-		if (changeTransaction(transaction , responseObject) == null) {
+		if (changeTransaction(transaction, responseObject) == null) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
 	/**
-	 * Metoda za periodicnu proveru transakcija sa statusom new, pending i confirming.
-	 * Sinhronizacija sa stanjem transakcija na CoinGate-u
+	 * Metoda za periodicnu proveru transakcija sa statusom new, pending i
+	 * confirming. Sinhronizacija sa stanjem transakcija na CoinGate-u
 	 */
 	@Scheduled(initialDelay = 10000, fixedRate = 60000)
 	public void checkTransactionsStatuses() {
-		List<Transaction> transactions = this.transactionRepository.getTransactionWithStatuses("new", "pending","confirming");
-		
+		List<Transaction> transactions = this.transactionRepository.getTransactionWithStatuses(TransactionStatus.NEW, TransactionStatus.PENDING, TransactionStatus.PENDING);
+
 		for (Transaction transaction : transactions) {
 			this.checkTransaction(transaction);
 		}

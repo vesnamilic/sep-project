@@ -9,6 +9,9 @@ public class BitCoinPayment {
 	@NotNull
 	@Email
 	private String email;
+	
+	@NotNull
+	private Long orderId;
 
 	@NotNull
 	@Positive
@@ -105,6 +108,16 @@ public class BitCoinPayment {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
 	}
 
 	

@@ -9,6 +9,8 @@ public class OrderInformationDTO {
 	@NotNull
 	@Email
 	private String email;
+	
+	private Long orderId;
 
 	@NotNull
 	@Positive
@@ -77,6 +79,14 @@ public class OrderInformationDTO {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
 	}
 
 

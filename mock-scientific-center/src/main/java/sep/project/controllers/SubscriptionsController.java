@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import sep.project.dto.OrderInformationDTO;
 import sep.project.dto.OrderResponseDTO;
 import sep.project.dto.RedirectDTO;
 import sep.project.dto.SubscriptionInformationDTO;
@@ -63,7 +62,7 @@ public class SubscriptionsController {
 
 		UserSubscription userSubscription = new UserSubscription();
 		userSubscription.setMagazine(magazine);
-		userSubscription.setSubscriptionStatus(OrderStatus.CREATED);
+		userSubscription.setSubscriptionStatus(OrderStatus.INITIATED);
 
 		userSubscription = this.userSubscriptionService.save(userSubscription);
 
@@ -81,7 +80,7 @@ public class SubscriptionsController {
 		try {
 			response = restTemplate.exchange(this.kpUrl, HttpMethod.POST, request, OrderResponseDTO.class);
 		} catch (RestClientException e) {
-			userSubscription.setSubscriptionStatus(OrderStatus.ERROR);
+			userSubscription.setSubscriptionStatus(OrderStatus.INVALID);
 			return ResponseEntity.status(400)
 					.body("An error occurred while trying to contact the payment microservice!");
 		}

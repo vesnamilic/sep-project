@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -24,7 +26,10 @@ public class Transaction {
 	private Long id;
 	
 	@Column
-	private String status;
+	private Long orderId;
+	
+	@Enumerated(EnumType.STRING)
+	private TransactionStatus status;
 	
 	@Column
 	private Date creationDate;
@@ -68,11 +73,11 @@ public class Transaction {
 		this.id = id;
 	}
 
-	public String getStatus() {
+	public TransactionStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(TransactionStatus status) {
 		this.status = status;
 	}
 
@@ -154,6 +159,14 @@ public class Transaction {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
 	}
 
 	

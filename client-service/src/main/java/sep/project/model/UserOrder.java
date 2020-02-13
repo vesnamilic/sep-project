@@ -18,6 +18,9 @@ public class UserOrder {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
+	@Column(name="orderId")
+	private Long orderId;
+	
 	@Column(name = "uuid")
 	private String uuid;
 	
@@ -43,6 +46,9 @@ public class UserOrder {
 	@Column(name = "failedUrl")
 	private String failedUrl;
 	
+	@Column(name = "paymentMethod")
+	private String paymentMethod;
+	
 	@ManyToOne
 	private Seller seller;
 
@@ -52,7 +58,7 @@ public class UserOrder {
 	}
 
 	public UserOrder(String uuid, Date expirationDate, OrderStatus orderStatus, double paymentAmount,
-			String paymentCurrency, String successUrl, String errorUrl, String failedUrl, Seller seller) {
+			String paymentCurrency, String successUrl, String errorUrl, String failedUrl,Long orderId, Seller seller) {
 		super();
 		this.uuid = uuid;
 		this.expirationDate = expirationDate;
@@ -63,6 +69,7 @@ public class UserOrder {
 		this.errorUrl = errorUrl;
 		this.failedUrl = failedUrl;
 		this.seller = seller;
+		this.orderId = orderId;
 	}
 
 	public Long getId() {
@@ -143,6 +150,22 @@ public class UserOrder {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
 	}
 
 }

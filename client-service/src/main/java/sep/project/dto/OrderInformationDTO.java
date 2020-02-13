@@ -11,6 +11,9 @@ public class OrderInformationDTO {
 	@NotNull
 	@Email
 	private String email;
+	
+	@NotNull
+	private Long orderId;
 
 	@NotNull
 	@Positive
@@ -28,6 +31,7 @@ public class OrderInformationDTO {
 	@NotNull
 	private String failedUrl;
 
+
 	public OrderInformationDTO() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -37,6 +41,7 @@ public class OrderInformationDTO {
 		this.email = userOrder.getSeller().getEmail();
 		this.paymentAmount = userOrder.getPaymentAmount();
 		this.paymentCurrency = userOrder.getPaymentCurrency();
+		this.orderId = userOrder.getOrderId();
 		this.successUrl = userOrder.getSuccessUrl();
 		this.errorUrl = userOrder.getErrorUrl();
 		this.failedUrl = userOrder.getFailedUrl();
@@ -88,6 +93,14 @@ public class OrderInformationDTO {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
 	}
 
 

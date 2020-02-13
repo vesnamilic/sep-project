@@ -6,13 +6,15 @@ import java.util.UUID;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.dto.OrderInformationDTO;
+import sep.project.dto.OrderStatusInformationDTO;
 import sep.project.model.OrderStatus;
 import sep.project.model.Seller;
 import sep.project.model.UserOrder;
@@ -23,9 +25,12 @@ public class OrderService {
 
 	@Autowired
 	private OrderRepository orderRepository;
-	
+
 	@Autowired
-	private RestTemplate restTemplate;	
+	private RestTemplate restTemplate;
+
+	@Value("https://localhost:8762/api/")
+	private String paymentMethodsRedirectURL;
 
 	/**
 	 * Metoda za vraćanje narudžbine sa odgovarajućim identifikatorom
@@ -37,10 +42,10 @@ public class OrderService {
 	public UserOrder getOrder(Long id) {
 		return this.orderRepository.getOne(id);
 	}
-	
-	
+
 	/**
 	 * Metoda za pronalazak narudžbine putem uuid-a
+	 * 
 	 * @param uuid
 	 * @return UserOrder
 	 * @see UserOrder
@@ -48,7 +53,6 @@ public class OrderService {
 	public UserOrder findOrderByUUID(String uuid) {
 		return this.orderRepository.findByUuid(uuid);
 	}
-	
 
 	/**
 	 * Metoda za čuvanje narudžbina korisnika
@@ -70,9 +74,14 @@ public class OrderService {
 
 	}
 	
+	public UserOrder findClientOrderByOrderId(String email, Long orderId) {
+		return this.orderRepository.findClientOrderByOrderId(orderId,email);
+	}
+
 	/**
 	 * Metoda za kreiranje narudžbina korisnika
-	 * @param order informacije o narudžbini
+	 * 
+	 * @param order  informacije o narudžbini
 	 * @param seller prodavac
 	 * @return kreirana narudžbina
 	 * @see OrderInformationDTO
@@ -82,44 +91,58 @@ public class OrderService {
 	public UserOrder createOrder(OrderInformationDTO order, Seller seller) {
 		Date dt = new Date();
 		DateTime dtOrg = new DateTime(dt);
-		DateTime dtPlusOne = dtOrg.plusDays(1);
+		DateTime dtPlusOne = dtOrg.plusMinutes(15);
 		UUID uuid = UUID.randomUUID();
-		
-		return new UserOrder(uuid.toString(),dtPlusOne.toDate(), OrderStatus.CREATED, order.getPaymentAmount(), order.getPaymentCurrency(), order.getSuccessUrl(), order.getErrorUrl(), order.getFailedUrl(), seller);
+
+		return new UserOrder(uuid.toString(), dtPlusOne.toDate(), OrderStatus.INITIATED, order.getPaymentAmount(),
+				order.getPaymentCurrency(), order.getSuccessUrl(), order.getErrorUrl(), order.getFailedUrl(),
+				order.getOrderId(), seller);
 	}
-	
+
 	/**
 	 * Metoda za proveru da li je narudžbina istekla
+	 * 
 	 * @param date datum isteka narudžbine
 	 * @return true- ukoliko je istekla, false- ukoliko je i dalje aktivna
 	 */
 	public Boolean isExpired(Date date) {
 		return date.before(new Date());
 	}
-	
-	
+
 	/**
-	 * Metoda za periodicnu proveru narudžina sa statusom CREATED
-	 * Sinhronizacija sa stanjem transakcija na CoinGate-u
+	 * Metoda za periodicnu proveru narudžina sa statusima INITIATED i CREATED
 	 */
 	@Scheduled(initialDelay = 10000, fixedRate = 60000)
 	public void checkOrdersStatus() {
 		List<UserOrder> orders = this.orderRepository.findExpiredOrders(new Date());
-		
-		for(UserOrder order : orders) {
+
+		for (UserOrder order : orders) {
+			order.setOrderStatus(OrderStatus.EXPIRED);
+			this.saveOrder(order);
+		}
+
+		orders = this.orderRepository.findByOrderStatus(OrderStatus.CREATED);
+
+		for (UserOrder order : orders) {
+			ResponseEntity<OrderStatusInformationDTO> response = null;
 			try {
-				System.out.println(order.getFailedUrl());
-				restTemplate.exchange("https://localhost:9897/orders/", HttpMethod.GET, null, Void.class);
+				System.out.println("OVDE" + this.paymentMethodsRedirectURL+ order.getPaymentMethod().toLowerCase() + "/payment?orderId=" + order.getOrderId() + "&email=" + order.getSeller().getEmail());
+				response = restTemplate.getForEntity(this.paymentMethodsRedirectURL+ order.getPaymentMethod().toLowerCase() + "/payment?orderId=" + order.getOrderId() + "&email=" + order.getSeller().getEmail(),
+						OrderStatusInformationDTO.class);
 			} catch (RestClientException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
-			} catch (Exception e2) {
-				e2.printStackTrace();
-				return;
 			}
-			order.setOrderStatus(OrderStatus.EXPIRED);
-			this.saveOrder(order);
+
+			OrderStatus orderStatus = OrderStatus.valueOf(response.getBody().getStatus());
+
+			if (orderStatus != null && !orderStatus.equals(order.getOrderStatus())) {
+				order.setOrderStatus(orderStatus);
+				this.orderRepository.save(order);
+			}
+
+			return;
 		}
 
 	}

@@ -39,13 +39,13 @@ public class OrderController {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("https://localhost:4203/success")
+	@Value("https://localhost:9897/orders/success")
 	private String successUrl;
 
-	@Value("https://localhost:4203/cancel")
+	@Value("https://localhost:9897/orders/failed")
 	private String failedUrl;
 
-	@Value("https://localhost:4203/error")
+	@Value("https://localhost:9897/orders/error")
 	private String errorUrl;
 
 	@Value("https://localhost:8762/api/client/orders/create")
@@ -64,7 +64,7 @@ public class OrderController {
 
 		UserOrder userOrder = new UserOrder();
 		userOrder.setMagazine(magazine);
-		userOrder.setOrderStatus(OrderStatus.CREATED);
+		userOrder.setOrderStatus(OrderStatus.INITIATED);
 		userOrder.setPaymentAmount(orderInformationDTO.getPaymentAmount());
 		userOrder.setPaymentCurrency(orderInformationDTO.getPaymentCurrency());
 
@@ -74,9 +74,10 @@ public class OrderController {
 			return ResponseEntity.status(500).build();
 		}
 
-		orderInformationDTO.setErrorUrl(this.errorUrl);
-		orderInformationDTO.setFailedUrl(this.failedUrl);
-		orderInformationDTO.setSuccessUrl(this.successUrl);
+		orderInformationDTO.setErrorUrl(this.errorUrl + "?id=" + userOrder.getId());
+		orderInformationDTO.setFailedUrl(this.failedUrl+ "?id=" + userOrder.getId());
+		orderInformationDTO.setSuccessUrl(this.successUrl+ "?id=" + userOrder.getId());
+		orderInformationDTO.setOrderId(userOrder.getId());
 
 		HttpEntity<OrderInformationDTO> request = new HttpEntity<>(orderInformationDTO);
 
@@ -85,14 +86,10 @@ public class OrderController {
 			response = restTemplate.exchange(this.kpUrl, HttpMethod.POST, request, OrderResponseDTO.class);
 		} catch (RestClientException e) {
 			// TODO Auto-generated catch block
-			userOrder.setOrderStatus(OrderStatus.ERROR);
-			return ResponseEntity.status(400)
-					.body("An error occurred while trying to contact the payment microservice!");
+			userOrder.setOrderStatus(OrderStatus.INVALID);
+			return ResponseEntity.status(400).body("An error occurred while trying to contact the payment microservice!");
 		}
 		
-		userOrder.setUuid(response.getBody().getUuid());
-		this.userOrderService.save(userOrder);
-		System.out.println("VEKICA");
 		RedirectDTO redirectDTO = new RedirectDTO();
 		redirectDTO.setUrl(response.getBody().getRedirectUrl());
 		return ResponseEntity.ok(redirectDTO);
@@ -101,7 +98,7 @@ public class OrderController {
 	@GetMapping("/success")
 	private ResponseEntity<?> successfulOrder(@RequestParam("id") Long id) {
 		UserOrder userOrder = this.userOrderService.getUserOrder(id);
-		userOrder.setOrderStatus(OrderStatus.SUCCEEDED);
+		userOrder.setOrderStatus(OrderStatus.COMPLETED);
 		this.userOrderService.save(userOrder);
 		RedirectDTO redirectDTO = new RedirectDTO();
 		redirectDTO.setUrl("https://localhost:4203/success");
@@ -112,7 +109,7 @@ public class OrderController {
 	@GetMapping("/failed")
 	private ResponseEntity<?> failedOrder(@RequestParam("id") Long id) {
 		UserOrder userOrder = this.userOrderService.getUserOrder(id);
-		userOrder.setOrderStatus(OrderStatus.FAILED);
+		userOrder.setOrderStatus(OrderStatus.CANCELED);
 		this.userOrderService.save(userOrder);
 		
 		RedirectDTO redirectDTO = new RedirectDTO();
@@ -124,7 +121,7 @@ public class OrderController {
 	@GetMapping("/error")
 	private ResponseEntity<?> errorOrder(@RequestParam("id") Long id) {
 		UserOrder userOrder = this.userOrderService.getUserOrder(id);
-		userOrder.setOrderStatus(OrderStatus.ERROR);
+		userOrder.setOrderStatus(OrderStatus.INVALID);
 		this.userOrderService.save(userOrder);
 		RedirectDTO redirectDTO = new RedirectDTO();
 		redirectDTO.setUrl("https://localhost:4203/error");
