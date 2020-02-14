@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: mock-payment-service
+#  cloud:
+#    config:
+#      uri: https://localhost:8888
+#      fail-fast: true
+
+ribbon:
+  isSecure: true
+
+eureka:
+  client:
+    service-url:
+      default-zone: ${EUREKA_URI:http://localhost:8761/eureka}

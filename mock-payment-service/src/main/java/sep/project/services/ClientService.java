@@ -1,0 +1,44 @@
+package sep.project.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import sep.project.dto.FieldDTO;
+import sep.project.dto.FieldType;
+import sep.project.model.Client;
+import sep.project.repositories.ClientRepository;
+
+@Service
+public class ClientService {
+	
+	@Autowired
+	ClientRepository clientRepository;
+		
+	public Client findByEmail(String email) {
+		
+		return clientRepository.findByEmail(email);
+	}
+	
+	public Client save(Client client) {
+		
+		return clientRepository.save(client);			
+	}
+	
+	public List<Client> findAll() {
+		
+		return clientRepository.findAll();
+	}
+
+	public List<FieldDTO> getFields(){
+		
+		List<FieldDTO> list = new ArrayList<FieldDTO>();
+		
+		list.add(new FieldDTO("username", "Username", FieldType.TEXT, true));
+		list.add(new FieldDTO("password", "Password", FieldType.PASSWORD, true));
+		
+		return list;
+	}
+}

@@ -22,9 +22,6 @@ public class Transaction {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
-	private Long orderId;
-	
 	@ManyToOne
 	private Client client;
 
@@ -60,7 +57,6 @@ public class Transaction {
 
 	public Transaction(PaymentDTO payment, Client client) {
 		this.client = client;
-		this.orderId = payment.getOrderId();
 		this.date = new Date();
 		this.status = TransactionStatus.INITIATED;
 		this.paymentAmount = payment.getPaymentAmount();
@@ -148,14 +144,6 @@ public class Transaction {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
-	}
-
-	public Long getOrderId() {
-		return orderId;
-	}
-
-	public void setOrderId(Long orderId) {
-		this.orderId = orderId;
 	}
 	
 }

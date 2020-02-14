@@ -11,9 +11,6 @@ public class PaymentDTO {
 	private String email;
 	
 	@NotNull
-	private Long orderId;
-	
-	@NotNull
 	@Positive
 	private Double paymentAmount;
 	
@@ -88,14 +85,6 @@ public class PaymentDTO {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
-	}
-
-	public Long getOrderId() {
-		return orderId;
-	}
-
-	public void setOrderId(Long orderId) {
-		this.orderId = orderId;
 	}
 	
 }

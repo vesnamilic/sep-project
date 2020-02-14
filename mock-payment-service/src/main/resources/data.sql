@@ -1,0 +1,4 @@
+INSERT INTO client("email", "username", "password") VALUES ('mail@gmail.com', '3GKHevsTQIrOJ0DgFz6eC0HaWh3MoxYcs2tTfMeb4P029OpiQY6QHg3qVSfR0JJjFZYoLYhuiTj3S7tWStthi4NPrA2F/WrpILnZ5abqWmkbSB4e6EaIyO4hQ48pF4Ha', '35wLipgTdYKx6Ho6UbDknlmdyvbu25l+Opm54mZXNKjWEVR1et8RU0s5VsXOCmGY1T7Hsm4v7CanNODgq6WWeatfn25y2IN29sVSg+7KvtdcCCRr70fa39Mof7YBuNAq');
+
+INSERT INTO crypto("iv", "text") VALUES ('nnrE242YiqTJWQYi', '3GKHevsTQIrOJ0DgFz6eC0HaWh3MoxYcs2tTfMeb4P029OpiQY6QHg3qVSfR0JJjFZYoLYhuiTj3S7tWStthi4NPrA2F/WrpILnZ5abqWmkbSB4e6EaIyO4hQ48pF4Ha');
+INSERT INTO crypto("iv", "text") VALUES ('WDMWtVxdQh8xAj81', '35wLipgTdYKx6Ho6UbDknlmdyvbu25l+Opm54mZXNKjWEVR1et8RU0s5VsXOCmGY1T7Hsm4v7CanNODgq6WWeatfn25y2IN29sVSg+7KvtdcCCRr70fa39Mof7YBuNAq');

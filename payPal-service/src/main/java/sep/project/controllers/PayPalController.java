@@ -22,12 +22,14 @@ import org.springframework.web.client.RestTemplate;
 
 import com.paypal.base.rest.PayPalRESTException;
 
+import sep.project.dto.OrderStatusInformationDTO;
 import sep.project.dto.PaymentDTO;
 import sep.project.dto.RedirectDTO;
 import sep.project.dto.SubscriptionDTO;
 import sep.project.model.Client;
 import sep.project.model.Subscription;
 import sep.project.model.Transaction;
+import sep.project.model.TransactionStatus;
 import sep.project.services.ClientService;
 import sep.project.services.PayPalService;
 import sep.project.services.SubscriptionService;
@@ -206,6 +208,25 @@ public class PayPalController {
 		headersRedirect.add("Access-Control-Allow-Origin", "*");
 		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);
 
+	}
+	
+	@GetMapping("/payment")
+	public ResponseEntity<?> getPaymentInfo(@RequestParam("orderId") Long id, @RequestParam("email") String email) {
+		Transaction transaction = transactionService.findTransactionByIdAndEmail(id, email);
+
+		if (transaction != null) {
+			OrderStatusInformationDTO status = new OrderStatusInformationDTO();
+			if (transaction.getStatus() == TransactionStatus.INITIATED || transaction.getStatus() == TransactionStatus.CREATED) {
+				status.setStatus("CREATED");
+			} else if (transaction.getStatus() == TransactionStatus.COMPLETED) {
+				status.setStatus("COMPLETED");
+			} else {
+				status.setStatus("CANCELED");
+			}
+			
+			return ResponseEntity.ok(status);
+		}
+		return ResponseEntity.notFound().build();
 	}
 	
 	private String updateSeller(String url){
