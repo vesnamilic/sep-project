@@ -21,28 +21,18 @@ public class BankRequestDTO {
 	@NotNull
 	private Date merchantTimestamp;
 	
-	private String successURL;
-	
-	private String failedURL;
-	
-	private String errorURL;
-
 	public BankRequestDTO () {
 		
 	}
 	
 	public BankRequestDTO(@NotNull String merchantID, @NotNull String merchantPass, @NotNull Double amount,
-			@NotNull Long merchantOrderID, @NotNull Date merchantTimestamp, String successURL, String failedURL,
-			String errorURL) {
+			@NotNull Long merchantOrderID, @NotNull Date merchantTimestamp) {
 		super();
 		this.merchantID = merchantID;
 		this.merchantPass = merchantPass;
 		this.amount = amount;
 		this.merchantOrderID = merchantOrderID;
 		this.merchantTimestamp = merchantTimestamp;
-		this.successURL = successURL;
-		this.failedURL = failedURL;
-		this.errorURL = errorURL;
 	}
 
 	public String getMerchantID() {
@@ -83,30 +73,6 @@ public class BankRequestDTO {
 
 	public void setMerchantTimestamp(Date merchantTimestamp) {
 		this.merchantTimestamp = merchantTimestamp;
-	}
-
-	public String getSuccessURL() {
-		return successURL;
-	}
-
-	public void setSuccessURL(String successURL) {
-		this.successURL = successURL;
-	}
-
-	public String getFailedURL() {
-		return failedURL;
-	}
-
-	public void setFailedURL(String failedURL) {
-		this.failedURL = failedURL;
-	}
-
-	public String getErrorURL() {
-		return errorURL;
-	}
-
-	public void setErrorURL(String errorURL) {
-		this.errorURL = errorURL;
 	}
 	
 }

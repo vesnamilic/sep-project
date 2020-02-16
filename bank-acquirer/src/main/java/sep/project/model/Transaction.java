@@ -50,15 +50,6 @@ public class Transaction {
 	@Column
 	private Float amount;
 
-	@Column
-	private String successURL;
-
-	@Column
-	private String failedURL;
-
-	@Column
-	private String errorURL;
-
 	@Column	
 	private Long merchantOrderId;
 
@@ -78,7 +69,7 @@ public class Transaction {
 	}
 	
 	public Transaction(Long id, CardOwner seller, CardOwner buyer, String paymentURL, Date timestamp, Status status,
-			String buyerPan, String sellerPan, Float amount, String successURL, String failedURL, String errorURL,
+			String buyerPan, String sellerPan, Float amount,
 			Long merchantOrderId, Date merchantTimestamp, Long issuerOrderId, Date issuerTimestamp) {
 		super();
 		this.id = id;
@@ -90,9 +81,6 @@ public class Transaction {
 		this.buyerPan = buyerPan;
 		this.sellerPan = sellerPan;
 		this.amount = amount;
-		this.successURL = successURL;
-		this.failedURL = failedURL;
-		this.errorURL = errorURL;
 		this.merchantOrderId = merchantOrderId;
 		this.merchantTimestamp = merchantTimestamp;
 		this.issuerOrderId = issuerOrderId;
@@ -169,30 +157,6 @@ public class Transaction {
 
 	public void setAmount(Float amount) {
 		this.amount = amount;
-	}
-
-	public String getSuccessURL() {
-		return successURL;
-	}
-
-	public void setSuccessURL(String successURL) {
-		this.successURL = successURL;
-	}
-
-	public String getFailedURL() {
-		return failedURL;
-	}
-
-	public void setFailedURL(String failedURL) {
-		this.failedURL = failedURL;
-	}
-
-	public String getErrorURL() {
-		return errorURL;
-	}
-
-	public void setErrorURL(String errorURL) {
-		this.errorURL = errorURL;
 	}
 
 	public Long getMerchantOrderId() {

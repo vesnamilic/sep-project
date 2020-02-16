@@ -19,10 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import sep.project.DTOs.BuyerDTO;
 import sep.project.DTOs.KPRequestDTO;
 import sep.project.DTOs.KPResponseDTO;
-import sep.project.DTOs.UrlDTO;
-import sep.project.customExceptions.InvalidDataException;
-import sep.project.customExceptions.NoEnoughFundException;
-import sep.project.customExceptions.PaymentException;
 import sep.project.enums.Status;
 import sep.project.model.PaymentInfo;
 import sep.project.model.Transaction;
@@ -65,77 +61,24 @@ public class AcquierController {
 			logger.error("ERROR | paymentInfo does not exists");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		
-		KPResponseDTO response=new KPResponseDTO();
+
+		KPResponseDTO response = new KPResponseDTO();
 		response.setPaymentID(info.getPaymentId());
 		response.setPaymentURL(BankFrontAddress + "/form/");
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping(value = "/pay/{paymentId}")
-	public ResponseEntity<UrlDTO> postPaymentForm(HttpServletResponse httpServletResponse, @PathVariable String paymentId,
-			@RequestBody BuyerDTO buyerDTO) {
+	public ResponseEntity<?> postPaymentForm(HttpServletResponse httpServletResponse,
+			@PathVariable String paymentId, @RequestBody BuyerDTO buyerDTO) {
 		logger.info("INFO | postPaymentForm started");
-
-		PaymentInfo paymentInfo = paymentInfoRepository.findByPaymentId(paymentId);
-		if (paymentInfo == null) {
-			logger.error("ERROR | paymentInfo does not exists");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		Transaction t = paymentInfo.getTransaction();
-		if (t == null) {
-			logger.error("ERROR | transaction does not exists");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		if(t.getStatus()==Status.SUCCESSFULLY) {
-			logger.error("ERROR | transaction is already finisheded");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		if(acquirerService.checkExpiration(t)) {
-			logger.error("ERROR | time for transaction is expiered");
-			acquirerService.save(t, Status.EXPIRED);
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		if (acquirerService.checkCredentials(paymentId, buyerDTO)) {
-			try {
-
-				String location = acquirerService.tryPayment(paymentId, buyerDTO, httpServletResponse).getBody();
-				UrlDTO retVal = new UrlDTO(location);
-
-				if (location.equals(t.getFailedURL()) || location.equals(t.getErrorURL())) {
-					logger.info("INFO | location is failed or error");
-					return ResponseEntity.badRequest().body(retVal);
-				}
-
-				logger.info("INFO | location is success");
-				return ResponseEntity.ok(retVal);
-				
-			} catch (InvalidDataException e) {
-				logger.error("ERROR | Data is not valid");
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-			} catch (PaymentException e) {
-				logger.error("ERROR | payment failed");
-				acquirerService.paymentFailed(paymentInfo, t);
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-			} catch (NoEnoughFundException e) {
-				logger.error("ERROR | No enough money");
-				acquirerService.paymentFailed(paymentInfo, t);
-				UrlDTO retVal = new UrlDTO(t.getFailedURL());
-				return ResponseEntity.badRequest().body(retVal);
-			}
-		} else {
-			logger.error("ERROR | credentials is not valid");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
+		return acquirerService.tryPayment(paymentId, buyerDTO);
 	}
-	
+
 	@PostMapping(value = "/checkTransaction")
 	public Status checkTransaction(@RequestBody String request) {
 		logger.info("INFO | retrunMonay is called");
 		return acquirerService.checkTransaction(request);
 	}
-
 
 }

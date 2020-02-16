@@ -12,7 +12,7 @@
 	<groupId>sep.project</groupId>
 	<artifactId>bank-acquirer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>bank-acquirer</name>
+	<name>bank</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>

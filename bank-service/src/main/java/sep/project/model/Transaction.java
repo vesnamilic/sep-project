@@ -44,6 +44,15 @@ public class Transaction {
 
 	@Column
 	private Double amount;
+	
+	@Column
+	private String successURL;
+	
+	@Column
+	private String errorURL;
+	
+	@Column
+	private String failedURL;
 
 	public Transaction() {
 
@@ -111,6 +120,30 @@ public class Transaction {
 
 	public void setPaymentID(String paymentID) {
 		this.paymentID = paymentID;
+	}
+
+	public String getSuccessURL() {
+		return successURL;
+	}
+
+	public void setSuccessURL(String successURL) {
+		this.successURL = successURL;
+	}
+
+	public String getErrorURL() {
+		return errorURL;
+	}
+
+	public void setErrorURL(String errorURL) {
+		this.errorURL = errorURL;
+	}
+
+	public String getFailedURL() {
+		return failedURL;
+	}
+
+	public void setFailedURL(String failedURL) {
+		this.failedURL = failedURL;
 	}
 
 }

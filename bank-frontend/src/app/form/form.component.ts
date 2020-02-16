@@ -61,11 +61,12 @@ export class FormComponent implements OnInit {
     console.log(this.token);
     this.formService.pay(payInfo, this.token).subscribe(
       data => {
+        console.log(data);
         const response = data as any;
         document.location.href  = response.url;
       },
       error => {
-        alert('An error ocurred.');
+        alert(error.error);
       }
     );
 

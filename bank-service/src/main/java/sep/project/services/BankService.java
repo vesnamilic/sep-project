@@ -7,17 +7,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import sep.project.DTOs.BankRequestDTO;
 import sep.project.DTOs.CompletedDTO;
-import sep.project.DTOs.KPResponseDTO;
+import sep.project.DTOs.BankResponseDTO;
 import sep.project.DTOs.PayRequestDTO;
+import sep.project.DTOs.RedirectDTO;
 import sep.project.DTOs.RegisterSellerDTO;
+import sep.project.DTOs.UrlDTO;
 import sep.project.enums.Status;
 import sep.project.model.Seller;
 import sep.project.model.Transaction;
@@ -55,12 +59,10 @@ public class BankService {
 		if (t == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		Transaction savedTransaction = transactionRepository.save(t);
-		savedTransaction.setMerchantOrderId(savedTransaction.getId());
-		transactionRepository.save(savedTransaction);
-		logger.info("COMPLETED | Saved transaction with id: " + savedTransaction.getId());
+		transactionRepository.save(t);
+		logger.info("COMPLETED | Saved transaction with id: " + t.getId());
 
-		BankRequestDTO bankRequest = createBankRequest(requestDTO, savedTransaction.getMerchantOrderId());
+		BankRequestDTO bankRequest = createBankRequest(requestDTO, t.getMerchantOrderId());
 
 		if (bankRequest == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -68,8 +70,8 @@ public class BankService {
 
 		RestTemplate template = new RestTemplate();
 		try {
-			ResponseEntity<KPResponseDTO> responseDTO = template.postForEntity(firstRequestURL, bankRequest,
-					KPResponseDTO.class);
+			ResponseEntity<BankResponseDTO> responseDTO = template.postForEntity(firstRequestURL, bankRequest,
+					BankResponseDTO.class);
 			logger.info("INFO | Bank return value");
 			t.setPaymentID(responseDTO.getBody().getPaymentID());
 			transactionRepository.save(t);
@@ -97,10 +99,7 @@ public class BankService {
 		bankRequest.setMerchantPass(seller.getMerchantPassword());
 		bankRequest.setMerchantTimestamp(new Date());
 		bankRequest.setMerchantOrderID(orderId);
-		bankRequest.setErrorURL(requestDTO.getErrorUrl());
-		bankRequest.setSuccessURL(requestDTO.getSuccessUrl());
-		bankRequest.setFailedURL(requestDTO.getFailedUrl());
-
+	
 		logger.info("COMPLETED | Bank request created");
 		return bankRequest;
 
@@ -116,9 +115,12 @@ public class BankService {
 
 		Transaction transaction = new Transaction();
 		transaction.setAmount(requestDTO.getPaymentAmount());
-		transaction.setMerchantOrderId(transaction.getId());
+		transaction.setMerchantOrderId(requestDTO.getOrderId());
 		transaction.setStatus(Status.CREATED);
 		transaction.setSeller(seller);
+		transaction.setSuccessURL(requestDTO.getSuccessUrl());
+		transaction.setErrorURL(requestDTO.getErrorUrl());
+		transaction.setFailedURL(requestDTO.getFailedUrl());
 		logger.info("COMPLETED | Transaction with id: " + transaction.getId() + " created");
 		return transaction;
 	}
@@ -142,42 +144,74 @@ public class BankService {
 		}
 	}
 
-	public ResponseEntity finishPayment(CompletedDTO completedDTO) {
+	public ResponseEntity<?> finishPayment(CompletedDTO completedDTO) {
 
-		System.out.println("FINISH USAO");
+		logger.info("INFO | finishPayment is called");
 
-		Transaction t = transactionRepository.findByMerchantOrderId(completedDTO.getMerchantOrderID());
-		t.setStatus(completedDTO.getTransactionStatus());
+		Transaction t = transactionRepository.findByPaymentID(completedDTO.getPaymentID());
 		t.setAcquirerOrderId(completedDTO.getAcquirerOrderID());
 		t.setAcquirerTimestamp(completedDTO.getAcquirerTimestamp());
-
+		t.setStatus(completedDTO.getTransactionStatus());
 		transactionRepository.save(t);
 
 		logger.info("COMPLETED | Payment with id: " + completedDTO.getPaymentID() + " completed");
 
-		return ResponseEntity.status(200).body(true);
+		String url = null;
+		if (completedDTO.getTransactionStatus() == Status.SUCCESSFULLY)
+			url = updateSeller(t.getSuccessURL());
+		if (completedDTO.getTransactionStatus() == Status.ERROR)
+			url = updateSeller(t.getErrorURL());
+		if (completedDTO.getTransactionStatus() == Status.EXPIRED
+				|| completedDTO.getTransactionStatus() == Status.UNSUCCESSFULLY)
+			url = updateSeller(t.getFailedURL());
+		
+		logger.error("ERROR | Error in constacting Scientific center");
 
+		if (url == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		return ResponseEntity.ok(new UrlDTO(url));
 	}
 
+	private String updateSeller(String url) {
+		RestTemplate restTemplate = new RestTemplate();
+		String redirectUrl = null;
+		try {
+			ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.GET, null, RedirectDTO.class);
+			RedirectDTO redirect = (RedirectDTO) response.getBody();
+			redirectUrl = redirect.getUrl();
+		} catch (RestClientException e) {
+			return null;
+		}
+		return redirectUrl;
+	}
+
+	/**
+	 * Contact bank to check status of created transactions
+	 */
 	@Scheduled(initialDelay = 1800000, fixedRate = 1800000)
 	public void checkCreatedTransactions() {
 		List<Transaction> transactions = transactionRepository.findAllByStatus(Status.CREATED);
 		for (Transaction t : transactions) {
 			String url = checkTransactionURL;
-			// sending request to return money
+
 			RestTemplate template = new RestTemplate();
 			try {
 				String paymentId = t.getPaymentID();
 				ResponseEntity<Status> response = template.postForEntity(url, paymentId, Status.class);
+				
 				if (response.getBody() == Status.SUCCESSFULLY || response.getBody() == Status.UNSUCCESSFULLY
-						|| response.getBody() == Status.CANCELED || response.getBody() == Status.EXPIRED) {
+						|| response.getBody() == Status.CANCELED || response.getBody() == Status.EXPIRED || response.getBody() == Status.ERROR) {
 					t.setStatus(response.getBody());
 					transactionRepository.save(t);
 				}
+				
 				if (response.getBody() == null) {
 					t.setStatus(Status.CANCELED);
 					transactionRepository.save(t);
 				}
+				
 			} catch (Exception e) {
 				logger.error("ERROR| Transaction does not exists in buyer bank");
 			}

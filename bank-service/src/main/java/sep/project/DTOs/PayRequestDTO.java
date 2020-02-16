@@ -6,6 +6,8 @@ public class PayRequestDTO {
 
 	private Double paymentAmount;
 	
+	private Long orderId;
+	
 	private String successUrl;
 	
 	private String errorUrl;
@@ -54,6 +56,14 @@ public class PayRequestDTO {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
 	}
 
 

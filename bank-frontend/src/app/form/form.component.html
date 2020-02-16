@@ -14,39 +14,39 @@
                     <h2 class="title">Credit card info</h2>
                     <form id="payForm" [formGroup]="payForm" (ngSubmit)="submitForm()">
                         <div class="row row-space">
-                            <div class="col-2">
+                            <div class="col-5">
                                 <div class="input-group">
-                                    <input class="input--style-1" type="text" placeholder="NAME" formControlName="name"
+                                    <input class="input--style-1" type="text" required placeholder="NAME" formControlName="name"
                                         name="name">
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-5">
                                 <div class="input-group">
-                                    <input class="input--style-1" type="text" placeholder="LAST NAME"
+                                    <input class="input--style-1" type="text" required placeholder="LAST NAME"
                                         formControlName="lastName" name="lastName">
                                 </div>
                             </div>
                         </div>
                         <div class="row row-space">
-                            <div class="col-2">
+                            <div class="col-5">
                                 <div class="input-group">
-                                    <input class="input--style-1" type="text" placeholder="MONTH OF EXPIRING CARD"
+                                    <input class="input--style-1" type="number" minlength="4" maxlength="4" required placeholder="MONTH OF EXPIRING CARD"
                                         formControlName="month" id="month" name="month">
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-5">
                                 <div class="input-group">
-                                    <input class="input--style-1" type="text" placeholder="YEAR OF EXPIRING CARD"
+                                    <input class="input--style-1" type="number" required placeholder="YEAR OF EXPIRING CARD"
                                         formControlName="year" id="year" name="year">
                                 </div>
                             </div>
                         </div>
                         <div class="input-group">
-                            <input class="input--style-1" type="text" formControlName="pan" placeholder="PAN"
+                            <input class="input--style-1" type="number" required minlength="6" formControlName="pan" placeholder="PAN"
                                 name="pan">
                         </div>
                         <div class="input-group">
-                            <input class="input--style-1" type="text" formControlName="cvv" placeholder="CVV"
+                            <input class="input--style-1" type="number" required minlength="3" maxlength="4" formControlName="cvv" placeholder="CVV"
                                 name="cvv">
                         </div>
                         <div class="row row-space">

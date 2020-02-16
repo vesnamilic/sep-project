@@ -1,28 +1,13 @@
 package sep.project.DTOs;
 
-import javax.validation.constraints.NotNull;
-
 public class BankResponseDTO {
 
-	@NotNull
-	String paymentID;
-
-	@NotNull
 	String paymentURL;
-
-	@NotNull
-	String transactionId;
-
+	
+	String paymentID;
+	
 	public BankResponseDTO() {
-
-	}
-
-	public String getPaymentID() {
-		return paymentID;
-	}
-
-	public void setPaymentID(String paymentID) {
-		this.paymentID = paymentID;
+		
 	}
 
 	public String getPaymentURL() {
@@ -33,12 +18,12 @@ public class BankResponseDTO {
 		this.paymentURL = paymentURL;
 	}
 
-	public String getTransactionId() {
-		return transactionId;
+	public String getPaymentID() {
+		return paymentID;
 	}
 
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
+	public void setPaymentID(String paymentID) {
+		this.paymentID = paymentID;
 	}
-
+	
 }

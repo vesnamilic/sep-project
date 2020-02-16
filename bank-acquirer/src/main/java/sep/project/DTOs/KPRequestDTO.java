@@ -21,12 +21,6 @@ public class KPRequestDTO {
 	@NotNull
 	private Date merchantTimestamp;
 	
-	private String successURL;
-	
-	private String failedURL;
-	
-	private String errorURL;
-	
 	public KPRequestDTO() {
 		
 	}
@@ -71,27 +65,4 @@ public class KPRequestDTO {
 		this.merchantTimestamp = merchantTimestamp;
 	}
 
-	public String getSuccessURL() {
-		return successURL;
-	}
-
-	public void setSuccessURL(String successURL) {
-		this.successURL = successURL;
-	}
-
-	public String getFailedURL() {
-		return failedURL;
-	}
-
-	public void setFailedURL(String failedURL) {
-		this.failedURL = failedURL;
-	}
-
-	public String getErrorURL() {
-		return errorURL;
-	}
-
-	public void setErrorURL(String errorURL) {
-		this.errorURL = errorURL;
-	}
 }
