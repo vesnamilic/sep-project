@@ -129,6 +129,9 @@ public class OrderController {
 					this.paymentMethodsRedirectURL + paymentMethodName.toLowerCase() + "/create", HttpMethod.POST,
 					request, String.class);
 		} catch (RestClientException e) {
+			order.setOrderStatus(OrderStatus.CANCELED);
+			orderService.saveOrder(order);
+			
 			ResponseEntity<RedirectDTO> response2 = null;
 			try {
 				response2 = restTemplate.exchange(order.getErrorUrl(), HttpMethod.GET, null, RedirectDTO.class);

@@ -28,6 +28,7 @@ import sep.project.dto.RedirectDTO;
 import sep.project.dto.SubscriptionDTO;
 import sep.project.model.Client;
 import sep.project.model.Subscription;
+import sep.project.model.SubscriptionStatus;
 import sep.project.model.Transaction;
 import sep.project.model.TransactionStatus;
 import sep.project.services.ClientService;
@@ -212,6 +213,9 @@ public class PayPalController {
 	
 	@GetMapping("/payment")
 	public ResponseEntity<?> getPaymentInfo(@RequestParam("orderId") Long id, @RequestParam("email") String email) {
+		
+		logger.info("INITIATED | PayPal Transaction Synchronization");
+		
 		Transaction transaction = transactionService.findTransactionByIdAndEmail(id, email);
 
 		if (transaction != null) {
@@ -220,6 +224,30 @@ public class PayPalController {
 				status.setStatus("CREATED");
 			} else if (transaction.getStatus() == TransactionStatus.COMPLETED) {
 				status.setStatus("COMPLETED");
+			} else {
+				status.setStatus("CANCELED");
+			}
+			
+			return ResponseEntity.ok(status);
+		}
+		return ResponseEntity.notFound().build();
+	}
+	
+	@GetMapping("/subscription")
+	public ResponseEntity<?> getSubscriptionInfo(@RequestParam("subscriptionId") Long id, @RequestParam("email") String email) {
+		
+		logger.info("INITIATED | PayPal Subscription Synchronization");
+		
+		Subscription subscription = subscriptionService.findSubscriptionByIdAndEmail(id, email);
+
+		if (subscription != null) {
+			OrderStatusInformationDTO status = new OrderStatusInformationDTO();
+			if (subscription.getStatus() == SubscriptionStatus.INITIATED || subscription.getStatus() == SubscriptionStatus.CREATED) {
+				status.setStatus("CREATED");
+			} else if (subscription.getStatus() == SubscriptionStatus.COMPLETED) {
+				status.setStatus("COMPLETED");
+			} else if (subscription.getStatus() == SubscriptionStatus.EXPIRED) {
+				status.setStatus("EXPIRED");
 			} else {
 				status.setStatus("CANCELED");
 			}

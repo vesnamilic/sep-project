@@ -21,8 +21,18 @@ INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id")
 INSERT INTO seller(email, name, deleted, activated) VALUES ('magazine-one@upp.com', 'Magazine One', false, true);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (4,2);
 
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 1, 4);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 6, 4);
+
 INSERT INTO seller(email, name, deleted, activated) VALUES ('magazine-two@upp.com', 'Magazine Two', false, true);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (5,2);
 
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 3, 5);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 6, 5);
+
 INSERT INTO seller(email, name, deleted, activated) VALUES ('magazine-three@upp.com', 'Magazine Three', false, true);
 INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (6,2);
+
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 2, 6);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 4, 6);
+INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 10, 6);

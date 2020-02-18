@@ -21,6 +21,9 @@ public class Subscription {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column
+	private Long subscriptionId;
 		
 	@ManyToOne
 	private Client client;
@@ -81,6 +84,7 @@ public class Subscription {
 		this.successUrl = subscriptionDTO.getSuccessUrl();
 		this.errorUrl = subscriptionDTO.getErrorUrl();
 		this.failedUrl = subscriptionDTO.getFailedUrl();
+		this.subscriptionId = subscriptionDTO.getSubscriptionId();
 	}
 
 	public Long getId() {
@@ -193,6 +197,14 @@ public class Subscription {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+
+	public Long getSubscriptionId() {
+		return subscriptionId;
+	}
+
+	public void setSubscriptionId(Long subscriptionId) {
+		this.subscriptionId = subscriptionId;
 	}
 	
 }

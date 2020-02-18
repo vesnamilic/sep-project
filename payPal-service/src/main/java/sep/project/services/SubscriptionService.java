@@ -34,4 +34,9 @@ public class SubscriptionService {
 		
 		return subscriptionRepository.findByClientAndStatusIn(client, list);
 	}
+	
+	public Subscription findSubscriptionByIdAndEmail(Long id, String email) {
+		
+		return subscriptionRepository.findMerchantSubscriptionBasedOnId(id, email);
+	}
 }
