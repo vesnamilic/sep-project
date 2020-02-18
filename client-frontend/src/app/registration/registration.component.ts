@@ -22,7 +22,6 @@ export class RegistrationComponent implements OnInit {
   ngOnInit() {
     this.registrationForm = new FormGroup(
       {
-        name: new FormControl('', Validators.required),
         email: new FormControl('', [Validators.email, Validators.required]),
         password: new FormControl('', Validators.required)
       }
@@ -31,9 +30,8 @@ export class RegistrationComponent implements OnInit {
 
   // submit form and register to KP
   submitForm() {
-    const seller: Seller = {
-      name: this.registrationForm.value.name,
-      email: this.registrationForm.value.email,
+    const seller = {
+      username: this.registrationForm.value.email,
       password: this.registrationForm.value.password
     };
 
@@ -44,8 +42,6 @@ export class RegistrationComponent implements OnInit {
         this.tokenStorageService.saveType(data.type);
         this.tokenStorageService.saveUsername(data.username);
 
-        alert('Successfully registered.');
-        
         this.router.navigateByUrl('/paymentmethods');
       },
       error => {

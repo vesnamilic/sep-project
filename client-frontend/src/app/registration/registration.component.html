@@ -6,12 +6,9 @@
         <div class="container">
           <div class="row">
             <div class="col-md-9 col-lg-8 mx-auto">
-              <h2 class="font-weight-light text-center mb-4">Register your webshop</h2>
+              <h2 class="font-weight-light text-center mb-4">Register to PaymentHub</h2>
+              <h5 class="font-weight-light text-center mb-4">Enter the password you recieved to continue setting up your account.</h5>
               <form id="registrationForm" [formGroup] = "registrationForm" (ngSubmit) = "submitForm()">
-                <div class="form-label-group">
-                  <label style="margin-left:5px" for="inputName" class="form-control-label">Name</label>
-                  <input type="text" id="inputName" class="form-control" placeholder="Name" formControlName="name">
-                </div>
                 <div class="form-label-group">
                   <label style="margin-left:5px" for="inputEmail" class="form-control-label">Email</label>
                   <input type="text" id="inputEmail" class="form-control" placeholder="Email" formControlName="email">
@@ -29,4 +26,3 @@
     </div>
   </div>
 </div>
-  

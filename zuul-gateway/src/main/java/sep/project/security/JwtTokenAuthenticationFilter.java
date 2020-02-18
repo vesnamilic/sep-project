@@ -31,10 +31,12 @@ public class JwtTokenAuthenticationFilter extends  OncePerRequestFilter {
 		
 		
 		String header = request.getHeader(jwtConfig.getHeader());
+			
 		
 		if(header == null || !header.startsWith(jwtConfig.getPrefix())) {
 
-			chain.doFilter(request, response);  	
+			chain.doFilter(request, response);
+			
 			return;
 		}
 		

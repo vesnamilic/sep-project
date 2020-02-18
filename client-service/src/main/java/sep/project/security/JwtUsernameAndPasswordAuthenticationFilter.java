@@ -10,6 +10,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 	private AuthenticationManager authManager;
 	
 	private final JwtConfig jwtConfig;
+	
+	private static final Logger logger = LoggerFactory.getLogger(JwtUsernameAndPasswordAuthenticationFilter.class);
     
 	public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authManager, JwtConfig jwtConfig) {
 		this.authManager = authManager;
@@ -38,6 +42,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException {
 		
+		logger.info("INITIATED | Logging in to the PaymentHub");
+				
 		try {
 		
 			LoginDTO creds = new ObjectMapper().readValue(request.getInputStream(), LoginDTO.class);
@@ -48,11 +54,12 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 			return authManager.authenticate(authToken);
 			
 		} catch (IOException e) {
+			logger.error("CANCELED | Logging in to the PaymentHub");
+			
 			throw new RuntimeException(e);
 		}
 	}
 	
-
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication auth) throws IOException, ServletException {
@@ -66,10 +73,11 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 			.signWith(SignatureAlgorithm.HS512, jwtConfig.getSecret().getBytes())
 			.compact();
 		
-	
+		
+		logger.info("COMPLETED | Logging in to the PaymentHub");
+		
 		UserTokenState jwtResponse = new UserTokenState(token, auth.getName());
-
-       
+     
         response.getWriter().write(new ObjectMapper().writeValueAsString(jwtResponse));
 	}
 	

@@ -49,3 +49,15 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
+  mail:
+    host: smtp.gmail.com
+    username : timisaprojekat@gmail.com
+    password : isaprojekat.22
+    port : 587
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable : true
+          ssl:
+            trust: smtp.gmail.com

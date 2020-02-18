@@ -68,7 +68,7 @@ public class OrderController {
 
 		Seller seller = this.sellersService.findByEmail((order.getEmail()));
 
-		if (seller == null) {
+		if (seller == null || !seller.isActivated()) {
 			logger.error("CANCELED | Finding a seller based on the given email address | Email: " + order.getEmail());
 			return ResponseEntity.status(400).body("There is no seller registred with the given email address");
 		}

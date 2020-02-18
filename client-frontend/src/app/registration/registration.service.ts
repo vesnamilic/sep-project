@@ -9,11 +9,11 @@ import { Observable } from 'rxjs';
 })
 export class RegistrationService {
 
-  baseUrl = 'https://localhost:8762/api/client/seller/';
+  baseUrl = 'https://localhost:8762/api/client/seller/login';
 
   constructor(private http: HttpClient) { }
 
-  register(seller: Seller): Observable<JwtResponse> {
+  register(seller: any): Observable<JwtResponse> {
     const httpOptions = {
       headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
     };

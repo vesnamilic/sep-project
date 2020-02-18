@@ -61,7 +61,7 @@ public class SubscriptionPlanController {
 	    Seller seller = sellerService.findByEmail(principal.getName());
 	    
 	    //check if seller exists
-	    if(seller == null) {
+	    if(seller == null  || !seller.isActivated()) {
 	    	logger.error("CANCELED | Creating a new subscription plan");
 	    	return ResponseEntity.status(400).build();
 	    }
