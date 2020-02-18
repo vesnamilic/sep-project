@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Field } from '../model/field';
 import { Observable } from 'rxjs/internal/Observable';
 import { PaymentMethod } from '../model/paymentmethod';
+import { ResponseLink } from '../model/responselink';
 
 @Injectable({
   providedIn: 'root'
@@ -44,6 +45,15 @@ export class FormService {
     const url = this.baseUrl + 'client/subscriptionplan';
 
     return this.http.post(url, valuesList, this.httpOptions);
+  }
+
+
+  getLink(): Observable<ResponseLink> {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
+    };
+
+    return this.http.get<ResponseLink>(this.baseUrl + 'client/seller/returnlink', httpOptions);
   }
 
 }

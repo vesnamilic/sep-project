@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class RegistrationService {
 
-  baseUrl = 'https://localhost:8762/api/client/seller/login';
+  baseUrl = 'https://localhost:8762/api/client/seller/';
 
   constructor(private http: HttpClient) { }
 
@@ -18,7 +18,6 @@ export class RegistrationService {
       headers: new HttpHeaders({ 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' })
     };
 
-    return this.http.post<JwtResponse>(this.baseUrl, seller, httpOptions);
+    return this.http.post<JwtResponse>(this.baseUrl + 'login', seller, httpOptions);
   }
-
 }

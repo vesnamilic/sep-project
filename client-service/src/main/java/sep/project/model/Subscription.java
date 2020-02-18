@@ -24,6 +24,9 @@ public class Subscription {
 	private Long id;
 	
 	@Column
+	private Long subscriptionId;
+	
+	@Column
 	private String uuid;
 	
 	@Column
@@ -51,6 +54,9 @@ public class Subscription {
 	@ManyToOne
 	private Seller seller;
 	
+	@Column(name = "paymentMethod")
+	private String paymentMethod;
+	
 	public Subscription() {
 		
 	}
@@ -61,8 +67,9 @@ public class Subscription {
 		DateTime expirationDateTime = originalDateTime.plusMinutes(15);
 		
 		this.uuid = UUID.randomUUID().toString();
+		this.subscriptionId = subscriptionDTO.getSubscriptionId();
 		this.expirationDate = expirationDateTime.toDate();
-		this.subscriptionStatus = SubscriptionStatus.CREATED;
+		this.subscriptionStatus = SubscriptionStatus.INITIATED;
 		this.successUrl = subscriptionDTO.getSuccessUrl();
 		this.errorUrl = subscriptionDTO.getErrorUrl();
 		this.failedUrl = subscriptionDTO.getFailedUrl();
@@ -149,6 +156,22 @@ public class Subscription {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public Long getSubscriptionId() {
+		return subscriptionId;
+	}
+
+	public void setSubscriptionId(Long subscriptionId) {
+		this.subscriptionId = subscriptionId;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
 	}
 	
 }

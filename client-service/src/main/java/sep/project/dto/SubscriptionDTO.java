@@ -14,6 +14,9 @@ public class SubscriptionDTO {
 	@NotNull
 	@Email
 	private String email;
+	
+	@NotNull
+	private Long subscriptionId;
 
 	@NotNull
 	@Positive
@@ -55,6 +58,7 @@ public class SubscriptionDTO {
 		this.successUrl = subscription.getSuccessUrl();
 		this.errorUrl = subscription.getErrorUrl();
 		this.failedUrl = subscription.getFailedUrl();
+		this.subscriptionId = subscription.getSubscriptionId();
 	}
 
 	public String getEmail() {
@@ -127,6 +131,14 @@ public class SubscriptionDTO {
 
 	public void setFailedUrl(String failedUrl) {
 		this.failedUrl = failedUrl;
+	}
+
+	public Long getSubscriptionId() {
+		return subscriptionId;
+	}
+
+	public void setSubscriptionId(Long subscriptionId) {
+		this.subscriptionId = subscriptionId;
 	}
 
 }

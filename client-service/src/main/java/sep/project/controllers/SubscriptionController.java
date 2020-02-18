@@ -5,22 +5,27 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import sep.project.dto.SubscriptionDTO;
 import sep.project.dto.OrderResponseDTO;
+import sep.project.dto.OrderStatusInformationDTO;
 import sep.project.dto.PaymentResponse;
+import sep.project.dto.RedirectDTO;
 import sep.project.dto.SubmitSubscriptionDTO;
+import sep.project.dto.SubscriptionDTO;
 import sep.project.dto.SubscriptionInformationDTO;
 import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
@@ -99,12 +104,12 @@ public class SubscriptionController {
 		}
 		
 		//check if subscription has expired or is already sent 
-		if(subscription.getSubscriptionStatus().equals(SubscriptionStatus.SENT) || this.subscriptionService.isExpired(subscription.getExpirationDate())) {
+		if(!subscription.getSubscriptionStatus().equals(SubscriptionStatus.INITIATED) || this.subscriptionService.isExpired(subscription.getExpirationDate())) {
 			logger.error("CANCELED | Submiting subscription to the payment service");
 			return ResponseEntity.status(400).body("The subscription has expired.");
 		}
 		
-		//check if payment method exists and if supports subscription
+		//check if payment method exists and if it supports subscription
 		PaymentMethod paymentMethod = paymentMethodService.getByName(subscriptionDTO.getPaymentMethod());
 		if (paymentMethod == null || !paymentMethod.isSubscription()) {
 			logger.error("CANCELED | Submiting subscription to the payment service");
@@ -118,6 +123,9 @@ public class SubscriptionController {
 			return ResponseEntity.status(400).build();
 		}
 		
+		subscription.setPaymentMethod(paymentMethod.getName().toLowerCase());
+		subscriptionService.save(subscription);
+		
 		//create a new billing agreement and send it to the payment method
 		SubscriptionDTO dto = new SubscriptionDTO(subscriptionPlan, subscription);
 		
@@ -129,7 +137,7 @@ public class SubscriptionController {
 		try {
 			ResponseEntity<?> response = restTemplate.postForEntity(url, dto, String.class);  
 			
-			subscription.setSubscriptionStatus(SubscriptionStatus.SENT);
+			subscription.setSubscriptionStatus(SubscriptionStatus.CREATED);
 			subscriptionService.save(subscription);
 			
 			redirectUrl = (String) response.getBody();
@@ -139,6 +147,14 @@ public class SubscriptionController {
 			
 			subscription.setSubscriptionStatus(SubscriptionStatus.CANCELED);
 			subscriptionService.save(subscription);
+			
+			ResponseEntity<RedirectDTO> response2 = null;
+			try {
+				response2 = restTemplate.exchange(subscription.getErrorUrl(), HttpMethod.GET, null, RedirectDTO.class);
+			} catch (RestClientException e2) {
+				
+				return ResponseEntity.status(400).body("An error occurred while trying to contact seller!");
+			}
 			
 			return ResponseEntity.status(400).build();
 		}
@@ -155,5 +171,25 @@ public class SubscriptionController {
 
 		return ResponseEntity.ok(response);			
 	}
+	
+	@GetMapping("/status")
+	public ResponseEntity<?> getSubscriptionStatus(@RequestParam("orderId") Long id, @RequestParam("email") String email) {
 		
+		logger.info("INITIATED | Finding subscription status | Subscription id: " + id);
+		
+		Subscription subscription = this.subscriptionService.findClientSubscriptionBySubscriptionId(email, id);
+		
+		if(subscription == null) {
+			logger.error("CANCELED | Finding subscription status | Subscription id: " + id);
+			return ResponseEntity.notFound().build();
+		}
+					
+		OrderStatusInformationDTO dto = new OrderStatusInformationDTO();
+		dto.setStatus(subscription.getSubscriptionStatus().toString());
+		
+		logger.info("COMPLETED | Finding subscription status | Subscription id: " + id);
+		
+		return ResponseEntity.ok(dto);
+	}
+
 }

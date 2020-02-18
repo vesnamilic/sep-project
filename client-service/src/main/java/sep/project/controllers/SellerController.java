@@ -40,6 +40,7 @@ import com.google.gson.Gson;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import sep.project.dto.LoginDTO;
+import sep.project.dto.PaymentResponse;
 import sep.project.dto.RegistrationDTO;
 import sep.project.dto.RegistrationResponseDTO;
 import sep.project.model.PaymentMethod;
@@ -266,6 +267,27 @@ public class SellerController {
 		
 		String email = principal.getName();
 		return ResponseEntity.ok(email);
+	}
+	
+	
+	@GetMapping("/returnlink")
+	public ResponseEntity<?> getResponseLink(Principal principal) {
+		
+		//check if anyone is logged in
+	    if(principal == null) {
+	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    
+	    Seller seller = sellerService.findByEmail(principal.getName());
+	    
+	    //check if seller exists
+	    if(seller == null || !seller.isActivated()) {
+	    	return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+	    }
+	    	
+	    System.out.println("return link:" + seller.getReturnLink());
+	    
+	    return ResponseEntity.ok(new PaymentResponse(seller.getReturnLink()));		
 	}
 
 }

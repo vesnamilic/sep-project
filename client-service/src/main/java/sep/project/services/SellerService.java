@@ -29,6 +29,7 @@ public class SellerService {
 		seller.setPassword(passwordEncoder.encode(password));
 		seller.setPaymentMethods(new HashSet<>());
 		seller.setConfirmationLink(registrationDTO.getConfirmationLink());
+		seller.setReturnLink(registrationDTO.getReturnLink());
 		return seller;
 	}
 	

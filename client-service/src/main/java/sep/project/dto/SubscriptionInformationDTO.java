@@ -9,6 +9,9 @@ public class SubscriptionInformationDTO {
 	@NotNull
 	@Email
 	private String email;
+	
+	@NotNull
+	private Long subscriptionId;
 
 	@NotNull
 	@Positive
@@ -76,6 +79,14 @@ public class SubscriptionInformationDTO {
 
 	public void setPaymentCurrency(String paymentCurrency) {
 		this.paymentCurrency = paymentCurrency;
+	}
+
+	public Long getSubscriptionId() {
+		return subscriptionId;
+	}
+
+	public void setSubscriptionId(Long subscriptionId) {
+		this.subscriptionId = subscriptionId;
 	}
 
 }
