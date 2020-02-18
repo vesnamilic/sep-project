@@ -55,8 +55,11 @@ public class BankService {
 
 	public ResponseEntity<String> initiatePayment(PayRequestDTO requestDTO) {
 
+		logger.info("INFO | initiatePayment is called");
+
 		Transaction t = createTransaction(requestDTO);
 		if (t == null) {
+			logger.info("Error | Error in creating transaction");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		transactionRepository.save(t);
@@ -65,6 +68,7 @@ public class BankService {
 		BankRequestDTO bankRequest = createBankRequest(requestDTO, t.getMerchantOrderId());
 
 		if (bankRequest == null) {
+			logger.info("Error | Error in creating transaction");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
@@ -72,7 +76,7 @@ public class BankService {
 		try {
 			ResponseEntity<BankResponseDTO> responseDTO = template.postForEntity(firstRequestURL, bankRequest,
 					BankResponseDTO.class);
-			logger.info("INFO | Bank return value");
+			logger.info("INFO | Bank is contacted");
 			t.setPaymentID(responseDTO.getBody().getPaymentID());
 			transactionRepository.save(t);
 			return ResponseEntity.ok(responseDTO.getBody().getPaymentURL() + responseDTO.getBody().getPaymentID());
@@ -88,9 +92,11 @@ public class BankService {
 
 	public BankRequestDTO createBankRequest(PayRequestDTO requestDTO, Long orderId) {
 
+		logger.info("INFO | createBankRequest is called");
+
 		Seller seller = sellerRepository.findByEmail(requestDTO.getEmail());
 		if (seller == null) {
-			logger.error("ERROR | Bank request can not be made, seller does not exists");
+			logger.error("ERROR | Erro in creating bank request");
 			return null;
 		}
 		BankRequestDTO bankRequest = new BankRequestDTO();
@@ -107,6 +113,8 @@ public class BankService {
 
 	public Transaction createTransaction(PayRequestDTO requestDTO) {
 
+		logger.info("INFO | createTransaction is called");
+
 		Seller seller = sellerRepository.findByEmail(requestDTO.getEmail());
 		if (seller == null) {
 			logger.error("ERROR | Transaction can not be made, seller does not exists");
@@ -121,11 +129,13 @@ public class BankService {
 		transaction.setSuccessURL(requestDTO.getSuccessUrl());
 		transaction.setErrorURL(requestDTO.getErrorUrl());
 		transaction.setFailedURL(requestDTO.getFailedUrl());
-		logger.info("COMPLETED | Transaction with id: " + transaction.getId() + " created");
+		logger.info("COMPLETED | Transaction is created");
 		return transaction;
 	}
 
 	public Boolean registerSeller(RegisterSellerDTO registerSellerDTO) {
+
+		logger.info("INFO | registerSeller is called");
 
 		Seller seller = new Seller();
 		seller.setMerchantID(registerSellerDTO.getMerchantID());
@@ -139,7 +149,7 @@ public class BankService {
 					+ " is successfuly added to card payment system");
 			return true;
 		} else {
-			logger.error("ERROR | Seller can not be added to card payment system, email is null");
+			logger.error("ERROR | Seller can not be added to card payment system, email is not valid");
 			return false;
 		}
 	}
@@ -175,13 +185,17 @@ public class BankService {
 	}
 
 	private String updateSeller(String url) {
+		logger.info("INFO | updateSeller is called");
+
 		RestTemplate restTemplate = new RestTemplate();
 		String redirectUrl = null;
 		try {
 			ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.GET, null, RedirectDTO.class);
 			RedirectDTO redirect = (RedirectDTO) response.getBody();
 			redirectUrl = redirect.getUrl();
+			logger.info("INFO | scientific center is contacted");
 		} catch (RestClientException e) {
+			logger.error("ERROR | Error in constacting Scientific center");
 			return null;
 		}
 		return redirectUrl;

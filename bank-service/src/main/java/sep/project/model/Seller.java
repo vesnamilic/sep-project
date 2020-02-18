@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import sep.project.crypto.CryptoConverter;
+import sep.project.utils.CryptoConverter;
 
 @Entity
 public class Seller {

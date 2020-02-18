@@ -37,7 +37,7 @@ public class PCCController {
 		// vraca null, ako ne postoji kreira ga
 		Request request = pccService.checkRequest(requestDTO);
 		if (request == null) {
-			logger.error("ERROR | Request denied, it already exists for this transaction.");
+			logger.error("ERROR | Request denied.");
 			return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
 		}
 
@@ -45,7 +45,7 @@ public class PCCController {
 
 		// nema kojoj banci da posalje, vraca odgovor banci prodavca
 		if (buyerBank == null) { 
-			logger.error("ERROR | Buyer bank does not exists.");
+			logger.error("ERROR | Request denied");
 			request.setStatus(Status.FAILURE);
 			requestRepository.save(request);
 			return pccService.makeFiliureResponse(request);

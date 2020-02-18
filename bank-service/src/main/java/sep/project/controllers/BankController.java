@@ -1,5 +1,7 @@
 package sep.project.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,8 @@ public class BankController {
 	@Autowired
 	private TransactionService transactionService;
 	
+	private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
+	
 	@PostMapping(value = "/create")
 	public ResponseEntity<String> initiatePayment(@RequestBody PayRequestDTO request) {
 		return bankService.initiatePayment(request);
@@ -42,27 +46,27 @@ public class BankController {
 	
 	@GetMapping("/payment")
 	public ResponseEntity<?> getPaymentInfo(@RequestParam("orderId") Long id, @RequestParam("email") String email) {
-		System.out.println("POYY SCEDULAR ME POZVAO");
+		logger.info("INFO | getPaymentInfo is called");
+
 		Transaction transaction = this.transactionService.findMerchantTransactionBasedOnId(id, email);
-		System.out.println("NSAOA TRANSAKCIJU");
-		System.out.println(transaction);
 		if (transaction != null) {
-			System.out.println("transakcija nije null ");
 			OrderStatusInformationDTO status = new OrderStatusInformationDTO();
 			if (transaction.getStatus() == Status.CREATED) {
+				logger.info("INFO | status is CREATED");
 				status.setStatus("CREATED");
 			} else if (transaction.getStatus() == Status.SUCCESSFULLY) {
+				logger.info("INFO | status is COMPLETED");
 				status.setStatus("COMPLETED");
 			} else if (transaction.getStatus() == Status.UNSUCCESSFULLY || transaction.getStatus()== Status.EXPIRED || transaction.getStatus()== Status.ERROR) {
+				logger.info("INFO | status is INVALID");
 				status.setStatus("INVALID");
 			} else {
+				logger.info("INFO | status is CANCELED");
 				status.setStatus("CANCELED");
 			}
-			
 			return ResponseEntity.ok(status);
 		}
 		return ResponseEntity.notFound().build();
 	}
-
 
 }
