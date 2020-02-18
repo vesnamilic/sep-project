@@ -1,8 +1,5 @@
 package sep.project.security;
 
-import java.util.Date;
-
-
 public class UserTokenState {
 
 	private String token;
@@ -15,7 +12,7 @@ public class UserTokenState {
 		this.username = null;
 	}
 	
-	public UserTokenState(String token,String email) {
+	public UserTokenState(String token, String email) {
 		super();
 		this.token = token;
 		this.username = email;

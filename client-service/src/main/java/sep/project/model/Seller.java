@@ -27,10 +27,16 @@ public class Seller {
 	private String name;
 	
 	@Column
+	private String confirmationLink;
+	
+	@Column
 	private String password;
     
     @Column
     private boolean deleted;
+    
+    @Column
+    private boolean activated;
     
     @Column(name = "lastPasswordResetDate")
 	private Timestamp lastPasswordResetDate;
@@ -41,6 +47,7 @@ public class Seller {
     public Seller() {
     	Timestamp now = new Timestamp(DateTime.now().getMillis());
 		this.lastPasswordResetDate = now;
+		this.activated = false;
     }
 
 	public Long getId() {
@@ -97,6 +104,22 @@ public class Seller {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public boolean isActivated() {
+		return activated;
+	}
+
+	public void setActivated(boolean activated) {
+		this.activated = activated;
+	}
+
+	public String getConfirmationLink() {
+		return confirmationLink;
+	}
+
+	public void setConfirmationLink(String confirmationLink) {
+		this.confirmationLink = confirmationLink;
 	}
 
 }

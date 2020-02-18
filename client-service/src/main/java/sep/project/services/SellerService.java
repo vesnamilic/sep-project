@@ -22,13 +22,13 @@ public class SellerService {
 	private PasswordEncoder passwordEncoder;
 		
 	
-	public Seller createSeller(RegistrationDTO registrationDTO) {
+	public Seller createSeller(RegistrationDTO registrationDTO, String password) {
 		Seller seller = new Seller();
 		seller.setName(registrationDTO.getName());
 		seller.setEmail(registrationDTO.getEmail());
-		seller.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
+		seller.setPassword(passwordEncoder.encode(password));
 		seller.setPaymentMethods(new HashSet<>());
-		
+		seller.setConfirmationLink(registrationDTO.getConfirmationLink());
 		return seller;
 	}
 	

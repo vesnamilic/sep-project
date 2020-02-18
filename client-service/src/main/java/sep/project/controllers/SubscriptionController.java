@@ -61,7 +61,7 @@ public class SubscriptionController {
 
 		//check if seller with this email address exists
 		Seller seller = this.sellersService.findByEmail((subscriptionDTO.getEmail()));
-		if (seller == null) {
+		if (seller == null  || !seller.isActivated()) {
 			logger.error("CANCELED | Creating a new subscription | Email: " + subscriptionDTO.getEmail());
 			return ResponseEntity.status(400).body("There is no seller with the given email address!");
 		}

@@ -1,18 +1,20 @@
 package sep.project.controllers;
 
 import java.security.Principal;
-import java.sql.Date;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,17 +32,21 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import sep.project.dto.LoginDTO;
 import sep.project.dto.RegistrationDTO;
+import sep.project.dto.RegistrationResponseDTO;
 import sep.project.model.PaymentMethod;
 import sep.project.model.Seller;
 import sep.project.security.JwtConfig;
 import sep.project.security.UserTokenState;
+import sep.project.services.EmailService;
 import sep.project.services.PaymentMethodService;
 import sep.project.services.SellerService;
 
@@ -54,6 +60,9 @@ public class SellerController {
 	
 	@Autowired
 	private PaymentMethodService paymentMethodService;
+	
+	@Autowired
+	private EmailService emailService;
 	
 	@Autowired
 	private JwtConfig jwtProvider;
@@ -79,8 +88,10 @@ public class SellerController {
 			return new ResponseEntity<>("A client with this email address already exists!", HttpStatus.BAD_REQUEST);
 		}
 	
+		String pass = RandomStringUtils.randomAlphanumeric(10);
+		
 		//save the new seller
-		Seller seller = sellerService.createSeller(registrationDTO);	
+		Seller seller = sellerService.createSeller(registrationDTO, pass);	
 		Seller newSeller = sellerService.save(seller);
 
 		if (newSeller == null) {
@@ -90,16 +101,51 @@ public class SellerController {
 	
 		logger.info("COMPLETED | Registering a new client to the PaymentHub | Name: " + registrationDTO.getName());
 		
+		//send an email with the password
+		String messageText = "<div>"
+				   + "<p>"
+				   + "Welcome to PaymentHub! <br><br>"
+				   + "Your password is: " + pass + ". Use this password to finish setting up the account at PaymentHub.<br><br>"
+				   + "Best regards, <br>"
+				   + "PaymentHub Team"
+				   + "<p>"
+				   + "</div>";
+
+		emailService.sendEmail(seller.getEmail(), "PaymentHub Registration", messageText);
+		
+	    RegistrationResponseDTO response = new RegistrationResponseDTO("https://localhost:4200/#/registration");   
+	    return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * Logging in to finish setting up the account
+	 */
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+		
+		logger.info("INITIATED | Logging in to the PaymentHub | Name: " + loginDTO.getUsername());
+		
+		//check if seller exists or if he has already activated the account
+		Seller checkSeller = sellerService.findByEmail(loginDTO.getUsername());
+		if(checkSeller == null || checkSeller.isActivated()) {
+			logger.error("CANCELED | Logging in to the PaymentHub | Name: " + loginDTO.getUsername());
+			return new ResponseEntity<>("An error occurred. Please try again.", HttpStatus.BAD_REQUEST);
+		}
+		
+		//try to log in
 		UsernamePasswordAuthenticationToken authentication = null;
 	    try {
-	      authentication = new UsernamePasswordAuthenticationToken(
-	          registrationDTO.getEmail(), registrationDTO.getPassword(), Collections.emptyList());
-	    } catch (AuthenticationException e) {
+	      authentication = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword(), Collections.emptyList());
+	    } 
+	    catch (AuthenticationException e) {
+	      logger.error("CANCELED | Logging in to the PaymentHub | Name: " + loginDTO.getUsername());
+	      
 	      return new ResponseEntity<>("An error occurred. Please try again.", HttpStatus.BAD_REQUEST);
 	    }
 	    
 	    SecurityContextHolder.getContext().setAuthentication(authentication);
 	  
+	    //create a  token
 	    Long now = System.currentTimeMillis();
 	    String token = Jwts.builder()
 	        .setSubject(authentication.getName())  
@@ -107,9 +153,27 @@ public class SellerController {
 	        .setIssuedAt(new Date(now))
 	        .setExpiration(new Date(now + jwtProvider.getExpiration() * 1000))  
 	        .signWith(SignatureAlgorithm.HS512, jwtProvider.getSecret().getBytes())
-	        .compact();
+	        .compact();	   
 	    
-	    return ResponseEntity.ok(new UserTokenState(token, newSeller.getEmail()));
+	    //set account activation 
+		checkSeller.setActivated(true);
+		sellerService.save(checkSeller);
+		
+		logger.info("COMPLETED | Logging in to the PaymentHub");
+		
+		//contact the seller to confirm activation
+		RestTemplate restTemplate = new RestTemplate();				
+		try {
+	    	restTemplate.exchange(checkSeller.getConfirmationLink(), HttpMethod.GET, null, ResponseEntity.class);	       
+	    } 
+		catch (RestClientException e) {
+			//TODO: what happens here?
+		}
+		
+		//return token
+		UserTokenState jwtResponse = new UserTokenState(token, loginDTO.getUsername());    
+        
+		return ResponseEntity.ok(jwtResponse);
 	}
 
 	  /**
@@ -129,7 +193,7 @@ public class SellerController {
 	    Seller seller = sellerService.findByEmail(principal.getName());
 	    
 	    //check if seller exists
-	    if(seller == null) {
+	    if(seller == null || !seller.isActivated()) {
 	    	logger.error("CANCELED | Adding a new payment method to an existing client | Method: " + paymentMethod);
 	    	return ResponseEntity.status(400).build();
 	    }
@@ -202,13 +266,6 @@ public class SellerController {
 		
 		String email = principal.getName();
 		return ResponseEntity.ok(email);
-	}
-	
-	
-	@GetMapping("/nesto")
-	public String proba() {
-
-		return "proba";
 	}
 
 }
