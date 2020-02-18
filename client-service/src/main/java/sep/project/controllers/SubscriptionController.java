@@ -148,6 +148,7 @@ public class SubscriptionController {
 			subscription.setSubscriptionStatus(SubscriptionStatus.CANCELED);
 			subscriptionService.save(subscription);
 			
+			ResponseEntity<RedirectDTO> response2 = null;
 			try {
 				response2 = restTemplate.exchange(subscription.getErrorUrl(), HttpMethod.GET, null, RedirectDTO.class);
 			} catch (RestClientException e2) {
@@ -190,5 +191,5 @@ public class SubscriptionController {
 		
 		return ResponseEntity.ok(dto);
 	}
-		
+
 }

@@ -126,8 +126,7 @@ export class PaymentMethodsComponent implements OnInit {
     } else {
       alert('You have successfully finished the registration process!');
 
-      this.tokenStorageService.signOut();
-      this.router.navigateByUrl('/');
+      this.getLink();
     }
   }
 
@@ -147,14 +146,34 @@ export class PaymentMethodsComponent implements OnInit {
         } else {
           alert('You have successfully finished the registration process!');
 
-          this.tokenStorageService.signOut();
-          this.router.navigateByUrl('/');
+          this.getLink();
         }
       },
       error => {
         alert('An error ocurred. Please try again!');
       }
     );
+  }
+
+  getLink() {
+    let link: string;
+    this.formService.getLink().subscribe(
+      data => {
+        link = data.url;
+
+        this.tokenStorageService.signOut();
+
+        document.location.href = link;
+      },
+      error => {
+        link = 'https://localhost:4200/#/';
+
+        this.tokenStorageService.signOut();
+
+        document.location.href = link;
+      }
+    );
+
   }
 
 }

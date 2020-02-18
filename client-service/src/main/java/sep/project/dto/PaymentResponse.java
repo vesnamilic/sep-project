@@ -8,6 +8,10 @@ public class PaymentResponse {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	public PaymentResponse(String url) {
+		this.url = url;
+	}
 
 	public String getUrl() {
 		return url;

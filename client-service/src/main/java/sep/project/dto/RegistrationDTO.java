@@ -4,6 +4,7 @@ public class RegistrationDTO {
 	private String email;
     private String name;
     private String confirmationLink;
+    private String returnLink;
     
     public RegistrationDTO() {
 		super();
@@ -32,6 +33,14 @@ public class RegistrationDTO {
 
 	public void setConfirmationLink(String confirmationLink) {
 		this.confirmationLink = confirmationLink;
+	}
+
+	public String getReturnLink() {
+		return returnLink;
+	}
+
+	public void setReturnLink(String returnLink) {
+		this.returnLink = returnLink;
 	}
     
 }

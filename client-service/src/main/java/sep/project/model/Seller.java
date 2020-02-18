@@ -30,6 +30,9 @@ public class Seller {
 	private String confirmationLink;
 	
 	@Column
+	private String returnLink;
+	
+	@Column
 	private String password;
     
     @Column
@@ -120,6 +123,14 @@ public class Seller {
 
 	public void setConfirmationLink(String confirmationLink) {
 		this.confirmationLink = confirmationLink;
+	}
+
+	public String getReturnLink() {
+		return returnLink;
+	}
+
+	public void setReturnLink(String returnLink) {
+		this.returnLink = returnLink;
 	}
 
 }
