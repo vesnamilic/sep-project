@@ -28,9 +28,16 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh, refresh
 
 spring:
   cloud:
+    bus:
+      enabled: true
     config:
       server:
         git:

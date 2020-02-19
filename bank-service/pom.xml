@@ -94,7 +94,7 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -148,6 +148,14 @@
 			<version>2.11.2</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.apache.clerezza.ext/org.json.simple -->
+		<dependency>
+			<groupId>org.apache.clerezza.ext</groupId>
+			<artifactId>org.json.simple</artifactId>
+			<version>0.4</version>
+		</dependency>
+
+		
 	</dependencies>
 
 	<dependencyManagement>

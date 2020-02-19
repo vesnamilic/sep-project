@@ -1,5 +1,5 @@
 server:
-  port: 8762
+  port: 8763
   ssl:
     enabled: true
     key-store: classpath:zuul_gateway_keyStore.jks
@@ -31,10 +31,6 @@ zuul:
     bank-service:
       service-id: bank-service
       path: "/bank/**"
-      sensitive-headers: Cookie,Set-Cookie
-    bitcoin-service:
-      path: "/bitcoin/**"
-      service-id: bitcoin-service
       sensitive-headers: Cookie,Set-Cookie
     payPal-service:
       path: "/paypal/**"

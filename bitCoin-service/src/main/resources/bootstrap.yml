@@ -1,6 +1,10 @@
 spring:
   application:
     name: bitcoin-service
+  cloud:
+    config:
+      uri: https://localhost:8888
+      fail-fast: true
 
 ribbon:
   isSecure: true
