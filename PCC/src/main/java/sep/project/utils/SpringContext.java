@@ -1,4 +1,4 @@
-package sep.project.crypto;
+package sep.project.utils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

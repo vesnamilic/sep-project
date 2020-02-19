@@ -1,4 +1,4 @@
-package sep.project.crypto;
+package sep.project.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ import javax.persistence.Converter;
 
 import org.apache.commons.lang.RandomStringUtils;
 
-import sep.project.BankServiceApplication;
+import sep.project.PccApplication;
 import sep.project.model.Crypto;
 import sep.project.services.CryptoService;
 
@@ -30,12 +30,13 @@ public class CryptoConverter implements AttributeConverter<String, String> {
 	public String convertToDatabaseColumn(String something) {
 		
 		String generatedString = RandomStringUtils.randomAlphanumeric(16);
+		
 		byte[] IvParameterVector=generatedString.getBytes();		
 
 		CryptoService cryptoService = SpringContext.getBean(CryptoService.class);
 
 		KeyStore jceks;
-		InputStream ins = BankServiceApplication.class.getResourceAsStream("/db.jceks");
+		InputStream ins = PccApplication.class.getResourceAsStream("/db.jceks");
 		Key key = null;
 		
 		try {
@@ -66,12 +67,11 @@ public class CryptoConverter implements AttributeConverter<String, String> {
 
 	@Override
 	public String convertToEntityAttribute(String dbData) {
-		
 		CryptoService cryptoService = SpringContext.getBean(CryptoService.class);
 		byte[] IvParameterVector=(cryptoService.findByText(dbData).getIv()).getBytes();	
 		
 		KeyStore jceks;
-		InputStream ins = BankServiceApplication.class.getResourceAsStream("/db.jceks");
+		InputStream ins = PccApplication.class.getResourceAsStream("/db.jceks");
 		Key key = null;
 
 		try {

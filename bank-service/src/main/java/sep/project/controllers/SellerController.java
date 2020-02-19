@@ -41,7 +41,7 @@ public class SellerController {
 	@PostMapping("")
 	public ResponseEntity<?> addClient(@RequestHeader("Authorization") String authorization, @RequestBody String clientString) {		
         
-		logger.info("INITIATED | Adding a new PaymentHub client to the PayPal database");
+		logger.info("INITIATED | Adding a new PaymentHub client to the Bank database");
 		
 		String email = "";
 
@@ -62,11 +62,11 @@ public class SellerController {
 	      email = (String) response.getBody();
 	    }
 	    catch(HttpClientErrorException e) {
-	    	logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+	    	logger.error("CANCELED | Adding a new PaymentHub client to the Bank database");
 	    	return ResponseEntity.status(401).build();
 	    }
 	    catch(Exception e) {
-	    	logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+	    	logger.error("CANCELED | Adding a new PaymentHub client to the Bank database");
 			return ResponseEntity.status(401).build();
 	    }
 	    	
@@ -77,7 +77,7 @@ public class SellerController {
 			seller = gson.fromJson(clientString, Seller.class);
 		}
 		catch(JsonSyntaxException e) {
-			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			logger.error("CANCELED | Adding a new PaymentHub client to the Bank database");
 			return ResponseEntity.status(400).build();
 		}
 		        
@@ -86,18 +86,18 @@ public class SellerController {
 		//check if client with this email address already exists
 		Seller checkSeller = sellerService.findByEmail(seller.getEmail());	
 		if(checkSeller != null) {
-			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			logger.error("CANCELED | Adding a new PaymentHub client to the Bank database");
 			return ResponseEntity.status(400).build();
 		}
 
 		Seller newSeller = sellerService.save(seller);
 		
 		if(newSeller != null) {
-			logger.info("COMPLETED | Adding a new PaymentHub client to the PayPal database");
+			logger.info("COMPLETED | Adding a new PaymentHub client to the Bank database");
 			return ResponseEntity.status(200).build();
 		}
 		else {
-			logger.error("CANCELED | Adding a new PaymentHub client to the PayPal database");
+			logger.error("CANCELED | Adding a new PaymentHub client to the Bank database");
 			return ResponseEntity.status(400).build();
 		}	
 	}
