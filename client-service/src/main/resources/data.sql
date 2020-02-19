@@ -15,7 +15,6 @@ INSERT INTO seller_payment_methods(seller_id, payment_methods_id) VALUES (3,1);
 INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 3, 1);
 INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 6, 1);
 INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'MONTH', 12, 1);
-INSERT INTO subscription_plan("type", "frequency", "cycles_number", "seller_id") VALUES ('FIXED', 'YEAR', 2, 1);
 
 --Maja K NC
 INSERT INTO seller(email, name, deleted, activated) VALUES ('magazine-one@upp.com', 'Magazine One', false, true);
