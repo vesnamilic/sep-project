@@ -173,7 +173,7 @@ public class SubscriptionController {
 	}
 	
 	@GetMapping("/status")
-	public ResponseEntity<?> getSubscriptionStatus(@RequestParam("orderId") Long id, @RequestParam("email") String email) {
+	public ResponseEntity<?> getSubscriptionStatus(@RequestParam("subscriptionId") Long id, @RequestParam("email") String email) {
 		
 		logger.info("INITIATED | Finding subscription status | Subscription id: " + id);
 		
