@@ -55,7 +55,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
         
 success_url_payment : "https://localhost:8762/api/paypal/complete"
+cancel_url_payment : "https://localhost:8762/api/paypal/cancel?transactionId="
+
 success_url_agreement : "https://localhost:8762/api/paypal/subscription/complete?subscriptionId="
+cancel_url_agreement : "https://localhost:8762/api/paypal/cancelsubscription?subscriptionId="
 
 
 success_url_redirect : "https://localhost:4200/#/success"

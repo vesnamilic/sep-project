@@ -39,4 +39,9 @@ public class TransactionService {
 	
 		return transactionRepository.findMerchantTransactionBasedOnId(id, email);
 	}
+	
+	public Transaction findById(Long id) {
+		
+		return transactionRepository.getOne(id);
+	}
 }

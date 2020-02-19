@@ -106,7 +106,7 @@ public class PayPalController {
 			logger.error("CANCELED | PayPal Payment Execution");
 			
 			//update seller and get redirect url
-			String url = updateSeller(transaction.getFailedUrl());
+			String url = updateSeller(transaction.getErrorUrl());
 
 			// redirect to the error page
 			HttpHeaders headersRedirect = new HttpHeaders();
@@ -190,7 +190,7 @@ public class PayPalController {
 			logger.error("CANCELED | PayPal Subscription Execution");
 			
 			//update seller and get redirect url
-			String url = updateSeller(subscription.getFailedUrl());
+			String url = updateSeller(subscription.getErrorUrl());
 			  
 			HttpHeaders headersRedirect = new HttpHeaders();
 			headersRedirect.add("Location", url);
@@ -255,6 +255,34 @@ public class PayPalController {
 			return ResponseEntity.ok(status);
 		}
 		return ResponseEntity.notFound().build();
+	}
+	
+	@GetMapping("/cancel")
+	public ResponseEntity<?> cancelOrder(@RequestParam Long transactionId) {
+		Transaction transaction = transactionService.findById(transactionId);
+	
+		//update seller and get redirect url
+		String url = updateSeller(transaction.getFailedUrl());
+
+		// redirect to the fail page
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", url);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);	
+	}
+	
+	@GetMapping("/cancelsubscription")
+	public ResponseEntity<?> cancelSubscription(@RequestParam Long subscriptionId) {
+		Subscription subscription = subscriptionService.getOne(subscriptionId);
+	
+		//update seller and get redirect url
+		String url = updateSeller(subscription.getFailedUrl());
+
+		// redirect to the fail page
+		HttpHeaders headersRedirect = new HttpHeaders();
+		headersRedirect.add("Location", url);
+		headersRedirect.add("Access-Control-Allow-Origin", "*");
+		return new ResponseEntity<byte[]>(null, headersRedirect, HttpStatus.FOUND);	
 	}
 	
 	private String updateSeller(String url){

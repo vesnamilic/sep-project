@@ -58,18 +58,28 @@ public class PayPalService {
 	@Value("${success_url_payment}")
 	private String successPaymentURL;
 	
+	@Value("${cancel_url_payment}")
+	private String cancelPaymentURL;
+	
 	@Value("${success_url_agreement}")
 	private String successAgreementURL;
+	
+	@Value("${cancel_url_agreement}")
+	private String cancelAgreementURL;
 	
 	private String executionMode = "sandbox";
 	
 	public String createPayment(PaymentDTO paymentDTO, Client client) throws PayPalRESTException {
 		
+	    //create and save transaction with status INITIATED
+	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(paymentDTO, client);
+	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
+		
 	    Payer payer = new Payer();
 	    payer.setPaymentMethod("paypal");
 	    
 	    RedirectUrls redirectUrls = new RedirectUrls();
-	    redirectUrls.setCancelUrl(paymentDTO.getErrorUrl());
+	    redirectUrls.setCancelUrl(cancelPaymentURL+paypalTransaction.getId());
 	    redirectUrls.setReturnUrl(successPaymentURL);
 
 		Amount amount = new Amount();
@@ -87,10 +97,6 @@ public class PayPalService {
 	    Payment payment = new Payment("sale", payer);
 	    payment.setTransactions(transactions);
 	    payment.setRedirectUrls(redirectUrls);
-	    	    	    
-	    //create and save transaction with status INITIATED
-	    sep.project.model.Transaction paypalTransaction = new sep.project.model.Transaction(paymentDTO, client);
-	    sep.project.model.Transaction savedTransaction = transactionService.save(paypalTransaction);
 	    
 	    APIContext context = new APIContext(client.getClientId(), client.getClientSecret(), executionMode);
 
@@ -189,7 +195,7 @@ public class PayPalService {
 		List<PaymentDefinition> paymentDefinitionList = new ArrayList<PaymentDefinition>();
 		paymentDefinitionList.add(paymentDefinition);
 				
-		MerchantPreferences merchantPreferences = new MerchantPreferences(subscriptionDTO.getErrorUrl(), successAgreementURL+savedSubscription.getId());
+		MerchantPreferences merchantPreferences = new MerchantPreferences(cancelAgreementURL+savedSubscription.getId(), successAgreementURL+savedSubscription.getId());
 		merchantPreferences.setAutoBillAmount("YES");
 		merchantPreferences.setInitialFailAmountAction("CONTINUE");
 				
