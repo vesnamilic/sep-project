@@ -222,6 +222,11 @@ public class PaymentController {
 		}
 		return ResponseEntity.notFound().build();
 	}
+	
+	@GetMapping("/test")
+	public ResponseEntity<?> test() {
+		return ResponseEntity.ok("NASAO SI ME");
+	}
 
 	// TODO: Ako bude trebalo
 	/*
