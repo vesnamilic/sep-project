@@ -51,7 +51,7 @@ public class SubscriptionService {
 	 * Checking INITIATED and CREATED subscriptions
 	 */
 	//@Scheduled(initialDelay = 10000, fixedRate = 3600000)
-	@Scheduled(initialDelay = 10000, fixedRate = 180000)
+	@Scheduled(initialDelay = 10000, fixedRate = 6000000)
 	public void checkOrdersStatus() {
 		
 		//find all expired subscriptinos

@@ -112,7 +112,7 @@ public class OrderService {
 	/**
 	 * Metoda za periodicnu proveru narudžina sa statusima INITIATED i CREATED
 	 */
-	@Scheduled(initialDelay = 10000, fixedRate = 60000)
+	@Scheduled(initialDelay = 10000, fixedRate = 6000000)
 	public void checkOrdersStatus() {
 		List<UserOrder> orders = this.orderRepository.findExpiredOrders(new Date());
 
